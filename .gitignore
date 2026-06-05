@@ -1,0 +1,11 @@
+.env
+node_modules/
+.next/
+*.log
+logs/
+
+# WeChat DevTools artifacts
+miniprogram/.DS_Store
+miniprogram/node_modules/
+miniprogram/miniprogram_npm/
+miniprogram/.idea/

@@ -1,0 +1,19 @@
+services:
+  web:
+    build: ./web
+    image: cloudpet-web
+    restart: unless-stopped
+    env_file: web/.env
+    environment:
+      PG_HOST: db
+      PG_PORT: "5432"
+      PG_USER: cloudpet
+      PG_DB: cloudpet
+    ports:
+      - "127.0.0.1:3012:3000"
+
+# Reuse traffic-monitor's bridge so we can resolve the shared `db` container.
+networks:
+  default:
+    name: traffic-monitor_default
+    external: true
