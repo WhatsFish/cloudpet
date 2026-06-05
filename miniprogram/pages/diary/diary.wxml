@@ -1,0 +1,22 @@
+<view class="page" wx:if="{{!loading && !noPet}}">
+  <view class="section-title">每日心声</view>
+  <view wx:if="{{voices.length === 0}}" class="muted center" style="padding:32rpx">还没有心声，明天再来看看～</view>
+  <view wx:for="{{voices}}" wx:key="created_at" class="card voice-card">
+    <view class="voice-date">{{item.local_date}}</view>
+    <view class="voice-line">{{item.line}}</view>
+  </view>
+
+  <view class="section-title" style="margin-top:40rpx">最近的互动</view>
+  <view wx:for="{{actions}}" wx:key="time" class="act-row">
+    <text class="act-tag">{{item.label}}</text>
+    <text class="act-line">{{item.line || '—'}}</text>
+    <text class="act-time">{{item.time}}</text>
+  </view>
+</view>
+
+<view class="empty" wx:elif="{{noPet}}">
+  <view>你还没有自己的本命宠</view>
+  <view class="btn" style="margin-top:32rpx;display:inline-block;padding:18rpx 56rpx" bindtap="goQuiz">去测一测</view>
+</view>
+
+<view class="empty" wx:else>加载中…</view>

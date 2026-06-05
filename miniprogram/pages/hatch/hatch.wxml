@@ -1,0 +1,23 @@
+<view class="page" wx:if="{{result}}">
+
+  <block wx:if="{{phase === 'reveal'}}">
+    <view class="reveal-title">{{result.reveal.title}}</view>
+    <view class="reveal-lines">
+      <view wx:for="{{result.reveal.lines}}" wx:key="*this" class="reveal-line">{{item}}</view>
+    </view>
+    <view class="btn btn--block reveal-btn" bindtap="toName">见见它 →</view>
+  </block>
+
+  <block wx:else>
+    <view class="hatch-stage">
+      <image class="egg anim-wobble" src="{{spriteSrc}}" mode="aspectFit" />
+    </view>
+    <view class="hatch-tip">给这只<text class="hl">「{{result.displayName}}」</text>取个名字吧</view>
+    <input class="name-input" value="{{name}}" maxlength="12" bindinput="onNameInput"
+           placeholder="给它起个名字" confirm-type="done" />
+    <view class="btn btn--block" bindtap="confirm">{{submitting ? '…' : '就叫这个名字'}}</view>
+    <view class="use-default" bindtap="useDefault">用默认名字「{{result.displayName}}」</view>
+  </block>
+
+</view>
+<view class="empty" wx:else>…</view>

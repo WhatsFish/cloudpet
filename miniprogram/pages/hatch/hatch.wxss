@@ -1,0 +1,27 @@
+.page { padding-top: 80rpx; }
+
+.reveal-title {
+  font-size: 44rpx; font-weight: 700; text-align: center;
+  color: #4A3F35; margin-bottom: 56rpx;
+}
+.reveal-lines { padding: 0 12rpx; }
+.reveal-line {
+  font-size: 32rpx; line-height: 1.9; color: #5A4E42;
+  text-align: center; margin-bottom: 28rpx;
+}
+.reveal-btn { margin-top: 72rpx; }
+
+.hatch-stage { display: flex; justify-content: center; margin: 40rpx 0 48rpx; }
+.egg { width: 300rpx; height: 300rpx; }
+@keyframes wobble { 0%,100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+.anim-wobble { animation: wobble 1.6s ease-in-out infinite; }
+
+.hatch-tip { text-align: center; font-size: 30rpx; color: #6A5E50; margin-bottom: 36rpx; }
+.hl { color: #E8845B; font-weight: 700; }
+
+.name-input {
+  background: #FFFFFF; border-radius: 22rpx; padding: 28rpx 30rpx;
+  font-size: 32rpx; text-align: center; margin-bottom: 32rpx;
+  box-shadow: 0 4rpx 14rpx rgba(180,150,110,0.08);
+}
+.use-default { text-align: center; color: #B0A28E; font-size: 26rpx; margin-top: 28rpx; }

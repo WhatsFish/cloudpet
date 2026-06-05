@@ -1,0 +1,68 @@
+<view class="page" wx:if="{{pet}}">
+  <!-- header -->
+  <view class="home-head">
+    <view>
+      <text class="pet-name">{{pet.pet.name}}</text>
+      <text class="chip">{{stageLabel}}</text>
+    </view>
+    <view class="muted">认识第 {{pet.pet.daysKnown}} 天 · 连续 {{pet.streakDays}} 天</view>
+  </view>
+
+  <!-- badges -->
+  <view wx:if="{{pet.badges.length}}" class="badge-row">
+    <text wx:for="{{pet.badges}}" wx:key="*this" class="badge">{{item}}</text>
+  </view>
+
+  <!-- speech bubble -->
+  <view class="bubble bubble-pet" wx:if="{{bubble}}">{{bubble}}</view>
+
+  <!-- sprite -->
+  <view class="stage">
+    <image class="sprite {{animClass}}" src="{{spriteSrc}}" mode="aspectFit"
+           binderror="onSpriteError" />
+  </view>
+
+  <!-- bond / exp -->
+  <view class="card">
+    <view class="row-between">
+      <text class="label">亲密度</text><text class="subtle">{{pet.bond}}/1000</text>
+    </view>
+    <view class="bar"><view class="bar-fill" style="width:{{pet.bond/10}}%;background:#FF9EC4"></view></view>
+    <view class="row-between" style="margin-top:18rpx">
+      <text class="label">成长经验</text>
+      <text class="subtle">{{pet.expForNextStage ? pet.exp + '/' + pet.expForNextStage : '已是当前最大阶段'}}</text>
+    </view>
+    <view class="bar"><view class="bar-fill" style="width:{{expPct}}%;background:#E8845B"></view></view>
+  </view>
+
+  <!-- stats -->
+  <view class="card">
+    <view wx:for="{{statBars}}" wx:key="label" class="stat">
+      <text class="stat-label">{{item.label}}</text>
+      <view class="bar"><view class="bar-fill" style="width:{{item.pct}}%;background:{{item.color}}"></view></view>
+      <text class="stat-val">{{item.value}}</text>
+    </view>
+  </view>
+
+  <!-- actions -->
+  <view class="actions">
+    <view wx:for="{{actionBtns}}" wx:key="verb"
+          class="act {{item.enabled ? '' : 'act--off'}}"
+          data-verb="{{item.verb}}" bindtap="onAction">
+      <text class="act-label">{{item.label}}</text>
+      <text wx:if="{{item.hint}}" class="act-hint">{{item.hint}}</text>
+    </view>
+  </view>
+
+  <!-- inventory -->
+  <view class="items">
+    <text wx:for="{{items}}" wx:key="key" class="item-chip">{{item.label}} {{item.qty}}</text>
+  </view>
+</view>
+
+<view class="empty" wx:elif="{{error}}">
+  <view>{{error}}</view>
+  <view class="btn btn--ghost" style="margin-top:32rpx;display:inline-block;padding:18rpx 48rpx" bindtap="load">再试一次</view>
+</view>
+
+<view class="empty" wx:else>正在唤醒你的小宠…</view>

@@ -1,0 +1,19 @@
+.codex-intro { font-size: 26rpx; line-height: 1.6; margin-bottom: 28rpx; }
+
+.grid { display: flex; flex-wrap: wrap; gap: 20rpx; }
+.cell {
+  width: calc((100% - 40rpx) / 3); box-sizing: border-box;
+  background: #FFFFFF; border-radius: 24rpx; padding: 20rpx 0 18rpx;
+  text-align: center; position: relative;
+  box-shadow: 0 4rpx 14rpx rgba(180,150,110,0.08);
+}
+.cell--bonded { background: #FFF3E0; box-shadow: 0 6rpx 20rpx rgba(232,132,91,0.25); }
+.cell-sprite { width: 120rpx; height: 120rpx; }
+.cell-sprite.is-preview { opacity: 0.5; filter: grayscale(0.4); }
+.cell-name { font-size: 26rpx; color: #5A4E42; margin-top: 8rpx; }
+.cell-tag {
+  position: absolute; top: 12rpx; right: 12rpx;
+  background: #E8845B; color: #FFF; font-size: 18rpx;
+  border-radius: 999rpx; padding: 2rpx 12rpx;
+}
+.cell-tag--soon { background: #D8CDBB; }

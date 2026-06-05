@@ -1,0 +1,22 @@
+<view class="page" wx:if="{{loaded}}">
+  <view class="q-progress">{{idx + 1}} / {{questions.length}}</view>
+  <view class="q-dots">
+    <view wx:for="{{questions}}" wx:key="id"
+          class="dot {{index <= idx ? 'dot--on' : ''}}"></view>
+  </view>
+
+  <view class="q-prompt">{{questions[idx].prompt}}</view>
+
+  <view class="q-options">
+    <view wx:for="{{questions[idx].options}}" wx:key="id"
+          class="q-opt"
+          data-qid="{{questions[idx].id}}" data-oid="{{item.id}}"
+          bindtap="onPick">
+      {{item.label}}
+    </view>
+  </view>
+
+  <view wx:if="{{idx > 0}}" class="q-back" bindtap="onBack">← 上一题</view>
+</view>
+
+<view class="empty" wx:else>正在准备题目…</view>

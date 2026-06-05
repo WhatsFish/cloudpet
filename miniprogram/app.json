@@ -1,0 +1,31 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/diary/diary",
+    "pages/codex/codex",
+    "pages/me/me",
+    "pages/quiz/quiz",
+    "pages/hatch/hatch"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "backgroundColor": "#FFF7E6",
+    "navigationBarBackgroundColor": "#FFF7E6",
+    "navigationBarTitleText": "本命小宠",
+    "navigationBarTextStyle": "black"
+  },
+  "tabBar": {
+    "color": "#C4B6A4",
+    "selectedColor": "#E8845B",
+    "backgroundColor": "#FFFDF7",
+    "borderStyle": "white",
+    "list": [
+      { "pagePath": "pages/home/home",   "text": "主页" },
+      { "pagePath": "pages/diary/diary", "text": "心声" },
+      { "pagePath": "pages/codex/codex", "text": "图鉴" },
+      { "pagePath": "pages/me/me",       "text": "我的" }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

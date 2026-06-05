@@ -1,0 +1,11 @@
+<view class="page">
+  <view class="codex-intro muted">十只各有性格的小宠。你的本命宠会带「本命」徽，其余的慢慢来认识～</view>
+  <view class="grid">
+    <view wx:for="{{list}}" wx:key="key" class="cell {{item.bonded ? 'cell--bonded' : ''}}">
+      <image class="cell-sprite pixel {{item.shipped ? '' : 'is-preview'}}" src="{{item.sprite}}" mode="aspectFit" />
+      <view class="cell-name">{{item.name}}</view>
+      <view wx:if="{{item.bonded}}" class="cell-tag">本命</view>
+      <view wx:elif="{{!item.shipped}}" class="cell-tag cell-tag--soon">敬请期待</view>
+    </view>
+  </view>
+</view>

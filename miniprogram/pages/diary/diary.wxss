@@ -1,0 +1,16 @@
+.section-title { font-size: 30rpx; font-weight: 700; color: #6A5E50; margin: 16rpx 0 20rpx; }
+
+.voice-card { padding: 26rpx 30rpx; }
+.voice-date { font-size: 22rpx; color: #C0B2A0; margin-bottom: 10rpx; }
+.voice-line { font-size: 30rpx; line-height: 1.7; color: #5A4E42; }
+
+.act-row {
+  display: flex; align-items: center; padding: 18rpx 4rpx;
+  border-bottom: 2rpx solid #F2E9DA;
+}
+.act-tag {
+  background: #FFF0E0; color: #C9763F; border-radius: 999rpx;
+  padding: 4rpx 16rpx; font-size: 22rpx; margin-right: 16rpx; flex-shrink: 0;
+}
+.act-line { flex: 1; font-size: 26rpx; color: #6A5E50; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.act-time { font-size: 20rpx; color: #C0B2A0; margin-left: 12rpx; flex-shrink: 0; }

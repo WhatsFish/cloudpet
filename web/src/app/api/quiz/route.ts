@@ -10,6 +10,17 @@ import type { ItemKey } from "@/lib/types";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
+// Public: the quiz questions (labels only — weights/maps stay server-side).
+export async function GET() {
+  return NextResponse.json({
+    questions: QUIZ.map((q) => ({
+      id: q.id,
+      prompt: q.prompt,
+      options: q.options.map((o) => ({ id: o.id, label: o.label })),
+    })),
+  });
+}
+
 type Body = { answers?: Record<string, string> };
 
 function validAnswers(answers: Record<string, string>): boolean {

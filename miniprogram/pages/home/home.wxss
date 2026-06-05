@@ -1,0 +1,53 @@
+.home-head {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  margin-bottom: 20rpx;
+}
+.pet-name { font-size: 42rpx; font-weight: 700; margin-right: 16rpx; }
+.badge-row { margin-bottom: 16rpx; }
+
+.bubble-pet { margin: 8rpx 24rpx 28rpx; }
+
+.stage {
+  display: flex; justify-content: center; align-items: flex-end;
+  height: 340rpx; margin-bottom: 12rpx;
+}
+.sprite { width: 280rpx; height: 280rpx; }
+
+/* idle "alive" tweens — distinct per personality, from one static frame */
+@keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14rpx); } }
+@keyframes jiggle { 0%,100% { transform: scale(1,1); } 50% { transform: scale(1.06,0.94); } }
+@keyframes float { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-18rpx) rotate(-3deg); } }
+@keyframes pop { 0%,100% { transform: scale(1); } 45% { transform: scale(1.1); } 55% { transform: scale(0.96); } }
+@keyframes bounce { 0% { transform: scale(1) translateY(0); } 30% { transform: scale(1.15) translateY(-26rpx); } 60% { transform: scale(0.92) translateY(0); } 100% { transform: scale(1); } }
+.anim-bob { animation: bob 2.6s ease-in-out infinite; }
+.anim-jiggle { animation: jiggle 2.2s ease-in-out infinite; }
+.anim-float { animation: float 3.4s ease-in-out infinite; }
+.anim-pop { animation: pop 2.0s ease-in-out infinite; }
+.anim-bounce { animation: bounce 0.5s ease-out; }
+
+.row-between { display: flex; justify-content: space-between; align-items: center; }
+.bar { height: 16rpx; background: #F1E8D8; border-radius: 999rpx; overflow: hidden; margin-top: 8rpx; }
+.bar-fill { height: 100%; border-radius: 999rpx; transition: width 0.4s ease; }
+
+.stat { display: flex; align-items: center; margin-bottom: 16rpx; }
+.stat:last-child { margin-bottom: 0; }
+.stat-label { width: 80rpx; font-size: 24rpx; color: #8A7D6E; }
+.stat .bar { flex: 1; margin: 0 18rpx; }
+.stat-val { width: 56rpx; text-align: right; font-size: 24rpx; color: #A89B8C; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 18rpx; margin: 8rpx 0 24rpx; }
+.act {
+  width: calc((100% - 36rpx) / 3); box-sizing: border-box;
+  background: #FFFFFF; border-radius: 22rpx; padding: 24rpx 0; text-align: center;
+  box-shadow: 0 4rpx 14rpx rgba(180,150,110,0.08);
+}
+.act--off { background: #F4EEE3; }
+.act-label { display: block; font-size: 28rpx; font-weight: 600; color: #5A4E42; }
+.act--off .act-label { color: #B9AC9A; }
+.act-hint { display: block; font-size: 20rpx; color: #C99B6F; margin-top: 4rpx; }
+
+.items { display: flex; flex-wrap: wrap; gap: 12rpx; }
+.item-chip {
+  background: #FFF0E0; color: #C9763F; border-radius: 999rpx;
+  padding: 8rpx 22rpx; font-size: 24rpx;
+}
