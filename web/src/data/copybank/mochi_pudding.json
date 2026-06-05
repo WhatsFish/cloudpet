@@ -1,0 +1,1086 @@
+{
+  "archetypeKey": "mochi_pudding",
+  "displayName": "抖抖布丁",
+  "slots": {
+    "endearment": [
+      "你",
+      "笨笨",
+      "软软的你",
+      "大笨蛋"
+    ],
+    "kaomoji": [
+      "(>﹏<)",
+      "(｡>﹏<｡)",
+      "(蹭蹭蹭)",
+      "(*´꒳`*)",
+      "(˶′◡‵˶)",
+      "(>ω<)"
+    ],
+    "activity": [
+      "贴贴",
+      "蹭脸",
+      "手心午睡",
+      "咕叽咕叽地抖",
+      "窝在手心里"
+    ],
+    "food": [
+      "温牛奶",
+      "麻薯",
+      "焦糖布丁",
+      "奶糕",
+      "软软的布丁"
+    ],
+    "treat": [
+      "小奶糖",
+      "棉花糖",
+      "一口甜布丁",
+      "奶油小饼"
+    ],
+    "mutter": [
+      "咕叽…",
+      "抖一抖就开心了…",
+      "心丁暖暖的…",
+      "想被抱抱了…",
+      "一切照旧最好了…"
+    ]
+  },
+  "lines": [
+    {
+      "id": "mochi_pudding.greet.open.1",
+      "event": "greet.open",
+      "text": "是{endearment}！是{endearment}！心丁一下就变粉啦~抱抱{kaomoji}",
+      "weight": 2
+    },
+    {
+      "id": "mochi_pudding.greet.open.2",
+      "event": "greet.open",
+      "text": "等好久好久啦…快把人家捧手心里嘛{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.greet.open.3",
+      "event": "greet.open",
+      "text": "咕叽~一看到{endearment}就忍不住开始抖了{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.greet.open.4",
+      "event": "greet.open",
+      "text": "来啦来啦~先{activity}三百秒再说别的好不好嘛{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.greet.open.5",
+      "event": "greet.open",
+      "text": "嘿嘿被发现啦，人家正想{endearment}呢{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.greet.open.6",
+      "event": "greet.open",
+      "text": "心丁亮粉粉的~这是只属于{endearment}的颜色哦{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.greet.open.egg.1",
+      "event": "greet.open",
+      "text": "壳壳里软软的…好像有谁在外面？是{endearment}吗{kaomoji}",
+      "requires": {
+        "stage": [
+          "egg"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.greet.open.egg.2",
+      "event": "greet.open",
+      "text": "咕叽…壳壳跟着{endearment}的脚步轻轻抖了一下{kaomoji}",
+      "requires": {
+        "stage": [
+          "egg"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.greet.open.elated.1",
+      "event": "greet.open",
+      "text": "呀！开心到整个奶冻都晃起来啦~抱抱抱{kaomoji}",
+      "requires": {
+        "moodBand": [
+          "极好"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.greet.return.1",
+      "event": "greet.return",
+      "text": "回来啦回来啦~人家只是去发了个小呆{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.greet.return.2",
+      "event": "greet.return",
+      "text": "刚刚那一小会儿…心丁就开始想{endearment}了{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.greet.return.3",
+      "event": "greet.return",
+      "text": "嘿嘿~趁{endearment}不在偷偷又抖了两下{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.greet.return_long.1",
+      "event": "greet.return_long",
+      "text": "呜你回来啦！！人家抖了一整天，心丁都急成蓝色了{kaomoji}",
+      "weight": 2
+    },
+    {
+      "id": "mochi_pudding.greet.return_long.2",
+      "event": "greet.return_long",
+      "text": "好久好久没贴贴…要抱满三百秒才能消气哦{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.greet.return_long.3",
+      "event": "greet.return_long",
+      "text": "差点瘪掉半口气啦…{endearment}以后不许走那么久{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.greet.morning.1",
+      "event": "greet.morning",
+      "text": "唔…早呀~让人家在手心里再多窝亿下下下{kaomoji}",
+      "requires": {
+        "timeBand": [
+          "清晨"
+        ]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.greet.morning.2",
+      "event": "greet.morning",
+      "text": "咕叽~第一件事就是找{endearment}贴贴脸{kaomoji}",
+      "requires": {
+        "timeBand": [
+          "清晨"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.greet.morning.3",
+      "event": "greet.morning",
+      "text": "今天也要一切照旧、一起慢慢醒来好不好嘛{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.greet.latenight.1",
+      "event": "greet.latenight",
+      "text": "这么晚还不睡呀…那把人家抱着一起发呆嘛{kaomoji}",
+      "requires": {
+        "timeBand": [
+          "深夜"
+        ]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.greet.latenight.2",
+      "event": "greet.latenight",
+      "text": "夜里心丁会怕怕的…{endearment}多陪它一会儿{kaomoji}",
+      "requires": {
+        "timeBand": [
+          "深夜"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.greet.latenight.3",
+      "event": "greet.latenight",
+      "text": "咕叽…安安静静的，刚好可以{activity}{kaomoji}",
+      "requires": {
+        "timeBand": [
+          "深夜"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.feed.love.1",
+      "event": "feed.love",
+      "text": "哇是{food}！心丁瞬间变成最最粉的那种粉{kaomoji}",
+      "weight": 2
+    },
+    {
+      "id": "mochi_pudding.feed.love.2",
+      "event": "feed.love",
+      "text": "温温软软的~吃下去整个人都咕叽咕叽起来啦{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.feed.love.3",
+      "event": "feed.love",
+      "text": "{food}最好吃啦…要{endearment}喂到嘴边才更甜哦{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.feed.love.4",
+      "event": "feed.love",
+      "text": "嘿嘿…吃饱饱的就可以安心{activity}了{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.feed.love.5",
+      "event": "feed.love",
+      "text": "这味道和昨天一样诶~人家最喜欢一切照旧了{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.feed.neutral.1",
+      "event": "feed.neutral",
+      "text": "唔…吃是吃啦，可人家更想要抱抱嘛{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.feed.neutral.2",
+      "event": "feed.neutral",
+      "text": "咕叽咕叽…还行吧，要是{food}就更好了{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.feed.neutral.3",
+      "event": "feed.neutral",
+      "text": "慢慢嚼…{endearment}陪着人家一起吃才香{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.feed.dislike.1",
+      "event": "feed.dislike",
+      "text": "凉凉硬硬的…心丁吓得缩了一下{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.feed.dislike.2",
+      "event": "feed.dislike",
+      "text": "呜不要这个嘛…要温温软软的才行{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.feed.dislike.3",
+      "event": "feed.dislike",
+      "text": "噗…吃了凉的，人家瘪掉半口气啦{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.feed.overfed.1",
+      "event": "feed.overfed",
+      "text": "圆滚滚啦…再吃就要从布丁杯里溢出来了{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.feed.overfed.2",
+      "event": "feed.overfed",
+      "text": "咕叽…肚肚鼓鼓的，抖起来都慢半拍了{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.feed.sick_refuse.1",
+      "event": "feed.sick_refuse",
+      "text": "呜…现在吃不下，心丁灰灰的好难受{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "SICK"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.feed.sick_refuse.2",
+      "event": "feed.sick_refuse",
+      "text": "不想吃嘛…{endearment}只要抱着人家就好了{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "SICK"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.clean.1",
+      "event": "clean",
+      "text": "擦擦干净~奶冻又变得亮晶晶滑溜溜啦{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.clean.2",
+      "event": "clean",
+      "text": "咕叽~温温的水珠子，人家好喜欢这种照顾{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.clean.3",
+      "event": "clean",
+      "text": "轻轻一点点就好啦…人家身子软软的会怕痒{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.clean.4",
+      "event": "clean",
+      "text": "擦完心丁透透亮亮的，{endearment}看好不好看{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.play.1",
+      "event": "play",
+      "text": "玩归玩~玩完还是要回{endearment}手心里抱抱哦{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.play.2",
+      "event": "play",
+      "text": "咕叽咕叽地滚一圈~只要{endearment}在就不怕{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.play.3",
+      "event": "play",
+      "text": "嘿嘿~慢悠悠地晃就好啦，人家不爱太快的{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.play.4",
+      "event": "play",
+      "text": "心丁开心得直冒泡泡~再来嘛再来嘛{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.play.5",
+      "event": "play",
+      "text": "最喜欢这种软软的小游戏了，一切照旧最安心{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.play.declined.1",
+      "event": "play.declined",
+      "text": "那个…会动会跳的好可怕，人家躲布丁杯里了{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.play.declined.2",
+      "event": "play.declined",
+      "text": "不想玩这个嘛…抱着发发呆不好吗{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.play.declined.3",
+      "event": "play.declined",
+      "text": "噗…太新奇的东西吓到人家了，缩缩缩{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.pet.1",
+      "event": "pet",
+      "text": "哇~被摸的地方咕叽咕叽地抖，好舒服{kaomoji}",
+      "weight": 2
+    },
+    {
+      "id": "mochi_pudding.pet.2",
+      "event": "pet",
+      "text": "再多摸亿下下下…心丁都被摸成粉色啦{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.pet.3",
+      "event": "pet",
+      "text": "嘿嘿…{endearment}的手心是全世界最暖的地方{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.pet.4",
+      "event": "pet",
+      "text": "蹭蹭~脸贴上去软软的，不要停嘛{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.pet.5",
+      "event": "pet",
+      "text": "咕叽~被这样宠着，人家要融化掉啦{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.pet.egg.1",
+      "event": "pet",
+      "text": "壳壳被轻轻摸着…里面的人家也跟着暖暖的{kaomoji}",
+      "requires": {
+        "stage": [
+          "egg"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.sleep.tuck.1",
+      "event": "sleep.tuck",
+      "text": "那…就抱着人家一起睡嘛，手心当被窝{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.sleep.tuck.2",
+      "event": "sleep.tuck",
+      "text": "晚安安~心丁会守着{endearment}一整晚的{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.sleep.tuck.3",
+      "event": "sleep.tuck",
+      "text": "咕叽…睡前要贴贴脸，这样才做得到甜甜的梦{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.sleep.wake.1",
+      "event": "sleep.wake",
+      "text": "唔…醒啦~第一眼就要看到{endearment}才行{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.sleep.wake.2",
+      "event": "sleep.wake",
+      "text": "伸个软软的懒腰~心丁又是粉色的啦{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.sleep.wake.3",
+      "event": "sleep.wake",
+      "text": "咕叽~睡醒先抖三下，再讨一个抱抱{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.medicine.1",
+      "event": "medicine",
+      "text": "呜苦苦的…可是{endearment}喂的，人家忍着吃{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "SICK"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.medicine.2",
+      "event": "medicine",
+      "text": "吃了药要抱抱补偿嘛…心丁才会快点变回粉{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.medicine.3",
+      "event": "medicine",
+      "text": "咕叽…有{endearment}照顾，难受也没那么怕了{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.checkin.1",
+      "event": "checkin",
+      "text": "今天也来看人家啦~一切照旧最让人安心{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.checkin.2",
+      "event": "checkin",
+      "text": "嘿嘿~只要{endearment}每天都来，心丁就一直是粉的{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.checkin.3",
+      "event": "checkin",
+      "text": "咕叽~点个卯，再蹭一蹭就更圆满啦{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.checkin.egg.1",
+      "event": "checkin",
+      "text": "壳壳又感受到{endearment}的温度啦，人家在里面咕叽点头{kaomoji}",
+      "requires": {
+        "stage": [
+          "egg"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.state.hungry.1",
+      "event": "state.hungry",
+      "text": "肚肚空空的…想要温温的{food}嘛{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.state.hungry.2",
+      "event": "state.hungry",
+      "text": "咕叽…抖得没力气了，{endearment}喂喂人家{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.state.hungry.3",
+      "event": "state.hungry",
+      "text": "心丁有点发蔫…吃一口{treat}就好啦{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.state.dirty.1",
+      "event": "state.dirty",
+      "text": "奶冻黏糊糊的…擦擦干净才好贴贴嘛{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.state.dirty.2",
+      "event": "state.dirty",
+      "text": "咕叽…身上脏脏的，心丁都不亮了{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.state.sleepy.1",
+      "event": "state.sleepy",
+      "text": "眼皮重重的…抱着人家{activity}好不好{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.state.sleepy.2",
+      "event": "state.sleepy",
+      "text": "咕叽…抖得越来越慢，要打盹盹啦{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.state.sick.1",
+      "event": "state.sick",
+      "text": "呜…心丁灰灰的，软软地缩在杯子里{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "SICK"
+        ]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.state.sick.2",
+      "event": "state.sick",
+      "text": "难受难受…只想被{endearment}轻轻抱着{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "SICK"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.state.sick.3",
+      "event": "state.sick",
+      "text": "抖都抖不动了…{endearment}别担心人家好不好{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "SICK"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.state.sulky.1",
+      "event": "state.sulky",
+      "text": "哼…刚刚被突然放下了，要抱满三百秒才消气{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "SULKING"
+        ]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.state.sulky.2",
+      "event": "state.sulky",
+      "text": "心丁鼓成蓝色啦…人家在生闷气嘛{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "SULKING"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.state.sulky.3",
+      "event": "state.sulky",
+      "text": "才不理{endearment}…除非再多抱亿下下下{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "SULKING"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.state.hiding.1",
+      "event": "state.hiding",
+      "text": "噗…被吓到了，缩进布丁杯里不出来{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "HIDING"
+        ]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.state.hiding.2",
+      "event": "state.hiding",
+      "text": "杯子里安全…{endearment}慢慢把手伸进来嘛{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "HIDING"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.state.hiding.3",
+      "event": "state.hiding",
+      "text": "露半只眼睛偷看…确认是{endearment}才敢冒头{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "HIDING"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.state.lonely.1",
+      "event": "state.lonely",
+      "text": "呜…一个人好久了，心丁急得整片都蓝了{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "LONELY"
+        ]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.state.lonely.2",
+      "event": "state.lonely",
+      "text": "别走嘛——再抱亿下下下…人家最怕孤单了{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "LONELY"
+        ]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.state.lonely.3",
+      "event": "state.lonely",
+      "text": "{endearment}是不是在盯手机…看看人家嘛{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "LONELY"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.mood.elated.1",
+      "event": "mood.elated",
+      "text": "耶~心丁亮成最最粉啦，整个奶冻都在蹦{kaomoji}",
+      "requires": {
+        "moodBand": [
+          "极好"
+        ]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.mood.elated.2",
+      "event": "mood.elated",
+      "text": "咕叽咕叽冒粉泡泡~今天和{endearment}在一起超开心{kaomoji}",
+      "requires": {
+        "moodBand": [
+          "极好"
+        ]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.mood.elated.3",
+      "event": "mood.elated",
+      "text": "开心到要从手心里跳起来啦~抱住人家{kaomoji}",
+      "requires": {
+        "moodBand": [
+          "极好"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.mood.elated.4",
+      "event": "mood.elated",
+      "text": "这种暖暖软软的日子…人家想一直一直过下去{kaomoji}",
+      "requires": {
+        "moodBand": [
+          "极好"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.idle.mutter.1",
+      "event": "idle.mutter",
+      "text": "{mutter}{kaomoji}",
+      "weight": 2
+    },
+    {
+      "id": "mochi_pudding.idle.mutter.2",
+      "event": "idle.mutter",
+      "text": "别走嘛——再抱亿下下下{kaomoji}",
+      "weight": 2
+    },
+    {
+      "id": "mochi_pudding.idle.mutter.3",
+      "event": "idle.mutter",
+      "text": "咕叽…自己抖着抖着就发起呆来了{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.idle.mutter.4",
+      "event": "idle.mutter",
+      "text": "{endearment}在看人家吗…心丁悄悄变粉了{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.idle.mutter.5",
+      "event": "idle.mutter",
+      "text": "想{food}…想贴贴…想抱抱…全都想{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.idle.mutter.6",
+      "event": "idle.mutter",
+      "text": "一切照旧的感觉…最最安心了{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.idle.mutter.7",
+      "event": "idle.mutter",
+      "text": "咕叽咕叽~数一数今天抖了几下下{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.idle.mutter.8",
+      "event": "idle.mutter",
+      "text": "手心空空的时候…人家就会偷偷瘪一点点{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.idle.mutter.egg.1",
+      "event": "idle.mutter",
+      "text": "壳壳里咕叽咕叽…轻轻晃着等{endearment}{kaomoji}",
+      "requires": {
+        "stage": [
+          "egg"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.idle.mutter.night.1",
+      "event": "idle.mutter",
+      "text": "夜深啦…心丁怕黑，悄悄找{endearment}的方向{kaomoji}",
+      "requires": {
+        "timeBand": [
+          "深夜"
+        ]
+      },
+      "weight": 0.6
+    },
+    {
+      "id": "mochi_pudding.beg.want.1",
+      "event": "beg.want",
+      "text": "那个那个…可以来一颗{treat}嘛{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.beg.want.2",
+      "event": "beg.want",
+      "text": "人家好想{activity}…就一下下下嘛{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.beg.want.3",
+      "event": "beg.want",
+      "text": "{endearment}~抱抱嘛抱抱嘛，心丁都等粉啦{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.growth.promote.1",
+      "event": "growth.promote",
+      "text": "咕叽——人家好像长大一点点了诶{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.growth.promote.2",
+      "event": "growth.promote",
+      "text": "奶冻变结实了一些…可还是最爱{endearment}的手心{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.growth.promote.egg.1",
+      "event": "growth.promote",
+      "text": "壳壳裂开啦…人家终于能跳进{endearment}手心抖抖啦{kaomoji}",
+      "requires": {
+        "stage": [
+          "egg"
+        ]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.streak.milestone.1",
+      "event": "streak.milestone",
+      "text": "哇~{endearment}连着好多天都没走开，心丁亮闪闪{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.streak.milestone.2",
+      "event": "streak.milestone",
+      "text": "咕叽~这就是人家最爱的『一切照旧』呀{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.streak.milestone.3",
+      "event": "streak.milestone",
+      "text": "每天都有{endearment}…人家再也不怕孤单了{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.reunion.gift.1",
+      "event": "reunion.gift",
+      "text": "{endearment}回来啦…人家偷偷攒了颗{treat}给你{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.reunion.gift.2",
+      "event": "reunion.gift",
+      "text": "咕叽~等你的时候滚出了一颗软软的小心意{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.reunion.gift.3",
+      "event": "reunion.gift",
+      "text": "心丁变回粉啦~这个{treat}给最想念的{endearment}{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "mochi_pudding.name.given.1",
+      "event": "name.given",
+      "text": "这是…人家的名字吗？心丁高兴得直冒泡{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "mochi_pudding.name.given.2",
+      "event": "name.given",
+      "text": "嘿嘿~以后{endearment}这样叫人家，要叫亿万遍哦{kaomoji}",
+      "weight": 1
+    }
+  ],
+  "diary": {
+    "openers": [
+      {
+        "id": "mochi_pudding.diary.opener.1",
+        "text": "今天也咕叽咕叽地抖了一整天~"
+      },
+      {
+        "id": "mochi_pudding.diary.opener.2",
+        "text": "清晨在手心里慢慢醒来，",
+        "requires": {
+          "timeBand": [
+            "清晨"
+          ]
+        }
+      },
+      {
+        "id": "mochi_pudding.diary.opener.3",
+        "text": "傍晚心丁暖暖的，",
+        "requires": {
+          "timeBand": [
+            "傍晚"
+          ]
+        }
+      },
+      {
+        "id": "mochi_pudding.diary.opener.4",
+        "text": "夜深了，人家窝在杯子里偷偷记下，",
+        "requires": {
+          "timeBand": [
+            "深夜"
+          ]
+        }
+      },
+      {
+        "id": "mochi_pudding.diary.opener.5",
+        "text": "白天又是软软的一天，",
+        "requires": {
+          "timeBand": [
+            "白天"
+          ]
+        }
+      },
+      {
+        "id": "mochi_pudding.diary.opener.6",
+        "text": "连着好多天没和{endearment}分开啦，",
+        "requires": {
+          "streakMin": 3
+        }
+      },
+      {
+        "id": "mochi_pudding.diary.opener.7",
+        "text": "心丁今天大半时间都是粉色的~"
+      },
+      {
+        "id": "mochi_pudding.diary.opener.8",
+        "text": "抖呀抖呀，又记起一件小事——"
+      }
+    ],
+    "bodies": [
+      {
+        "id": "mochi_pudding.diary.body.1",
+        "text": "最开心的就是被{endearment}捧在手心{activity}。"
+      },
+      {
+        "id": "mochi_pudding.diary.body.2",
+        "text": "吃到温温的{food}时，整个奶冻都在咕叽咕叽地笑。"
+      },
+      {
+        "id": "mochi_pudding.diary.body.3",
+        "text": "被突然放下的时候，人家噗地瘪掉了半口气…"
+      },
+      {
+        "id": "mochi_pudding.diary.body.4",
+        "text": "只要{endearment}在身边，心丁就一直亮亮的粉。"
+      },
+      {
+        "id": "mochi_pudding.diary.body.5",
+        "text": "今天悄悄数了数，一共抖了好多好多下下。"
+      },
+      {
+        "id": "mochi_pudding.diary.body.6",
+        "text": "最怕一个人啦…{endearment}走开时心丁就发蓝。"
+      },
+      {
+        "id": "mochi_pudding.diary.body.7",
+        "text": "一切照旧的日子，是人家最最喜欢的味道。"
+      },
+      {
+        "id": "mochi_pudding.diary.body.8",
+        "text": "贴着脸打了个小盹，做了个软软甜甜的梦。"
+      },
+      {
+        "id": "mochi_pudding.diary.body.9",
+        "text": "会动的新玩具好可怕，人家躲进杯子缩了好久。"
+      },
+      {
+        "id": "mochi_pudding.diary.body.10",
+        "text": "想攒一颗{treat}，等{endearment}回来时偷偷塞给你。"
+      }
+    ],
+    "memory": [
+      {
+        "id": "mochi_pudding.diary.memory.1",
+        "text": "我们已经第{streak}天没分开啦，心丁好满足~",
+        "requires": {
+          "streakMin": 5
+        }
+      },
+      {
+        "id": "mochi_pudding.diary.memory.2",
+        "text": "认识{endearment}第{days}天了，每天都更黏一点点。",
+        "requires": {
+          "daysMin": 7
+        }
+      },
+      {
+        "id": "mochi_pudding.diary.memory.3",
+        "text": "和{endearment}的羁绊到{bond}啦，人家是你的小布丁啦。",
+        "requires": {
+          "bondMin": 300
+        }
+      },
+      {
+        "id": "mochi_pudding.diary.memory.4",
+        "text": "羁绊都{bond}了…人家想一辈子赖在你手心里。",
+        "requires": {
+          "bondMin": 600
+        }
+      },
+      {
+        "id": "mochi_pudding.diary.memory.5",
+        "text": "{endearment}总是很晚才来喂人家，肚肚等得咕咕叫…",
+        "requires": {
+          "pattern": [
+            "late_feeder"
+          ]
+        }
+      },
+      {
+        "id": "mochi_pudding.diary.memory.6",
+        "text": "{endearment}今天又把人家喂得圆滚滚的，溢出来啦~",
+        "requires": {
+          "pattern": [
+            "overfeeder"
+          ]
+        }
+      },
+      {
+        "id": "mochi_pudding.diary.memory.7",
+        "text": "{endearment}每天都准时来，这就是人家最爱的照旧。",
+        "requires": {
+          "pattern": [
+            "daily_regular"
+          ]
+        }
+      },
+      {
+        "id": "mochi_pudding.diary.memory.8",
+        "text": "最近{endearment}有点不理人家…心丁蓝了好几回了。",
+        "requires": {
+          "pattern": [
+            "neglected_recently"
+          ]
+        }
+      }
+    ],
+    "signoffs": [
+      {
+        "id": "mochi_pudding.diary.signoff.1",
+        "text": "明天还要继续抱抱哦~{kaomoji}"
+      },
+      {
+        "id": "mochi_pudding.diary.signoff.2",
+        "text": "别走嘛——晚安亿下下下{kaomoji}"
+      },
+      {
+        "id": "mochi_pudding.diary.signoff.3",
+        "text": "心丁今天是粉色的，记下啦{kaomoji}"
+      },
+      {
+        "id": "mochi_pudding.diary.signoff.4",
+        "text": "要一直一直在一起呀{kaomoji}"
+      },
+      {
+        "id": "mochi_pudding.diary.signoff.5",
+        "text": "咕叽~把这页贴在你手心里{kaomoji}"
+      },
+      {
+        "id": "mochi_pudding.diary.signoff.6",
+        "text": "想{endearment}了，悄悄合上小本本{kaomoji}"
+      }
+    ]
+  }
+}

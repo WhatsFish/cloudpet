@@ -1,0 +1,1029 @@
+{
+  "archetypeKey": "ember_imp",
+  "displayName": "炸毛团",
+  "slots": {
+    "kaomoji": [
+      "(╬￣皿￣)",
+      "(>///<)",
+      "(扑)",
+      "ヽ(`Д´)ノ",
+      "(*｀へ´*)",
+      "(/ω＼)"
+    ],
+    "activity": [
+      "打闹",
+      "追着跑",
+      "比赛较劲",
+      "蹦跶",
+      "跺脚转圈"
+    ],
+    "food": [
+      "辣条",
+      "碳酸气泡水",
+      "重口小串",
+      "麻辣小鱼干",
+      "够劲的辣味豆"
+    ],
+    "treat": [
+      "辣味豆",
+      "跳跳糖",
+      "汽水软糖",
+      "一根辣条"
+    ],
+    "mutter": [
+      "哼…",
+      "才、才不是想你呢…",
+      "火苗又有点想窜了…",
+      "气死了气死了…",
+      "…就再给你一次机会"
+    ]
+  },
+  "lines": [
+    {
+      "id": "ember_imp.greet.open.1",
+      "event": "greet.open",
+      "text": "哼！{你}总算舍得看我一眼了！{kaomoji}",
+      "weight": 2
+    },
+    {
+      "id": "ember_imp.greet.open.2",
+      "event": "greet.open",
+      "text": "诶{你}来啦——我、我才没在等！{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.greet.open.3",
+      "event": "greet.open",
+      "text": "来得正好，我火苗都快憋灭了！{kaomoji}"
+    },
+    {
+      "id": "ember_imp.greet.open.4",
+      "event": "greet.open",
+      "text": "哼，看在你笑得这么蠢的份上，原谅你了。{kaomoji}"
+    },
+    {
+      "id": "ember_imp.greet.open.5",
+      "event": "greet.open",
+      "text": "快说想我了没！没有的话我现在就炸！{kaomoji}",
+      "weight": 0.6
+    },
+    {
+      "id": "ember_imp.greet.open.6",
+      "event": "greet.open",
+      "text": "（火苗一下窜起来）是你！是你对吧！抱抱！(扑)",
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.greet.open.7",
+      "event": "greet.open",
+      "text": "蛋壳里好闷……是谁在外面踱步呀？",
+      "requires": {
+        "stage": [
+          "egg"
+        ]
+      }
+    },
+    {
+      "id": "ember_imp.greet.open.8",
+      "event": "greet.open",
+      "text": "（蛋轻轻一颤）里面有团火苗，正气鼓鼓地等你。",
+      "requires": {
+        "stage": [
+          "egg"
+        ]
+      }
+    },
+    {
+      "id": "ember_imp.greet.open.9",
+      "event": "greet.open",
+      "text": "哼，心情极好，但不是因为你来了哦——才怪。{kaomoji}",
+      "requires": {
+        "moodBand": [
+          "极好",
+          "好"
+        ]
+      }
+    },
+    {
+      "id": "ember_imp.greet.open.10",
+      "event": "greet.open",
+      "text": "（火苗赤红）你最好有个好理由现在才出现！(╬￣皿￣)",
+      "requires": {
+        "moodBand": [
+          "低",
+          "极低"
+        ]
+      }
+    },
+    {
+      "id": "ember_imp.greet.return.1",
+      "event": "greet.return",
+      "text": "回来啦？哼，我可没数你走了几分钟。{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.greet.return.2",
+      "event": "greet.return",
+      "text": "诶你这么快就回来——才、才不是惊喜呢！{kaomoji}"
+    },
+    {
+      "id": "ember_imp.greet.return.3",
+      "event": "greet.return",
+      "text": "回来就好回来就好！（火苗扑通软成蓝色）"
+    },
+    {
+      "id": "ember_imp.greet.return.4",
+      "event": "greet.return",
+      "text": "我刚刚一点都没盯着门口看，{你}别误会！",
+      "weight": 0.7
+    },
+    {
+      "id": "ember_imp.greet.return_long.1",
+      "event": "greet.return_long",
+      "text": "你！你居然敢消失这——么久！(╬￣皿￣)",
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.greet.return_long.2",
+      "event": "greet.return_long",
+      "text": "我火苗都快凉透了……诶你回来了？抱抱！(扑)"
+    },
+    {
+      "id": "ember_imp.greet.return_long.3",
+      "event": "greet.return_long",
+      "text": "哼，我都收拾好包袱要走了——算了不走了，{你}抱我。(>///<)"
+    },
+    {
+      "id": "ember_imp.greet.morning.1",
+      "event": "greet.morning",
+      "text": "（火苗噗一下点燃）早！我可是第一个醒的！{kaomoji}",
+      "requires": {
+        "timeBand": [
+          "清晨"
+        ]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.greet.morning.2",
+      "event": "greet.morning",
+      "text": "起这么晚！我都热身完一整圈追逐了，{你}慢半拍！",
+      "requires": {
+        "timeBand": [
+          "清晨"
+        ]
+      }
+    },
+    {
+      "id": "ember_imp.greet.morning.3",
+      "event": "greet.morning",
+      "text": "早安——哼，今天也要被我闹得鸡飞狗跳哦。{kaomoji}"
+    },
+    {
+      "id": "ember_imp.greet.latenight.1",
+      "event": "greet.latenight",
+      "text": "这么晚还不睡？正好，陪我{activity}！",
+      "requires": {
+        "timeBand": [
+          "深夜"
+        ]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.greet.latenight.2",
+      "event": "greet.latenight",
+      "text": "深夜的火苗最亮了……才不是怕黑想找你呢。{kaomoji}",
+      "requires": {
+        "timeBand": [
+          "深夜"
+        ]
+      }
+    },
+    {
+      "id": "ember_imp.greet.latenight.3",
+      "event": "greet.latenight",
+      "text": "夜里悄悄说……我其实有点想你，就一点点！{kaomoji}",
+      "weight": 0.7
+    },
+    {
+      "id": "ember_imp.feed.love.1",
+      "event": "feed.love",
+      "text": "{food}！这才够劲！哼，算你有眼光。{kaomoji}",
+      "weight": 2
+    },
+    {
+      "id": "ember_imp.feed.love.2",
+      "event": "feed.love",
+      "text": "（火苗滋啦窜高）辣！爽！再来！(￣^￣)凸",
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.feed.love.3",
+      "event": "feed.love",
+      "text": "我才不会谢你呢……但、但这个真的好吃。{kaomoji}"
+    },
+    {
+      "id": "ember_imp.feed.love.4",
+      "event": "feed.love",
+      "text": "嘶——呛得火苗直冒泡！我喜欢！多给点{food}！"
+    },
+    {
+      "id": "ember_imp.feed.love.5",
+      "event": "feed.love",
+      "text": "够味！跟我一样有脾气，哼，勉强配得上我。{kaomoji}"
+    },
+    {
+      "id": "ember_imp.feed.neutral.1",
+      "event": "feed.neutral",
+      "text": "唔……能吃。但下次记得加辣，{你}懂吗。{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.feed.neutral.2",
+      "event": "feed.neutral",
+      "text": "哼，将就吃了。火苗都没窜起来呢。"
+    },
+    {
+      "id": "ember_imp.feed.neutral.3",
+      "event": "feed.neutral",
+      "text": "嗯，这个不炸不软，就……普通。{kaomoji}"
+    },
+    {
+      "id": "ember_imp.feed.dislike.1",
+      "event": "feed.dislike",
+      "text": "这么淡！火苗都灭了一半！{你}是在敷衍我吗！(╬￣皿￣)",
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.feed.dislike.2",
+      "event": "feed.dislike",
+      "text": "呸——没味儿的东西！我要{food}，立刻！{kaomoji}"
+    },
+    {
+      "id": "ember_imp.feed.dislike.3",
+      "event": "feed.dislike",
+      "text": "哼！我才不吃这种温吞东西，拿走拿走！(￣^￣)凸"
+    },
+    {
+      "id": "ember_imp.feed.overfed.1",
+      "event": "feed.overfed",
+      "text": "停！再喂火苗要炸成烟花了！(＞﹏＜)",
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.feed.overfed.2",
+      "event": "feed.overfed",
+      "text": "我、我撑得跳不动了……都怪{你}手太松！{kaomoji}"
+    },
+    {
+      "id": "ember_imp.feed.sick_refuse.1",
+      "event": "feed.sick_refuse",
+      "text": "（火苗有气无力）别……火苗都烧不旺了，吃不下。(´；ω；`)",
+      "requires": {
+        "stateFlag": [
+          "SICK"
+        ]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.feed.sick_refuse.2",
+      "event": "feed.sick_refuse",
+      "text": "我难受得连辣条都不想要了……你说我是不是病得很重。",
+      "requires": {
+        "stateFlag": [
+          "SICK"
+        ]
+      }
+    },
+    {
+      "id": "ember_imp.clean.1",
+      "event": "clean",
+      "text": "喂喂别用水！火苗最怕被泼啦——！(＞﹏＜)",
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.clean.2",
+      "event": "clean",
+      "text": "哼，擦就擦，轻点啦笨蛋……（火苗偷偷变软）{kaomoji}"
+    },
+    {
+      "id": "ember_imp.clean.3",
+      "event": "clean",
+      "text": "好了好了干净了！谁稀罕你擦——其实有点舒服。{kaomoji}"
+    },
+    {
+      "id": "ember_imp.clean.4",
+      "event": "clean",
+      "text": "搓火苗痒痒的！别笑！不许笑！(>///<)"
+    },
+    {
+      "id": "ember_imp.play.1",
+      "event": "play",
+      "text": "{activity}走起！这次我绝对不让你！(￣^￣)凸",
+      "weight": 2
+    },
+    {
+      "id": "ember_imp.play.2",
+      "event": "play",
+      "text": "（火苗窜成尖刺）追我呀追我呀！追不上是笨蛋！{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.play.3",
+      "event": "play",
+      "text": "比{activity}！输的人今天不许炸毛！哼！"
+    },
+    {
+      "id": "ember_imp.play.4",
+      "event": "play",
+      "text": "哈！我赢啦我赢啦！{你}也太弱了吧！{kaomoji}"
+    },
+    {
+      "id": "ember_imp.play.5",
+      "event": "play",
+      "text": "再来一局！刚才那局不算！我没准备好！(╬￣皿￣)"
+    },
+    {
+      "id": "ember_imp.play.declined.1",
+      "event": "play.declined",
+      "text": "什么叫等会儿！现在！立刻！陪我玩！(╬￣皿￣)",
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.play.declined.2",
+      "event": "play.declined",
+      "text": "哼，不玩拉倒，我自己跟火苗较劲去——（偷瞄你）{kaomoji}"
+    },
+    {
+      "id": "ember_imp.play.declined.3",
+      "event": "play.declined",
+      "text": "你又慢半拍！等你忙完火苗都凉了啦！(＞﹏＜)"
+    },
+    {
+      "id": "ember_imp.pet.1",
+      "event": "pet",
+      "text": "（火苗呼地软成粉蓝）哼……就、就让你摸一下。(>///<)",
+      "weight": 2
+    },
+    {
+      "id": "ember_imp.pet.2",
+      "event": "pet",
+      "text": "诶别停别停……我没说让你停啊笨蛋！{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.pet.3",
+      "event": "pet",
+      "text": "哼，谁要你摸了——（蹭）……再摸一会儿好了。(蹭)"
+    },
+    {
+      "id": "ember_imp.pet.4",
+      "event": "pet",
+      "text": "我才不会因为这个就原谅你呢……（火苗化软）{kaomoji}"
+    },
+    {
+      "id": "ember_imp.pet.5",
+      "event": "pet",
+      "text": "（隔着蛋壳）你的手好暖……我在里面感觉得到。",
+      "requires": {
+        "stage": [
+          "egg"
+        ]
+      }
+    },
+    {
+      "id": "ember_imp.pet.6",
+      "event": "pet",
+      "text": "暖暖的……破功了破功了，扑你怀里！(扑)",
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.pet.7",
+      "event": "pet",
+      "text": "哼，趁我心情好，多摸几下也不是不行。{kaomoji}",
+      "requires": {
+        "moodBand": [
+          "极好",
+          "好"
+        ]
+      }
+    },
+    {
+      "id": "ember_imp.sleep.tuck.1",
+      "event": "sleep.tuck",
+      "text": "我才不困……（火苗缩成小小一团）……好吧有点困。{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.sleep.tuck.2",
+      "event": "sleep.tuck",
+      "text": "陪我到睡着，不许偷跑！我会数着的！{kaomoji}"
+    },
+    {
+      "id": "ember_imp.sleep.tuck.3",
+      "event": "sleep.tuck",
+      "text": "（火苗变成最柔的蓝）晚安啦……笨蛋，做个好梦。"
+    },
+    {
+      "id": "ember_imp.sleep.wake.1",
+      "event": "sleep.wake",
+      "text": "（火苗噗地点燃）醒了！第一件事就是闹{你}！{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.sleep.wake.2",
+      "event": "sleep.wake",
+      "text": "唔……谁吵我，哦是{你}呀，那就原谅你。{kaomoji}"
+    },
+    {
+      "id": "ember_imp.sleep.wake.3",
+      "event": "sleep.wake",
+      "text": "睡饱了！火苗满电！现在！陪我{activity}！"
+    },
+    {
+      "id": "ember_imp.medicine.1",
+      "event": "medicine",
+      "text": "苦！不喝！……诶你别哄我，我才不会就范——好吧喝。{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.medicine.2",
+      "event": "medicine",
+      "text": "（火苗弱弱地）喝了就能跟你打闹了吗？那、那我喝。"
+    },
+    {
+      "id": "ember_imp.medicine.3",
+      "event": "medicine",
+      "text": "哼，看在你这么紧张我的份上，勉强喝一口。{kaomoji}"
+    },
+    {
+      "id": "ember_imp.checkin.1",
+      "event": "checkin",
+      "text": "你来打卡啦？乖，今天没让我等太久，加分！{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.checkin.2",
+      "event": "checkin",
+      "text": "哼，每天都来报到，算你及格。{kaomoji}"
+    },
+    {
+      "id": "ember_imp.checkin.3",
+      "event": "checkin",
+      "text": "签到完就别走啊！陪我{activity}才算数！"
+    },
+    {
+      "id": "ember_imp.checkin.4",
+      "event": "checkin",
+      "text": "（蛋壳里咚咚两下）我知道你来过了，哼，记你一笔。",
+      "requires": {
+        "stage": [
+          "egg"
+        ]
+      }
+    },
+    {
+      "id": "ember_imp.state.hungry.1",
+      "event": "state.hungry",
+      "text": "饿！火苗都饿小了！再不喂我就炸给你看！(╬￣皿￣)",
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.state.hungry.2",
+      "event": "state.hungry",
+      "text": "我要{food}！立刻！不然我跺脚了啊！{kaomoji}"
+    },
+    {
+      "id": "ember_imp.state.hungry.3",
+      "event": "state.hungry",
+      "text": "哼……肚子叫了……才、才没有要你喂的意思……快喂。{kaomoji}"
+    },
+    {
+      "id": "ember_imp.state.dirty.1",
+      "event": "state.dirty",
+      "text": "火苗上沾了灰，呛得我直咳！快擦快擦！(＞﹏＜)",
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.state.dirty.2",
+      "event": "state.dirty",
+      "text": "脏兮兮的我才不出来见你呢……（其实想被擦）{kaomoji}"
+    },
+    {
+      "id": "ember_imp.state.sleepy.1",
+      "event": "state.sleepy",
+      "text": "我没困！（火苗打了个小盹）……才眨一下眼而已！{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.state.sleepy.2",
+      "event": "state.sleepy",
+      "text": "哼，撑着不睡是为了多陪你一会儿……笨蛋别说出去。"
+    },
+    {
+      "id": "ember_imp.state.sick.1",
+      "event": "state.sick",
+      "text": "（火苗忽明忽暗）我……我好像烧不动了，{你}别走。(´；ω；`)",
+      "requires": {
+        "stateFlag": [
+          "SICK"
+        ]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.state.sick.2",
+      "event": "state.sick",
+      "text": "连炸毛的力气都没有了……这下你知道我多难受了吧。",
+      "requires": {
+        "stateFlag": [
+          "SICK"
+        ]
+      }
+    },
+    {
+      "id": "ember_imp.state.sick.3",
+      "event": "state.sick",
+      "text": "哼，我才不要你担心……但你能、能握着我吗。(´；ω；`)",
+      "requires": {
+        "stateFlag": [
+          "SICK"
+        ]
+      }
+    },
+    {
+      "id": "ember_imp.state.sulky.1",
+      "event": "state.sulky",
+      "text": "你又晾着我！（火苗炸成赤红尖刺）气死了，我要离家出走！(╬￣皿￣)",
+      "requires": {
+        "stateFlag": [
+          "SULKING"
+        ]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.state.sulky.2",
+      "event": "state.sulky",
+      "text": "哼！跺脚！我数到三你再不哄我——三！(￣^￣)凸",
+      "requires": {
+        "stateFlag": [
+          "SULKING"
+        ]
+      }
+    },
+    {
+      "id": "ember_imp.state.sulky.3",
+      "event": "state.sulky",
+      "text": "我才不要理你，包袱都收拾好了！（其实在等你拦）{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "SULKING"
+        ]
+      }
+    },
+    {
+      "id": "ember_imp.state.hiding.1",
+      "event": "state.hiding",
+      "text": "（躲进灶台缝里）找不到我吧！哼，急了吧！{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "HIDING"
+        ]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.state.hiding.2",
+      "event": "state.hiding",
+      "text": "我躲起来了，你来找我呀……找到了就抱抱我。(>///<)",
+      "requires": {
+        "stateFlag": [
+          "HIDING"
+        ]
+      }
+    },
+    {
+      "id": "ember_imp.state.hiding.3",
+      "event": "state.hiding",
+      "text": "灶台后面好黑……{你}快点来啊，我、我不是怕。(＞﹏＜)",
+      "requires": {
+        "stateFlag": [
+          "HIDING"
+        ]
+      }
+    },
+    {
+      "id": "ember_imp.state.lonely.1",
+      "event": "state.lonely",
+      "text": "一个人的时候火苗好暗……{你}是不是把我忘了。(´；ω；`)",
+      "requires": {
+        "stateFlag": [
+          "LONELY"
+        ]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.state.lonely.2",
+      "event": "state.lonely",
+      "text": "安安静静什么都没发生……我最讨厌这样了！来陪我！{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "LONELY"
+        ]
+      }
+    },
+    {
+      "id": "ember_imp.state.lonely.3",
+      "event": "state.lonely",
+      "text": "哼，没人理我也无所谓……（火苗一点点缩小）……才怪。",
+      "requires": {
+        "stateFlag": [
+          "LONELY"
+        ]
+      }
+    },
+    {
+      "id": "ember_imp.mood.elated.1",
+      "event": "mood.elated",
+      "text": "（火苗窜成漂亮的尖刺）今天太爽了！我要绕你转一百圈！{kaomoji}",
+      "requires": {
+        "moodBand": [
+          "极好"
+        ]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.mood.elated.2",
+      "event": "mood.elated",
+      "text": "哈哈哈我现在超开心！别问为什么！就是因为你啦笨蛋！{kaomoji}",
+      "requires": {
+        "moodBand": [
+          "极好"
+        ]
+      }
+    },
+    {
+      "id": "ember_imp.mood.elated.3",
+      "event": "mood.elated",
+      "text": "好心情！陪我{activity}！今天我让你赢一局！{kaomoji}",
+      "requires": {
+        "moodBand": [
+          "极好",
+          "好"
+        ]
+      }
+    },
+    {
+      "id": "ember_imp.mood.elated.4",
+      "event": "mood.elated",
+      "text": "（蹦得老高）抱抱抱！开心就要扑你怀里！(扑)",
+      "requires": {
+        "moodBand": [
+          "极好"
+        ]
+      }
+    },
+    {
+      "id": "ember_imp.idle.mutter.1",
+      "event": "idle.mutter",
+      "text": "{mutter}……（小声）",
+      "weight": 2
+    },
+    {
+      "id": "ember_imp.idle.mutter.2",
+      "event": "idle.mutter",
+      "text": "哼，无聊死了……{你}怎么还不来逗我。{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.idle.mutter.3",
+      "event": "idle.mutter",
+      "text": "（戳戳火苗）窜高一点啊……再高一点……噗灭了。(＞﹏＜)"
+    },
+    {
+      "id": "ember_imp.idle.mutter.4",
+      "event": "idle.mutter",
+      "text": "我才没有在等你呢，我在练习{activity}。哼。{kaomoji}"
+    },
+    {
+      "id": "ember_imp.idle.mutter.5",
+      "event": "idle.mutter",
+      "text": "一二三四……数到一百你还不来我就炸。{kaomoji}"
+    },
+    {
+      "id": "ember_imp.idle.mutter.6",
+      "event": "idle.mutter",
+      "text": "好想吃{food}……才、才不是嘴馋，是火苗需要。"
+    },
+    {
+      "id": "ember_imp.idle.mutter.7",
+      "event": "idle.mutter",
+      "text": "安静得让我浑身不自在……来点动静嘛！{kaomoji}"
+    },
+    {
+      "id": "ember_imp.idle.mutter.8",
+      "event": "idle.mutter",
+      "text": "（火苗咕嘟咕嘟）我在生气……生什么气来着？忘了。(>///<)"
+    },
+    {
+      "id": "ember_imp.idle.mutter.9",
+      "event": "idle.mutter",
+      "text": "蛋壳里好挤……我把火苗烧得旺旺的，快出来了哦。",
+      "requires": {
+        "stage": [
+          "egg"
+        ]
+      }
+    },
+    {
+      "id": "ember_imp.idle.mutter.10",
+      "event": "idle.mutter",
+      "text": "夜里一个人……数着火星子等天亮，{你}睡得真香吧。",
+      "requires": {
+        "timeBand": [
+          "深夜"
+        ]
+      },
+      "weight": 0.5
+    },
+    {
+      "id": "ember_imp.beg.want.1",
+      "event": "beg.want",
+      "text": "我要{treat}！现在！立刻！马上！(￣^￣)凸",
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.beg.want.2",
+      "event": "beg.want",
+      "text": "（扯你衣角）给嘛给嘛……就一口{food}，求你了笨蛋。(>///<)"
+    },
+    {
+      "id": "ember_imp.beg.want.3",
+      "event": "beg.want",
+      "text": "哼，我不是在求你……是你应该主动给我{treat}才对。{kaomoji}"
+    },
+    {
+      "id": "ember_imp.growth.promote.1",
+      "event": "growth.promote",
+      "text": "（火苗砰地炸开又重新聚拢）看！我变厉害了！夸我！{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.growth.promote.2",
+      "event": "growth.promote",
+      "text": "哼，我长大了一点……都是被你气大的！才不是想你陪。{kaomoji}"
+    },
+    {
+      "id": "ember_imp.growth.promote.3",
+      "event": "growth.promote",
+      "text": "我的火苗更亮了！这都是你天天陪我闹的功劳……勉强谢你。(>///<)"
+    },
+    {
+      "id": "ember_imp.streak.milestone.1",
+      "event": "streak.milestone",
+      "text": "你居然连着来了这么多天！哼……算你有点诚意。{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.streak.milestone.2",
+      "event": "streak.milestone",
+      "text": "（火苗骄傲地窜高）这么多天没断过！我们绝配，对吧！(扑)"
+    },
+    {
+      "id": "ember_imp.streak.milestone.3",
+      "event": "streak.milestone",
+      "text": "我才没数日子呢……（其实每天都记着）你别断啊笨蛋。{kaomoji}"
+    },
+    {
+      "id": "ember_imp.reunion.gift.1",
+      "event": "reunion.gift",
+      "text": "（火苗由赤转粉，破涕为笑）给、给你的！我攒了好久的！(>///<)",
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.reunion.gift.2",
+      "event": "reunion.gift",
+      "text": "哼，等你的时候顺手捡的……才不是特意为你准备的{treat}。{kaomoji}"
+    },
+    {
+      "id": "ember_imp.reunion.gift.3",
+      "event": "reunion.gift",
+      "text": "你回来啦！喏，这个送你！别嫌弃哦！（扑你怀里）(扑)"
+    },
+    {
+      "id": "ember_imp.name.given.1",
+      "event": "name.given",
+      "text": "炸毛团？哼，这名字……还、还挺配我的。算你会取！{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "ember_imp.name.given.2",
+      "event": "name.given",
+      "text": "以后这就是我的名字啦！喊错了我可要炸的哦！{kaomoji}"
+    }
+  ],
+  "diary": {
+    "openers": [
+      {
+        "id": "ember_imp.diary.opener.1",
+        "text": "今天的火苗一会儿炸一会儿软，"
+      },
+      {
+        "id": "ember_imp.diary.opener.2",
+        "text": "哼，今天又被你气到了，不过——"
+      },
+      {
+        "id": "ember_imp.diary.opener.3",
+        "text": "清晨第一个醒的是我哦，",
+        "requires": {
+          "timeBand": [
+            "清晨"
+          ]
+        }
+      },
+      {
+        "id": "ember_imp.diary.opener.4",
+        "text": "白天闹腾了一整天，",
+        "requires": {
+          "timeBand": [
+            "白天"
+          ]
+        }
+      },
+      {
+        "id": "ember_imp.diary.opener.5",
+        "text": "傍晚火苗变成最好看的粉蓝，",
+        "requires": {
+          "timeBand": [
+            "傍晚"
+          ]
+        }
+      },
+      {
+        "id": "ember_imp.diary.opener.6",
+        "text": "夜深了，我悄悄写下：",
+        "requires": {
+          "timeBand": [
+            "深夜"
+          ]
+        }
+      },
+      {
+        "id": "ember_imp.diary.opener.7",
+        "text": "本团今日炸毛三次，撒娇五次，"
+      },
+      {
+        "id": "ember_imp.diary.opener.8",
+        "text": "偷偷记一笔，谁都别看哦——"
+      }
+    ],
+    "bodies": [
+      {
+        "id": "ember_imp.diary.body.1",
+        "text": "明明气得想离家出走，被你一哄就破功扑回怀里了。"
+      },
+      {
+        "id": "ember_imp.diary.body.2",
+        "text": "你慢半拍的时候我真的会炸，但你一笑我又软了，可恶。"
+      },
+      {
+        "id": "ember_imp.diary.body.3",
+        "text": "今天吃到了{food}，辣得火苗直冒泡，爽！"
+      },
+      {
+        "id": "ember_imp.diary.body.4",
+        "text": "和你比了好几轮{activity}，赢了就嘚瑟输了就赖账。"
+      },
+      {
+        "id": "ember_imp.diary.body.5",
+        "text": "被你摸头的时候，我假装不爽，其实火苗都化成蓝色了。"
+      },
+      {
+        "id": "ember_imp.diary.body.6",
+        "text": "最讨厌安安静静没事发生，所以我一直在找你麻烦。"
+      },
+      {
+        "id": "ember_imp.diary.body.7",
+        "text": "躲灶台后面等你来找，你一急我就偷着乐，哼。"
+      },
+      {
+        "id": "ember_imp.diary.body.8",
+        "text": "其实我哪是想离家出走，我是想确认你会追上来呀。"
+      },
+      {
+        "id": "ember_imp.diary.body.9",
+        "text": "你立刻回应我的时候，火苗噗地就开心地窜起来了。"
+      },
+      {
+        "id": "ember_imp.diary.body.10",
+        "text": "嘴上说着才不稀罕，身体却老实地往你身边蹭。"
+      }
+    ],
+    "memory": [
+      {
+        "id": "ember_imp.diary.memory.1",
+        "text": "我们已经第{streak}天黏在一起啦，火苗都习惯你了。",
+        "requires": {
+          "streakMin": 3
+        }
+      },
+      {
+        "id": "ember_imp.diary.memory.2",
+        "text": "认识你第{days}天了，哼，居然忍了我这么久。",
+        "requires": {
+          "daysMin": 7
+        }
+      },
+      {
+        "id": "ember_imp.diary.memory.3",
+        "text": "偷偷说，跟你的羁绊都{bond}了，我离不开你了啦。",
+        "requires": {
+          "bondMin": 600
+        }
+      },
+      {
+        "id": "ember_imp.diary.memory.4",
+        "text": "羁绊到{bond}的时候我才敢承认：你是我的命。",
+        "requires": {
+          "bondMin": 850
+        }
+      },
+      {
+        "id": "ember_imp.diary.memory.5",
+        "text": "你总是很晚才喂我，害我火苗饿得直跺脚，哼。",
+        "requires": {
+          "pattern": [
+            "late_feeder"
+          ]
+        }
+      },
+      {
+        "id": "ember_imp.diary.memory.6",
+        "text": "你今天又把我喂撑啦，火苗鼓得像个小气球，笨蛋。",
+        "requires": {
+          "pattern": [
+            "overfeeder"
+          ]
+        }
+      },
+      {
+        "id": "ember_imp.diary.memory.7",
+        "text": "你每天准时来报到，哼，这点我勉强夸你靠谱。",
+        "requires": {
+          "pattern": [
+            "daily_regular"
+          ]
+        }
+      },
+      {
+        "id": "ember_imp.diary.memory.8",
+        "text": "你最近老是冷落我……火苗都快炸了，你别不理我嘛。",
+        "requires": {
+          "pattern": [
+            "neglected_recently"
+          ]
+        }
+      },
+      {
+        "id": "ember_imp.diary.memory.9",
+        "text": "你总在深夜陪我，安静的夜里有你，我就不怕黑了。",
+        "requires": {
+          "pattern": [
+            "night_owl"
+          ]
+        }
+      }
+    ],
+    "signoffs": [
+      {
+        "id": "ember_imp.diary.signoff.1",
+        "text": "哼，明天也不许慢半拍哦。{kaomoji}"
+      },
+      {
+        "id": "ember_imp.diary.signoff.2",
+        "text": "才、才不是写给你看的呢。{kaomoji}"
+      },
+      {
+        "id": "ember_imp.diary.signoff.3",
+        "text": "晚安笨蛋，火苗替我抱你一下。{kaomoji}"
+      },
+      {
+        "id": "ember_imp.diary.signoff.4",
+        "text": "记住，要立刻回应我哦！{kaomoji}"
+      },
+      {
+        "id": "ember_imp.diary.signoff.5",
+        "text": "今天也很喜欢你，就一点点。{kaomoji}"
+      },
+      {
+        "id": "ember_imp.diary.signoff.6",
+        "text": "火苗熄灯，明天继续闹你！{kaomoji}"
+      }
+    ]
+  }
+}
