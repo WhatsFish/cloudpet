@@ -4,8 +4,6 @@ import { getUserId } from "@/lib/auth";
 import { scoreQuiz } from "@/lib/game/quiz";
 import { creature } from "@/data/bestiary";
 import { QUIZ, SCORED_QUESTION_IDS } from "@/data/quiz-questions";
-import { START_KIT } from "@/lib/game/constants";
-import type { ItemKey } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -67,13 +65,9 @@ export async function POST(req: NextRequest) {
       );
       const id = pet[0].id;
 
-      // pet_state / pet_cooldown use schema defaults = egg start values.
+      // pet_state / pet_cooldown use schema defaults = egg start values + 3 care charges.
       await q(`INSERT INTO pet_state (pet_id) VALUES ($1)`, [id]);
       await q(`INSERT INTO pet_cooldown (pet_id) VALUES ($1)`, [id]);
-
-      for (const [item, qty] of Object.entries(START_KIT) as [ItemKey, number][]) {
-        await q(`INSERT INTO pet_inventory (pet_id, item_key, qty) VALUES ($1,$2,$3)`, [id, item, qty]);
-      }
       return id;
     });
 

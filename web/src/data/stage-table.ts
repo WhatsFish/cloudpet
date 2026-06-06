@@ -16,9 +16,11 @@ export type StageDef = {
 export const STAGES: StageDef[] = [
   { stage: "egg", order: 0, expReq: 0, minDays: 0, cap: 80, bondGate: 0 },
   { stage: "baby", order: 1, expReq: 120, minDays: 1, cap: 85, bondGate: 0 },
-  { stage: "child", order: 2, expReq: 400, minDays: 5, cap: 90, bondGate: 60 },
-  { stage: "teen", order: 3, expReq: 1000, minDays: 12, cap: 95, bondGate: 180 },
-  { stage: "adult", order: 4, expReq: 2200, minDays: 21, cap: 100, bondGate: 400 },
+  // V2 (REDESIGN_V2 §4): expReq lands Lv chips exactly on stage-ups (Lv 2/4/7/11)
+  // and keeps the day-gate binding before the exp-gate at a realistic ~80 EXP/day.
+  { stage: "child", order: 2, expReq: 380, minDays: 5, cap: 90, bondGate: 60 },
+  { stage: "teen", order: 3, expReq: 900, minDays: 12, cap: 95, bondGate: 180 },
+  { stage: "adult", order: 4, expReq: 1700, minDays: 21, cap: 100, bondGate: 400 },
 ];
 
 export const MAX_STAGE_V1: Stage = "child";

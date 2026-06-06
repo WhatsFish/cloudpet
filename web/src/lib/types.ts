@@ -103,24 +103,33 @@ export type CopyContext = {
 
 // --- API view models ---
 export type PetView = {
-  pet: { id: number; name: string; archetypeKey: string; stage: Stage; daysKnown: number };
+  pet: { id: number; name: string; archetypeKey: string; stage: Stage; daysKnown: number; level: number };
   stats: { satiety: number; mood: number; cleanliness: number; energy: number; health: number };
   bond: number;
   exp: number;
+  level: number;
+  evolveProgress: number; // 0–100 within current stage toward next
   expForNextStage: number | null;
   moodBand: MoodBand;
   dominantState: StateFlagName | "none";
   badges: StateFlagName[] | string[];
+  needHint: string; // gentle "what to do" prompt (mirrors dominant precedence)
   asleep: boolean;
   sprite: { creatureId: string; stage: Stage; mood: string; animation: string };
-  inventory: Inventory;
+  careCharges: number; // 0–3 「照顾电池」
+  chargesRefreshInMs: number; // ms to next +1 (0 if full)
+  dailyResetInMs: number; // ms to local-midnight reset
+  careCoveredToday: boolean; // satiety/cleanliness/health all >= 30
   streakDays: number;
+  theme: string; // device skin
   voice: { line: string; lineId: string } | null; // today's 心声
   actions: ActionAvailability[];
 };
 
-export type Verb =
-  | "feed" | "snack" | "clean" | "play" | "pet" | "sleep" | "doctor" | "checkin";
+// V2: 3 home buttons. care (battery) = feed/clean/doctor; affection (free) = play/pet/sleep.
+export type Verb = "feed" | "clean" | "doctor" | "play" | "pet" | "sleep";
+
+export type ReactionCue = { pose: string; fx: string; anim: string; copyEvent: string };
 
 export type ActionAvailability = {
   verb: Verb;

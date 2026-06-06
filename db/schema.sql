@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS app_user (
   is_anonymous      BOOLEAN NOT NULL DEFAULT FALSE,
   tz_offset_minutes INTEGER NOT NULL DEFAULT 480,           -- SERVER-VALIDATED at login
   sub_opt_in        BOOLEAN NOT NULL DEFAULT FALSE,
+  theme             TEXT NOT NULL DEFAULT 'cream',           -- device skin (cream|mint|dusk)
   created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   last_seen         TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -65,7 +66,9 @@ CREATE TABLE IF NOT EXISTS pet_cooldown (
   streak_days     INTEGER NOT NULL DEFAULT 0,
   streak_state    TEXT NOT NULL DEFAULT 'active'
                   CHECK (streak_state IN ('active','grace')),
-  last_active_date DATE
+  last_active_date DATE,
+  care_charges       INTEGER NOT NULL DEFAULT 3,             -- V2 「照顾电池」: 3/day, +1/5h, midnight reset
+  charges_updated_at TIMESTAMPTZ                             -- compute-on-read regen anchor
 );
 
 CREATE TABLE IF NOT EXISTS pet_inventory (
@@ -88,6 +91,8 @@ CREATE TABLE IF NOT EXISTS action_log (
 CREATE INDEX IF NOT EXISTS idx_action_pet_time ON action_log (pet_id, created_at DESC);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_checkin_per_day
   ON action_log (pet_id, local_date) WHERE verb = 'checkin';   -- 签到 idempotent at DB layer
+CREATE UNIQUE INDEX IF NOT EXISTS uq_complete_per_day
+  ON action_log (pet_id, local_date) WHERE verb = 'complete';  -- V2 「照顾够了」完成奖 idempotent
 
 CREATE TABLE IF NOT EXISTS voice_log (
   id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
