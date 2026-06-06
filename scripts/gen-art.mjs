@@ -1,20 +1,26 @@
 #!/usr/bin/env node
-// Procedural pixel-art engine v2 (pure Node, built-in zlib). Cel-shaded
-// (base+shadow+highlight + 1px tinted outline, single top-left light), 5 evolution
-// stages with maturation (scale + feature growth + adult 本命 mark), mood/reaction
-// poses + FX overlays. Renders to miniprogram/assets/pets/<id>/<stage>_<mood>.png.
+// Procedural pixel-art engine v3 (pure Node, built-in zlib). V4 EVOLUTION MODEL:
+// 4 within-lineage LINES (web/src/data/lines.json). Each pet is ONE creature egg→adult;
+// care sculpts WHICH variant of itself it becomes. Real SILHOUETTE EVENTS fire at the
+// teen/adult NODES (a part grows / splits / appears / recolors) — NOT a uniform upscale.
 //
-// Usage: `node scripts/gen-art.mjs [creatureId]`  (no arg = all 10). Iterate on one.
+// Output layout (spritePath-compatible, zero client change):
+//   pets/<line>/{egg, baby_*, child_*, teen_*, adult_*}   ← shared trunk + the TRUE form
+//   pets/<line>__<variant>/{teen_*, adult_*}              ← the 3 care branches
+//
+// Usage: `node scripts/gen-art.mjs [lineId]` (no arg = all 4 lines). Then sync-art.sh.
 
 import zlib from "node:zlib";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = join(ROOT, "miniprogram/assets/pets");
+const LINES = JSON.parse(readFileSync(join(ROOT, "web/src/data/lines.json"), "utf8")).lines;
 const W = 64, H = 64;
 const INK = [38, 30, 50];
+const R = Math.round;
 
 // ---- color ----
 const hx = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
@@ -35,7 +41,6 @@ function px(buf, x, y, c, a = 255) {
 }
 const getA = (buf, x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? 0 : buf[(y * W + x) * 4 + 3];
 
-// cel-shaded ball (3 tones by light from upper-left + specular pip)
 function ball(buf, cx, cy, r, rm) {
   const lx = cx - r * 0.42, ly = cy - r * 0.42;
   for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
@@ -45,20 +50,11 @@ function ball(buf, cx, cy, r, rm) {
   }
   if (r >= 5) { px(buf, lx, ly, mix(rm.hi, [255, 255, 255], 0.5)); px(buf, lx + 1, ly, mix(rm.hi, [255, 255, 255], 0.3)); }
 }
-// cel-shaded ellipse (vertical light bands)
 function blob(buf, cx, cy, rx, ry, rm) {
   for (let dy = -ry; dy <= ry; dy++) for (let dx = -rx; dx <= rx; dx++) {
     if ((dx * dx) / (rx * rx) + (dy * dy) / (ry * ry) > 1) continue;
     const t = (dy + ry) / (2 * ry);
     px(buf, cx + dx, cy + dy, t < 0.28 && dx < rx * 0.3 ? rm.hi : t > 0.7 ? rm.sh : rm.base);
-  }
-}
-function dome(buf, cx, cy, s, rm) { // upper hemisphere (jelly)
-  const lx = cx - s * 0.42, ly = cy - s * 0.42;
-  for (let dy = -s; dy <= Math.round(s * 0.28); dy++) for (let dx = -s; dx <= s; dx++) {
-    if (dx * dx + dy * dy > s * s) continue;
-    const nl = 1 - Math.hypot(cx + dx - lx, cy + dy - ly) / (2 * s);
-    px(buf, cx + dx, cy + dy, nl > 0.74 ? rm.hi : nl > 0.4 ? rm.base : rm.sh);
   }
 }
 function rrect(buf, cx, cy, hw, hh, rad, rm) {
@@ -90,11 +86,13 @@ function outline(buf, col) {
 }
 function shadow(buf, cy = 57, rx = 14) { for (let dy = -3; dy <= 3; dy++) for (let dx = -rx; dx <= rx; dx++) if ((dx * dx) / (rx * rx) + (dy * dy) / 9 <= 1) px(buf, 32 + dx, cy + dy, [0, 0, 0], 34); }
 function badge(buf, cx, cy) { const c = [255, 210, 90]; px(buf, cx, cy - 1, c); px(buf, cx - 1, cy, c); px(buf, cx + 1, cy, c); px(buf, cx, cy, [255, 245, 200]); px(buf, cx, cy + 1, c); }
+function star(buf, x, y, c = [255, 230, 120]) { px(buf, x, y - 1, c); px(buf, x, y + 1, c); px(buf, x - 1, y, c); px(buf, x + 1, y, c); px(buf, x, y, [255, 255, 255]); }
+function flame(buf, x, y, h, hot = [255, 210, 90], edge = [235, 90, 30]) { tri(buf, x - 3, y, x - 4, y - h + 4, x + 1, y - 1, edge); tri(buf, x + 3, y, x + 4, y - h + 4, x - 1, y - 1, edge); tri(buf, x, y, x - 2, y - h, x + 3, y - 1, hot); tri(buf, x, y - 1, x, y - h + 3, x + 2, y - 1, [255, 240, 150]); }
 
-// ---- face (expressive, eye shine) ----
+// ---- face ----
 function face(buf, cx, cy, mood, sp, eye = 2) {
   const lx = cx - sp, rx = cx + sp;
-  const drawEye = (ex) => { for (let yy = -eye; yy <= eye; yy++) for (let xx = -(eye - 1); xx <= eye - 1; xx++) if (xx * xx / ((eye - 1) * (eye - 1) + 0.2) + yy * yy / (eye * eye) <= 1) px(buf, ex + xx, cy + yy, INK); px(buf, ex - 1, cy - 1, [255, 255, 255]); };
+  const drawEye = (ex) => { for (let yy = -eye; yy <= eye; yy++) for (let xx = -eye; xx <= eye; xx++) if (xx * xx * 1.7 + yy * yy * 1.1 <= eye * eye + 0.6) px(buf, ex + xx, cy + yy, INK); px(buf, ex - 1, cy - 1, [255, 255, 255]); px(buf, ex + 1, cy + 1, mix(INK, [255, 255, 255], 0.25)); };
   if (mood === "sleeping") { for (let x = -2; x <= 2; x++) { px(buf, lx + x, cy, INK); px(buf, rx + x, cy, INK); } px(buf, cx, cy + 5, INK); return; }
   if (mood === "happy" || mood === "eating") {
     for (const ex of [lx, rx]) { px(buf, ex - 1, cy - 1, INK); px(buf, ex, cy - 2, INK); px(buf, ex + 1, cy - 1, INK); px(buf, ex, cy, INK); }
@@ -112,126 +110,170 @@ function face(buf, cx, cy, mood, sp, eye = 2) {
 // ---- FX overlays ----
 const FX = {
   hearts(b) { for (const [x, y] of [[15, 16], [49, 22], [21, 10]]) { const c = [255, 110, 150]; px(b, x, y, c); px(b, x + 2, y, c); px(b, x - 1, y + 1, c); px(b, x + 3, y + 1, c); for (let i = -1; i <= 3; i++) px(b, x + i, y + 2, c); px(b, x + 1, y + 3, c); } },
-  sparkle(b) { for (const [x, y] of [[16, 14], [48, 18], [22, 9], [44, 36]]) { const c = [255, 240, 150]; px(b, x, y - 1, c); px(b, x, y + 1, c); px(b, x - 1, y, c); px(b, x + 1, y, c); px(b, x, y, [255, 255, 255]); } },
+  sparkle(b) { for (const [x, y] of [[16, 14], [48, 18], [22, 9], [44, 36]]) star(b, x, y); },
   zzz(b) { const c = [150, 170, 210]; const Z = (ox, oy, s) => { for (let i = 0; i < s; i++) px(b, ox + i, oy, c); for (let i = 0; i < s; i++) px(b, ox + s - 1 - i, oy + i, c); for (let i = 0; i < s; i++) px(b, ox + i, oy + s - 1, c); }; Z(44, 14, 3); Z(49, 9, 2); },
-  bubbles(b) { for (const [x, y, r] of [[16, 18, 2], [47, 14, 2], [22, 11, 1]]) { for (let a = 0; a < 7; a++) px(b, x + Math.round(r * Math.cos(a)), y + Math.round(r * Math.sin(a)), [205, 238, 252], 210); px(b, x - 1, y - 1, [255, 255, 255], 220); } },
-  notes(b) { const c = [120, 150, 230]; for (const [x, y] of [[16, 13], [47, 19]]) { for (let i = 0; i < 4; i++) px(b, x + 2, y - i, c); px(b, x, y, c); px(b, x + 1, y, c); px(b, x + 2, y + 1, c); } },
-  anger(b) { const c = [230, 60, 50], x = 46, y = 13; px(b, x, y, c); px(b, x + 2, y, c); px(b, x + 1, y + 1, c); px(b, x, y + 2, c); px(b, x + 2, y + 2, c); },
   food(b) { const c = [210, 150, 90]; for (const [x, y] of [[20, 40], [44, 42], [16, 44]]) { px(b, x, y, c); px(b, x + 1, y, mix(c, [255, 255, 255], 0.3)); } },
-  evolve(b) { for (let a = 0; a < 12; a++) px(b, 32 + Math.round(26 * Math.cos(a / 12 * 6.283)), 33 + Math.round(26 * Math.sin(a / 12 * 6.283)), [255, 240, 180]); FX.sparkle(b); },
+  anger(b) { const c = [230, 60, 50], x = 46, y = 13; px(b, x, y, c); px(b, x + 2, y, c); px(b, x + 1, y + 1, c); px(b, x, y + 2, c); px(b, x + 2, y + 2, c); },
   none() {},
 };
 const FXOF = { happy: "hearts", eating: "food", sleeping: "zzz", sulk: "anger", sad: "none", idle: "none", hide: "none" };
 
-// ---- stages ----
-const STAGES = {
-  egg: { egg: true },
-  baby: { scale: 0.66, feat: 0.45, eye: 3, faceY: -0.18 },
-  child: { scale: 0.82, feat: 0.7, eye: 2, faceY: -0.12 },
-  teen: { scale: 0.98, feat: 0.9, eye: 2, faceY: -0.05 },
-  adult: { scale: 1.12, feat: 1.0, eye: 2, faceY: 0, badge: true },
-};
+// ---- node + growth ----
+const NODE = { egg: 0, baby: 1, child: 2, teen: 3, adult: 4 };
+const SCALE = [0, 0.66, 0.82, 1.0, 1.14];
+const FEAT = [0, 0.45, 0.7, 0.9, 1.0];
 const MOODS = ["idle", "happy", "sad", "sleeping", "sulk", "hide", "eating"];
 
-// =================== BLUEPRINTS ===================
-const R = Math.round;
+// variant identity tint applied to the body ramp (subtle, so the silhouette carries it)
+function bodyRamp(rm, variant) {
+  if (variant === "brim" || variant === "plush" || variant === "brimimp" || variant === "harvest") return tint(rm, [255, 240, 222], 0.1);
+  if (variant === "ward" || variant === "forge" || variant === "dorm") return tint(rm, [120, 96, 70], 0.12);
+  return rm; // true / engage keep the pure line accent
+}
+
+// =================== LINE BLUEPRINTS ===================
 const DRAW = {
-  mochi_pudding(buf, rm, st, mood) {
-    const s = R(15 * st.scale), cy = 40 - R(s * 0.1), f = st.feat;
-    tri(buf, 32, cy - s - 5, 32 - 5, cy - s + 3, 32 + 5, cy - s + 3, rm.sh); // drip tip
-    blob(buf, 32, cy, s, R(s * 1.12), rm);
-    for (let i = 0; i < 3 + R(2 * f); i++) px(buf, 33 + i, cy - s - 3 - i, [230, 170, 90]); // 糖浆 curl
-    if (mood !== "sleeping") { const h = [255, 120, 165]; px(buf, 31, cy + 3, h); px(buf, 33, cy + 3, h); px(buf, 30, cy + 4, h); px(buf, 34, cy + 4, h); for (let x = 30; x <= 34; x++) px(buf, x, cy + 5, h); px(buf, 32, cy + 6, h); px(buf, 32, cy + 7, h); }
-    if (st.badge) badge(buf, 32, cy - s + 1);
-    outline(buf, rm.out); face(buf, 32, cy + R(s * st.faceY) - 1, mood, R(s * 0.4), st.eye);
+  // ---------- 抖抖布丁: soft pudding/团子 ----------
+  mochi_pudding(buf, rm0, variant, node, mood) {
+    const rm = bodyRamp(rm0, variant), teen = node >= 3, adult = node >= 4;
+    const sc = SCALE[node], f = FEAT[node];
+    const wide = variant === "brim" && teen ? 1.22 : 1.0;
+    const tall = variant === "hop" && teen ? 1.22 : 1.0;
+    const s = R(15 * sc), cy = 40 - R(s * 0.1), rx = R(s * wide), ry = R(s * 1.12 * tall);
+    // hop: little nub feet under the body
+    if (variant === "hop" && teen) { const ft = tint(rm, [40, 30, 50], 0.22); ball(buf, 32 - 6, cy + ry - 2, adult ? 4 : 3, ft); ball(buf, 32 + 6, cy + ry - 2, adult ? 4 : 3, ft); }
+    // syrup drip + curl
+    tri(buf, 32, cy - ry - 5, 32 - 5, cy - ry + 3, 32 + 5, cy - ry + 3, rm.sh);
+    for (let i = 0; i < 3 + R(2 * f); i++) px(buf, 33 + i, cy - ry - 3 - i, [230, 170, 90]);
+    if (variant === "brim" && adult) for (let i = 0; i < 4; i++) px(buf, 28 - i, cy - ry - 2 - i, [230, 170, 90]); // 2nd swirl
+    blob(buf, 32, cy, rx, ry, rm);
+    // brim: cheek dots + cherry
+    if (variant === "brim" && teen) { px(buf, 32 - rx + 2, cy + 2, [255, 170, 195]); px(buf, 32 + rx - 2, cy + 2, [255, 170, 195]); if (adult) { ball(buf, 30, cy - ry - 3, 2, ramp("#E23B5A")); stroke(buf, 30, cy - ry - 4, 31, cy - ry - 8, 1, [120, 170, 70]); } }
+    // ward: glowing heart-core + halo + ward dots
+    if (variant === "ward" && teen) {
+      ball(buf, 32, cy + 2, R(s * 0.34), ramp("#FFF0C0")); px(buf, 32, cy + 2, [255, 120, 165]);
+      for (let a = 0; a < 9; a++) px(buf, 32 + R((s + 3) * Math.cos(-Math.PI + a / 8 * Math.PI)), cy - ry - 6 + R(3 * Math.sin(-Math.PI + a / 8 * Math.PI)), [255, 226, 130]); // halo arc
+      if (adult) for (const [dx, dy] of [[-rx - 4, -2], [rx + 4, -4], [0, -ry - 9]]) star(buf, 32 + dx, cy + dy, [255, 214, 120]);
+    }
+    // mouth heart (skip when sleeping)
+    if (mood !== "sleeping" && variant !== "ward") { const h = [255, 120, 165]; px(buf, 31, cy + 3, h); px(buf, 33, cy + 3, h); px(buf, 30, cy + 4, h); px(buf, 34, cy + 4, h); for (let x = 30; x <= 34; x++) px(buf, x, cy + 5, h); px(buf, 32, cy + 6, h); }
+    if (adult && variant === "true") badge(buf, 32, cy - ry + 1);
+    outline(buf, rm.out);
+    face(buf, 32, cy - 2, mood, R(s * 0.4), teen ? 2 : 3);
   },
-  echo_fox(buf, rm, st, mood) {
-    const s = R(16 * st.scale), cy = 39 - R(s * 0.12), f = st.feat;
-    const tails = f > 0.85 ? [5, -4] : [1];
-    for (const off of tails) { const ex = 32 + s + R(7 * f) + 2; stroke(buf, 32 + s - 2, cy + 4 + off / 2, ex, cy + 9 + off, 2, rm.sh); stroke(buf, 32 + s - 2, cy + 4 + off / 2, ex, cy + 8 + off, 1, rm.base); ball(buf, ex, cy + 9 + off, 2, ramp("#BFE9F2")); }
-    const eh = R(9 * f);
-    tri(buf, 32 - s + 2, cy - s + 3, 32 - s - 2, cy - s + 3 - eh, 32 - 4, cy - s + 1, rm.sh);
-    tri(buf, 32 - s + 1, cy - s + 3, 32 - s, cy - s + 2 - eh, 32 - 5, cy - s, rm.base);
-    tri(buf, 32 + s - 2, cy - s + 3, 32 + s + 2, cy - s + 3 - eh, 32 + 4, cy - s + 1, rm.sh);
-    tri(buf, 32 + s - 1, cy - s + 3, 32 + s, cy - s + 2 - eh, 32 + 5, cy - s, rm.base);
+
+  // ---------- 墨影狐: fox ----------
+  echo_fox(buf, rm0, variant, node, mood) {
+    const rm = bodyRamp(rm0, variant), teen = node >= 3, adult = node >= 4;
+    const sc = SCALE[node], f = FEAT[node];
+    const s = R(16 * sc) - (variant === "swift" && teen ? 1 : 0), cy = 39 - R(s * 0.12);
+    // --- tail(s) by variant ---
+    if (variant === "ward" && teen) {
+      const ft = (off) => { const ex = 32 + s + 6, ey = cy + 9 + off; stroke(buf, 32 + s - 2, cy + 4 + off / 2, ex, ey, 2, rm.sh); flame(buf, ex, ey + 2, 9); };
+      if (adult) { ft(5); ft(-5); for (const [dx, dy] of [[-s - 4, -6], [s + 5, -9], [0, -s - 9]]) star(buf, 32 + dx, cy + dy, [255, 200, 110]); } else ft(0);
+    } else if (variant === "swift" && teen) {
+      const ex = 32 + s + 16, ey = cy - 3; stroke(buf, 32 + s - 2, cy + 5, ex - 3, ey + 1, 1, rm.sh); tri(buf, ex - 3, ey + 3, ex + 4, ey - 2, ex - 3, ey - 3, rm.base);
+    } else if (variant === "plush" && teen) {
+      const pl = (off) => { const ex = 32 + s + 6; stroke(buf, 32 + s - 3, cy + 4 + off / 2, ex, cy + 9 + off, 3, rm.sh); ball(buf, ex, cy + 9 + off, 4, rm); ball(buf, ex, cy + 9 + off, 2, ramp("#EADCF4")); };
+      if (adult) { pl(5); pl(-5); } else pl(0);
+    } else {
+      const ex = 32 + s + R(7 * f) + 2; stroke(buf, 32 + s - 2, cy + 4, ex, cy + 9, adult ? 2 : 1, rm.sh); stroke(buf, 32 + s - 2, cy + 4, ex, cy + 8, 1, rm.base); ball(buf, ex, cy + 9, 2, ramp("#BFE9F2"));
+    }
+    // --- ears ---
+    const eh = teen ? 11 : R(9 * f);
+    if (variant === "swift" && teen) { tri(buf, 32 - s + 2, cy - s + 4, 32 - s - 5, cy - s + 4 - eh, 32 - 2, cy - s + 1, rm.sh); tri(buf, 32 + s - 2, cy - s + 4, 32 + s + 5, cy - s + 4 - eh, 32 + 2, cy - s + 1, rm.sh); }
+    else { tri(buf, 32 - s + 2, cy - s + 3, 32 - s - 2, cy - s + 3 - eh, 32 - 4, cy - s + 1, rm.sh); tri(buf, 32 - s + 1, cy - s + 3, 32 - s, cy - s + 2 - eh, 32 - 5, cy - s, rm.base); tri(buf, 32 + s - 2, cy - s + 3, 32 + s + 2, cy - s + 3 - eh, 32 + 4, cy - s + 1, rm.sh); tri(buf, 32 + s - 1, cy - s + 3, 32 + s, cy - s + 2 - eh, 32 + 5, cy - s, rm.base); }
+    // --- body ---
     ball(buf, 32, cy, s, rm);
     blob(buf, 32, cy + 4, R(s * 0.5), R(s * 0.4), tint(rm, [255, 255, 255], 0.28));
-    if (st.badge) badge(buf, 32, cy - s + 3);
-    outline(buf, rm.out); face(buf, 32, cy + R(s * st.faceY), mood, R(s * 0.38), st.eye); px(buf, 32, cy + 5, INK);
+    if (variant === "plush" && teen) { blob(buf, 32 - s + 1, cy + 1, 4, 5, tint(rm, [255, 255, 255], 0.22)); blob(buf, 32 + s - 1, cy + 1, 4, 5, tint(rm, [255, 255, 255], 0.22)); }
+    if (variant === "swift" && adult) for (let a = 0; a < 6; a++) px(buf, 32 + R(3 * Math.cos(-0.6 + a * 0.42)), cy - s + 2 + R(3 * Math.sin(-0.6 + a * 0.42)), [205, 222, 255]);
+    if (adult && variant === "true") badge(buf, 32, cy - s + 3);
+    outline(buf, rm.out);
+    face(buf, 32, cy, mood, R(s * 0.38), teen ? 2 : 3); px(buf, 32, cy + 5, INK);
   },
-  ember_imp(buf, rm, st, mood) {
-    const s = R(15 * st.scale), cy = 40 - R(s * 0.1), f = st.feat, fh = R(13 * f);
-    const hi = mood === "sulk" ? [235, 40, 30] : [255, 195, 75];
-    tri(buf, 32 - 7, cy - s + 2, 32 - 9, cy - s - fh + 5, 32 - 1, cy - s, [225, 70, 25]);
-    tri(buf, 32, cy - s + 2, 32 - 2, cy - s - fh, 32 + 4, cy - s, hi);
-    tri(buf, 32 + 7, cy - s + 2, 32 + 9, cy - s - fh + 5, 32 + 1, cy - s, [225, 70, 25]);
-    tri(buf, 32 + 1, cy - s - 1, 32, cy - s - fh + 5, 32 + 3, cy - s, [255, 235, 130]);
-    ball(buf, 32, cy, s, tint(rm, [80, 42, 24], 0.32));
-    ball(buf, 32 - 6, cy + s - 2, 3, rm); ball(buf, 32 + 6, cy + s - 2, 3, rm);
-    if (st.badge) badge(buf, 32, cy + 1);
-    outline(buf, rm.out); face(buf, 32, cy + R(s * st.faceY), mood, R(s * 0.36), st.eye);
+
+  // ---------- 炸毛团: flame imp ----------
+  ember_imp(buf, rm0, variant, node, mood) {
+    const teen = node >= 3, adult = node >= 4;
+    const rmBody = tint(rm0, [80, 42, 24], 0.32);
+    const sc = SCALE[node], f = FEAT[node];
+    const wide = variant === "brimimp" && teen ? 1.2 : 1.0;
+    const s = R(15 * sc), cy = 40 - R(s * 0.1), rx = R(s * wide);
+    const sulk = mood === "sulk";
+    // --- flame hair by variant ---
+    const fh = R(13 * (teen ? 1 : f));
+    if (variant === "crackle" && teen) {
+      // taller spikier flame + spark arcs + bolt
+      const hot = sulk ? [255, 90, 50] : [255, 220, 90];
+      tri(buf, 32 - 8, cy - s + 2, 32 - 10, cy - s - fh - 2, 32 - 1, cy - s, [235, 70, 20]);
+      tri(buf, 32, cy - s + 2, 32 - 2, cy - s - fh - 6, 32 + 5, cy - s, hot);
+      tri(buf, 32 + 8, cy - s + 2, 32 + 10, cy - s - fh - 2, 32 + 1, cy - s, [235, 70, 20]);
+      for (const [x, y] of [[16, 20], [48, 16], [20, 12]]) { stroke(buf, x, y, x + 2, y + 3, 0, [255, 235, 90]); stroke(buf, x + 2, y + 3, x - 1, y + 6, 0, [255, 235, 90]); }
+      if (adult) { stroke(buf, 50, 26, 53, 30, 0, [255, 240, 120]); stroke(buf, 53, 30, 50, 33, 0, [255, 240, 120]); }
+    } else if (variant === "brimimp" && teen) {
+      const hot = [255, 200, 90]; // droopy lazy flame
+      tri(buf, 32 - 6, cy - s + 2, 32 - 9, cy - s - fh + 7, 32 - 1, cy - s, [225, 90, 35]);
+      tri(buf, 32 + 6, cy - s + 2, 32 + 9, cy - s - fh + 7, 32 + 1, cy - s, [225, 90, 35]);
+      tri(buf, 32, cy - s + 2, 32 + 2, cy - s - fh + 4, 32 + 4, cy - s, hot);
+    } else {
+      const hot = sulk ? [235, 40, 30] : [255, 195, 75];
+      tri(buf, 32 - 7, cy - s + 2, 32 - 9, cy - s - fh + 5, 32 - 1, cy - s, [225, 70, 25]);
+      tri(buf, 32, cy - s + 2, 32 - 2, cy - s - fh, 32 + 4, cy - s, hot);
+      tri(buf, 32 + 7, cy - s + 2, 32 + 9, cy - s - fh + 5, 32 + 1, cy - s, [225, 70, 25]);
+      tri(buf, 32 + 1, cy - s - 1, 32, cy - s - fh + 5, 32 + 3, cy - s, [255, 235, 130]);
+    }
+    // --- body ---
+    blob(buf, 32, cy, rx, R(s * 1.04), rmBody);
+    ball(buf, 32 - 6, cy + s - 2, 3, rm0); ball(buf, 32 + 6, cy + s - 2, 3, rm0); // feet
+    if (variant === "brimimp" && teen) blob(buf, 32, cy + 3, R(rx * 0.55), R(s * 0.4), tint(rmBody, [255, 220, 170], 0.18)); // full belly
+    // forge: chest core + body plates
+    if (variant === "forge" && teen) {
+      for (const py of [cy - 2, cy + 4]) for (let x = -rx + 2; x <= rx - 2; x += 1) if ((x + py) % 2 === 0) px(buf, 32 + x, py, tint(rmBody, [0, 0, 0], 0.25).sh); // plate seams
+      ball(buf, 32, cy + 1, R(s * 0.3), ramp("#FF9838")); ball(buf, 32, cy + 1, R(s * 0.16), ramp("#FFE0A0"));
+      if (adult) { for (const a of [0, 1, 2, 3]) star(buf, 32 + R((rx + 4) * Math.cos(a * 1.57)), cy + R((rx + 4) * Math.sin(a * 1.57)), [255, 200, 110]); }
+    }
+    if (adult && variant === "true") badge(buf, 32, cy + 1);
+    outline(buf, rmBody.out);
+    face(buf, 32, cy, mood, R(s * 0.36), teen ? 2 : 3);
   },
-  sproutling(buf, rm, st, mood) {
-    const s = R(14 * st.scale), cy = 41 - R(s * 0.1), f = st.feat;
+
+  // ---------- 探探芽: seed-sprout ----------
+  sproutling(buf, rm0, variant, node, mood) {
+    const rm = bodyRamp(rm0, variant), teen = node >= 3, adult = node >= 4;
+    const sc = SCALE[node], f = FEAT[node];
+    const lean = variant === "gust" && teen ? 0.86 : 1.0;
+    const s = R(14 * sc), cy = 41 - R(s * 0.1), rx = R(s * lean);
+    const bodyRm = tint(rm, [245, 240, 210], 0.26);
+    // --- crown: stem + leaves (variant-flavored) ---
+    const leaf = (sgn, len, col) => tri(buf, 32, cy - s - R(4 * f), 32 + sgn * R(len * f), cy - s - R(9 * f), 32 + sgn, cy - s - R((len + 5) * f), col);
     stroke(buf, 32, cy - s + 2, 32, cy - s - R(8 * f), 1, [90, 150, 70]);
-    tri(buf, 32, cy - s - R(4 * f), 32 - R(9 * f), cy - s - R(9 * f), 32 - 1, cy - s - R(14 * f), [120, 200, 110]);
-    tri(buf, 32, cy - s - R(4 * f), 32 + R(9 * f), cy - s - R(9 * f), 32 + 1, cy - s - R(14 * f), [145, 218, 122]);
-    blob(buf, 32, cy, s, R(s * 1.08), tint(rm, [245, 240, 210], 0.28));
-    if (st.badge) badge(buf, 32, cy + R(s * 0.4));
-    outline(buf, rm.out); face(buf, 32, cy + R(s * st.faceY), mood, R(s * 0.38), st.eye);
-  },
-  stone_egg(buf, rm, st, mood) {
-    const s = R(17 * st.scale), cy = 40 - R(s * 0.08);
-    blob(buf, 32, cy, s, R(s * 0.86), rm);
-    for (const [dx, dy, r] of [[-7, -R(s * 0.9), 3], [0, -s - 1, 4], [7, -R(s * 0.9), 3]]) ball(buf, 32 + dx, cy + dy, R(r * Math.max(0.6, st.feat)), ramp("#6EA05A"));
-    if (st.badge) badge(buf, 32, cy + R(s * 0.35));
-    outline(buf, rm.out); face(buf, 32, cy + R(s * st.faceY), mood === "happy" ? "idle" : mood, R(s * 0.36), st.eye);
-  },
-  puff_seal(buf, rm, st, mood) {
-    const s = R(17 * st.scale), cy = 40 - R(s * 0.08);
-    blob(buf, 32 - s + 1, cy + 4, 5, 3, tint(rm, [255, 255, 255], 0.12)); blob(buf, 32 + s - 1, cy + 4, 5, 3, tint(rm, [255, 255, 255], 0.12));
-    ball(buf, 32, cy, s, rm);
-    blob(buf, 32, cy + 4, R(s * 0.5), R(s * 0.38), tint(rm, [255, 255, 255], 0.3));
-    if (st.badge) badge(buf, 32, cy + R(s * 0.5));
-    outline(buf, rm.out); face(buf, 32, cy + R(s * st.faceY), mood, R(s * 0.4), st.eye);
-  },
-  wisp_moth(buf, rm, st, mood) {
-    const s = R(9 * st.scale), cy = 38 - R(s * 0.1), f = Math.max(0.6, st.feat), wing = tint(rm, [255, 245, 200], 0.4);
-    blob(buf, 32 - s - 5, cy, R(7 * f), R(9 * f), wing); blob(buf, 32 + s + 5, cy, R(7 * f), R(9 * f), wing);
-    ball(buf, 32, cy, s, tint(rm, [120, 100, 60], 0.18));
-    stroke(buf, 32 - 2, cy - s - 1, 32 - 6, cy - s - 9, 1, INK); ball(buf, 32 - 6, cy - s - 9, 1, ramp("#FFD24A"));
-    stroke(buf, 32 + 2, cy - s - 1, 32 + 6, cy - s - 9, 1, INK); ball(buf, 32 + 6, cy - s - 9, 1, ramp("#FFD24A"));
-    ball(buf, 32, cy + s + 6, 2, ramp("#FFD24A"));
-    if (st.badge) badge(buf, 32, cy);
-    outline(buf, rm.out); face(buf, 32, cy, mood, Math.max(3, R(s * 0.5)), st.eye);
-  },
-  clay_golem(buf, rm, st, mood) {
-    const hw = R(14 * st.scale), hh = R(15 * st.scale), cy = 38 - R(hh * 0.08);
-    ball(buf, 32 - hw - 1, cy + 2, 3, rm); ball(buf, 32 + hw + 1, cy + 2, 3, rm);
-    rrect(buf, 32, cy, hw, hh, 6, rm);
-    ball(buf, 32, cy + R(hh * 0.4), 3, ramp("#FF9838"));
-    if (st.badge) badge(buf, 32, cy - R(hh * 0.42));
-    outline(buf, rm.out); face(buf, 32, cy - R(hh * 0.16), mood, R(hw * 0.42), st.eye);
-  },
-  spark_sprite(buf, rm, st, mood) {
-    const s = R(13 * st.scale), cy = 41 - R(s * 0.1), f = st.feat;
-    const Z = [[32 - 1, cy - s - 1], [32 + 4, cy - s - 5], [32 + 1, cy - s - 5], [32 + 5, cy - s - R(11 * f)]];
-    for (let i = 0; i < Z.length - 1; i++) stroke(buf, Z[i][0], Z[i][1], Z[i + 1][0], Z[i + 1][1], 1, [255, 230, 90]);
-    ball(buf, 32 - s - 1, cy - 3, 1, ramp("#FFEB78")); ball(buf, 32 + s + 1, cy + 2, 1, ramp("#FFEB78"));
-    ball(buf, 32, cy, s, rm);
-    if (st.badge) badge(buf, 32, cy + R(s * 0.45));
-    outline(buf, rm.out); face(buf, 32, cy + R(s * st.faceY), mood, R(s * 0.38), st.eye);
-  },
-  dream_jelly(buf, rm, st, mood) {
-    const s = R(17 * st.scale), cy = 35 - R(s * 0.04), tc = mix(rm.base, [255, 255, 255], 0.18);
-    for (let i = -2; i <= 2; i++) { const x = 32 + i * R(s / 2.6); stroke(buf, x, cy + R(s * 0.2), x + (i % 2 ? 2 : -2), cy + R(s * 0.2) + 10, 1, tc); }
-    dome(buf, 32, cy, s, rm);
-    px(buf, 32 - 4, cy - 4, [255, 255, 255], 180); px(buf, 32 + 5, cy + 1, mix(rm.hi, [255, 255, 255], 0.4)); px(buf, 32 + 6, cy - 2, [255, 255, 255], 130);
-    if (st.badge) badge(buf, 32, cy - R(s * 0.4));
-    outline(buf, rm.out); face(buf, 32, cy, mood, R(s * 0.36), st.eye);
+    if (variant === "harvest" && teen) {
+      leaf(-1, 11, [120, 200, 110]); leaf(1, 11, [145, 218, 122]); leaf(-1, 7, [110, 190, 100]); leaf(1, 7, [135, 205, 115]);
+      ball(buf, 33, cy - s - R(11 * f), 2, ramp("#E23B5A")); if (adult) { ball(buf, 29, cy - s - R(8 * f), 2, ramp("#E23B5A")); ball(buf, 36, cy - s - R(8 * f), 2, ramp("#E23B5A")); }
+    } else if (variant === "gust" && teen) {
+      // leaf-wings on the sides + a floating seed
+      tri(buf, 32 - rx, cy - 2, 32 - rx - R(11 * f), cy - 6, 32 - rx - 1, cy + 4, tint(rm, [255, 255, 255], 0.18).hi);
+      tri(buf, 32 + rx, cy - 2, 32 + rx + R(11 * f), cy - 6, 32 + rx + 1, cy + 4, tint(rm, [255, 255, 255], 0.18).hi);
+      leaf(0, 9, [150, 215, 125]);
+      if (adult) { for (const [x, y] of [[14, 18], [50, 22], [18, 12]]) { ball(buf, x, y, 1, ramp("#EAF6D8")); for (let k = 1; k <= 3; k++) px(buf, x, y + k, [220, 235, 200], 180); } }
+    } else if (variant === "dorm" && teen) {
+      // stone shell cap + moss patches
+      rrect(buf, 32, cy - R(s * 0.5), R(rx * 0.9), R(s * 0.62), 6, ramp("#9C8E7E"));
+      for (const [dx, dy] of [[-4, -s], [3, -s + 2], [-2, -s + 4]]) px(buf, 32 + dx, cy + dy, [120, 170, 90]);
+      if (adult) { stroke(buf, 32, cy - s - 1, 32, cy - s - 5, 0, [120, 170, 90]); ball(buf, 32, cy - s - 6, 2, ramp("#F4C6D8")); } // tiny flower
+    } else {
+      leaf(-1, 9, [120, 200, 110]); leaf(1, 9, [145, 218, 122]);
+    }
+    // --- body ---
+    blob(buf, 32, cy, rx, R(s * 1.06), variant === "dorm" && teen ? ramp("#B9A98F") : bodyRm);
+    if (adult && variant === "true") badge(buf, 32, cy + R(s * 0.4));
+    outline(buf, (variant === "dorm" && teen ? ramp("#6B5E4C") : bodyRm).out);
+    face(buf, 32, cy, mood === "happy" && variant === "dorm" ? "idle" : mood, R(s * 0.38), teen ? 2 : 3);
   },
 };
 
+// ---- egg + hide ----
 function drawEgg(rm) {
   const buf = canvas(); shadow(buf, 56, 12);
   blob(buf, 32, 35, 16, 20, tint(rm, [255, 255, 255], 0.5));
@@ -245,40 +287,53 @@ function drawHide(buf, rm) {
   for (let y = 46; y < 58; y++) for (let x = 13; x < 51; x++) px(buf, x, y, y < 49 ? box.hi : box.base);
   outline(buf, box.out);
 }
-function render(id, rm, stage, mood) {
-  if (stage === "egg") return encode(drawEgg(rm));
+
+function renderBuf(lineId, variant, stage, mood) {
+  const rm = ramp(LINES[lineId].accent);
+  if (stage === "egg") return drawEgg(rm);
   const buf = canvas(); shadow(buf);
-  if (mood === "hide") { drawHide(buf, rm); return encode(buf); }
-  DRAW[id](buf, rm, STAGES[stage], mood);
+  if (mood === "hide") { drawHide(buf, rm); return buf; }
+  DRAW[lineId](buf, rm, variant, NODE[stage], mood);
   (FX[FXOF[mood]] || FX.none)(buf);
-  return encode(buf);
+  return buf;
 }
+function render(lineId, variant, stage, mood) { return encode(renderBuf(lineId, variant, stage, mood)); }
+
+export { renderBuf, encode, LINES, W, H };
 
 // ---- PNG ----
 const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++)c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
 const crc32 = (b) => { let c = 0xffffffff; for (let i = 0; i < b.length; i++)c = CRC[(c ^ b[i]) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
 const chunk = (t, d) => { const l = Buffer.alloc(4); l.writeUInt32BE(d.length, 0); const b = Buffer.concat([Buffer.from(t, "ascii"), d]); const cr = Buffer.alloc(4); cr.writeUInt32BE(crc32(b), 0); return Buffer.concat([l, b, cr]); };
-function encode(rgba) {
-  const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(W, 0); ihdr.writeUInt32BE(H, 4); ihdr[8] = 8; ihdr[9] = 6;
-  const raw = Buffer.alloc((W * 4 + 1) * H);
-  for (let y = 0; y < H; y++) { raw[y * (W * 4 + 1)] = 0; Buffer.from(rgba.buffer).copy(raw, y * (W * 4 + 1) + 1, y * W * 4, (y + 1) * W * 4); }
+function encode(rgba, w = W, h = H) {
+  const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(w, 0); ihdr.writeUInt32BE(h, 4); ihdr[8] = 8; ihdr[9] = 6;
+  const raw = Buffer.alloc((w * 4 + 1) * h);
+  for (let y = 0; y < h; y++) { raw[y * (w * 4 + 1)] = 0; Buffer.from(rgba.buffer).copy(raw, y * (w * 4 + 1) + 1, y * w * 4, (y + 1) * w * 4); }
   return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk("IHDR", ihdr), chunk("IDAT", zlib.deflateSync(raw, { level: 9 })), chunk("IEND", Buffer.alloc(0))]);
 }
 
-const ACCENTS = {
-  mochi_pudding: "#FF9EC4", echo_fox: "#5B4B8A", ember_imp: "#FF6B2C",
-  sproutling: "#7FB069", stone_egg: "#9C8B7A", puff_seal: "#FFB6CE",
-  wisp_moth: "#F2C94C", clay_golem: "#C97B5A", spark_sprite: "#56CCF2",
-  dream_jelly: "#B39DDB",
-};
+// ---- main ----
+const isMain = process.argv[1] && import.meta.url === `file://${process.argv[1]}`;
 const only = process.argv[2];
 let n = 0;
-for (const [id, hex] of Object.entries(ACCENTS)) {
-  if (only && id !== only) continue;
-  const rm = ramp(hex), dir = join(OUT, id); mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, "egg.png"), render(id, rm, "egg", "idle")); n++;
-  for (const stage of ["baby", "child", "teen", "adult"]) for (const mood of MOODS) { writeFileSync(join(dir, `${stage}_${mood}.png`), render(id, rm, stage, mood)); n++; }
+function writeSet(dir, lineId, variant, stages) {
+  mkdirSync(dir, { recursive: true });
+  for (const stage of stages) {
+    if (stage === "egg") { writeFileSync(join(dir, "egg.png"), render(lineId, variant, "egg", "idle")); n++; continue; }
+    for (const mood of MOODS) { writeFileSync(join(dir, `${stage}_${mood}.png`), render(lineId, variant, stage, mood)); n++; }
+  }
 }
-mkdirSync(join(OUT, "_fallback"), { recursive: true });
-writeFileSync(join(OUT, "_fallback", "blob.png"), render("mochi_pudding", ramp("#C9C9D6"), "child", "idle"));
-console.log(`rendered ${n} sprites${only ? " for " + only : " (all 10)"}`);
+if (isMain) {
+  for (const [lineId, line] of Object.entries(LINES)) {
+    if (only && lineId !== only) continue;
+    // head folder = shared trunk (egg/baby/child) + the TRUE form (teen/adult)
+    writeSet(join(OUT, lineId), lineId, "true", ["egg", "baby", "child", "teen", "adult"]);
+    // each care branch = a within-lineage variant, teen+adult only
+    for (const b of Object.values(line.branches)) {
+      writeSet(join(OUT, `${lineId}__${b.variant}`), lineId, b.variant, ["teen", "adult"]);
+    }
+  }
+  mkdirSync(join(OUT, "_fallback"), { recursive: true });
+  writeFileSync(join(OUT, "_fallback", "blob.png"), render("mochi_pudding", "true", "child", "idle"));
+  console.log(`rendered ${n} sprites${only ? " for " + only : " (4 lines)"}`);
+}
