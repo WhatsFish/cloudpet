@@ -16,8 +16,8 @@ export function cooldownText(ms?: number): string {
 }
 
 export const VERB_LABEL: Record<string, string> = {
-  feed: "喂食", snack: "喂零食", clean: "洗澡", play: "陪玩",
-  pet: "抚摸", sleep: "哄睡", doctor: "看医生", checkin: "每日签到",
+  feed: "喂食", clean: "洗澡", doctor: "看医生", play: "陪玩",
+  pet: "摸摸", sleep: "哄睡", checkin: "签到", complete: "照顾达成",
 };
 
 export const STAGE_LABEL: Record<string, string> = {

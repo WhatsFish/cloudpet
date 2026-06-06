@@ -1,68 +1,84 @@
-<view class="page" wx:if="{{pet}}">
-  <!-- header -->
-  <view class="home-head">
-    <view>
-      <text class="pet-name">{{pet.pet.name}}</text>
-      <text class="chip">{{stageLabel}}</text>
+<view class="screen theme-{{theme}}" wx:if="{{pet}}">
+  <view class="device">
+    <view class="brand">● 本命小宠 ●</view>
+
+    <view class="lcd">
+      <view class="lcd-grid"></view>
+      <view class="pips">
+        <view wx:for="{{pips}}" wx:key="*this" class="pip pip--{{item}}"></view>
+      </view>
+
+      <view class="bubble" wx:if="{{bubble}}">{{bubble}}</view>
+
+      <view class="stage-wrap">
+        <image class="sprite {{animClass}}" src="{{spriteSrc}}" mode="aspectFit" binderror="onSpriteError" />
+        <view wx:if="{{fxEmoji}}" class="fx">{{fxEmoji}}</view>
+        <view wx:if="{{floatTag}}" class="floattag">{{floatTag}}</view>
+      </view>
+
+      <view class="lcd-foot">
+        <view class="nm">{{pet.pet.name}} · {{stageLabel}} · Lv{{pet.level}}</view>
+        <view class="evo"><view class="evo-fill" style="width:{{pet.evolveProgress}}%"></view></view>
+      </view>
     </view>
-    <view class="muted">认识第 {{pet.pet.daysKnown}} 天 · 连续 {{pet.streakDays}} 天</view>
-  </view>
 
-  <!-- badges -->
-  <view wx:if="{{pet.badges.length}}" class="badge-row">
-    <text wx:for="{{pet.badges}}" wx:key="*this" class="badge">{{item}}</text>
-  </view>
+    <view class="hint">{{pet.needHint}}</view>
 
-  <!-- speech bubble -->
-  <view class="bubble bubble-pet" wx:if="{{bubble}}">{{bubble}}</view>
-
-  <!-- sprite -->
-  <view class="stage">
-    <image class="sprite {{animClass}}" src="{{spriteSrc}}" mode="aspectFit"
-           binderror="onSpriteError" />
-  </view>
-
-  <!-- bond / exp -->
-  <view class="card">
-    <view class="row-between">
-      <text class="label">亲密度</text><text class="subtle">{{pet.bond}}/1000</text>
+    <view class="menu">
+      <view wx:for="{{icons}}" wx:key="key"
+            class="icon icon--{{item.kind}} {{cursor===index ? 'cursor' : ''}}"
+            data-key="{{item.key}}" bindtap="onIcon">
+        <text class="emoji">{{item.emoji}}</text>
+        <text class="ilabel">{{item.label}}</text>
+      </view>
     </view>
-    <view class="bar"><view class="bar-fill" style="width:{{pet.bond/10}}%;background:#FF9EC4"></view></view>
-    <view class="row-between" style="margin-top:18rpx">
-      <text class="label">成长经验</text>
-      <text class="subtle">{{pet.expForNextStage ? pet.exp + '/' + pet.expForNextStage : '已是当前最大阶段'}}</text>
-    </view>
-    <view class="bar"><view class="bar-fill" style="width:{{expPct}}%;background:#E8845B"></view></view>
-  </view>
 
-  <!-- stats -->
-  <view class="card">
-    <view wx:for="{{statBars}}" wx:key="label" class="stat">
-      <text class="stat-label">{{item.label}}</text>
-      <view class="bar"><view class="bar-fill" style="width:{{item.pct}}%;background:{{item.color}}"></view></view>
-      <text class="stat-val">{{item.value}}</text>
+    <view class="buttons">
+      <view class="abtn" bindtap="onA"><text class="ab">A</text><text class="blabel">选</text></view>
+      <view class="abtn" bindtap="onB"><text class="ab">B</text><text class="blabel">确定</text></view>
+      <view class="abtn" bindtap="onC"><text class="ab">C</text><text class="blabel">返回</text></view>
     </view>
   </view>
 
-  <!-- actions -->
-  <view class="actions">
-    <view wx:for="{{actionBtns}}" wx:key="verb"
-          class="act {{item.enabled ? '' : 'act--off'}}"
-          data-verb="{{item.verb}}" bindtap="onAction">
-      <text class="act-label">{{item.label}}</text>
-      <text wx:if="{{item.hint}}" class="act-hint">{{item.hint}}</text>
+  <view wx:if="{{showStatus}}" class="mask" bindtap="closeModals">
+    <view class="panel" catchtap="noop">
+      <view class="panel-title">状态 · {{pet.pet.name}}</view>
+      <view wx:for="{{statBars}}" wx:key="label" class="srow">
+        <text class="slabel">{{item.label}}</text>
+        <view class="sbar"><view class="sfill" style="width:{{item.pct}}%;background:{{item.color}}"></view></view>
+        <text class="sval">{{item.value}}</text>
+      </view>
+      <view class="srow2">亲密度 {{pet.bond}}/1000 · 认识第 {{pet.pet.daysKnown}} 天 · 连续 {{pet.streakDays}} 天</view>
+      <view class="srow2">Lv {{pet.level}} · {{pet.pet.stage === 'child' ? '已达童年（V1 封顶，Lv 继续涨）' : '进化进度 ' + pet.evolveProgress + '%'}}</view>
+      <view class="pbtn" bindtap="closeModals">关闭</view>
     </view>
   </view>
 
-  <!-- inventory -->
-  <view class="items">
-    <text wx:for="{{items}}" wx:key="key" class="item-chip">{{item.label}} {{item.qty}}</text>
+  <view wx:if="{{showSettings}}" class="mask" bindtap="closeModals">
+    <view class="panel" catchtap="noop">
+      <view class="panel-title">设置</view>
+      <view class="plabel">机身配色</view>
+      <view class="themes">
+        <view wx:for="{{['cream','mint','dusk']}}" wx:key="*this"
+              class="swatch theme-{{item}} {{theme === item ? 'sel' : ''}}" data-theme="{{item}}" bindtap="pickTheme">
+          <view class="swatch-shell"></view>
+          <text class="swatch-name">{{item === 'cream' ? '奶油' : item === 'mint' ? '薄荷' : '暮光'}}</text>
+        </view>
+      </view>
+      <view class="plabel">给它改名</view>
+      <view class="namerow">
+        <input class="ninput" value="{{nameInput}}" maxlength="12" bindinput="onNameInput" />
+        <view class="nbtn" bindtap="saveName">保存</view>
+      </view>
+      <view class="pbtn" bindtap="closeModals">关闭</view>
+    </view>
   </view>
 </view>
 
-<view class="empty" wx:elif="{{error}}">
-  <view>{{error}}</view>
-  <view class="btn btn--ghost" style="margin-top:32rpx;display:inline-block;padding:18rpx 48rpx" bindtap="load">再试一次</view>
+<view class="screen theme-cream center-screen" wx:elif="{{error}}">
+  <view class="muted">{{error}}</view>
+  <view class="retry" bindtap="load">再试一次</view>
 </view>
-
-<view class="empty" wx:else>正在唤醒你的小宠…</view>
+<view class="screen theme-cream center-screen" wx:else>
+  <view class="muted">正在唤醒你的小宠…</view>
+</view>
