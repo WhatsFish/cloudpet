@@ -30,6 +30,14 @@ export async function GET(req: NextRequest) {
   let rows = await loadRows(query, userId);
   if (!rows) return NextResponse.json({ error: "no_pet" }, { status: 404 });
 
+  // Self-heal: the egg is only a transient onboarding ceremony — the home should
+  // never show one. If a pet is somehow still an egg here (abandoned/failed hatch,
+  // an older client), promote it to baby so it can never get stuck.
+  if (rows.pet.stage === "egg") {
+    await query(`UPDATE pet SET stage='baby' WHERE id=$1`, [rows.pet.id]);
+    rows.pet.stage = "baby";
+  }
+
   ({ rows } = await tickAndPersistTz(query, rows, now, tz));
 
   // battery (compute-on-read)
