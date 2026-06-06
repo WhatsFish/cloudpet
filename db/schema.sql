@@ -51,6 +51,12 @@ CREATE TABLE IF NOT EXISTS pet_state (
   state_since TIMESTAMPTZ,
   asleep      BOOLEAN NOT NULL DEFAULT FALSE,
   sleep_since TIMESTAMPTZ,
+  -- V3 养育历史 (Model C): which care you favour steers the divergent teen fork.
+  -- affection_taps = play + pet (the free actions). See lib/game/evolve.ts.
+  care_feed      INTEGER NOT NULL DEFAULT 0,
+  care_clean     INTEGER NOT NULL DEFAULT 0,
+  care_doctor    INTEGER NOT NULL DEFAULT 0,
+  affection_taps INTEGER NOT NULL DEFAULT 0,
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

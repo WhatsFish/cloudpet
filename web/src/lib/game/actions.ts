@@ -6,7 +6,7 @@ import type { Snapshot, Stage, Verb } from "@/lib/types";
 import { STATE } from "@/lib/types";
 import type { BestiaryEntry } from "@/data/bestiary";
 import { capForStage, stageDef } from "@/data/stage-table";
-import { ACTIONS, OVERFEED_ABOVE } from "./constants";
+import { ACTIONS, OVERFEED_ABOVE, careExp } from "./constants";
 import { resolveStateFlags } from "./state";
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
@@ -75,11 +75,19 @@ export function planAction(inp: ActionInput): ActionPlan | ActionReject {
 
   if (verb === "feed" && s.satiety > OVERFEED_ABOVE) event = "feed.overfed";
 
+  // deficit-weighted EXP for care: value the tap by how much the stat NEEDED it
+  // (computed from the pre-care value). Affection stays 0-growth (def.exp = 0).
+  let expGain = def.exp;
+  if (def.charge) {
+    const statKey = Object.keys(def.effects)[0] as keyof Snapshot; // feed→satiety, clean→cleanliness, doctor→health
+    expGain = careExp(inp.state[statKey] as number, cap);
+  }
+
   for (const [k, v] of Object.entries(def.effects) as [keyof Snapshot, number][]) {
     (s[k] as number) = clamp((s[k] as number) + v, 0, cap);
   }
 
-  s.exp += def.exp;
+  s.exp += expGain;
   s.bond = clamp(s.bond + def.bond, 0, 1000);
 
   // re-resolve flags: an interaction just happened (clears LONELY/HIDING; play's
@@ -91,7 +99,7 @@ export function planAction(inp: ActionInput): ActionPlan | ActionReject {
   return {
     ok: true,
     state: s,
-    expGain: def.exp,
+    expGain,
     bondGain: def.bond,
     chargeSpent: def.charge,
     event,

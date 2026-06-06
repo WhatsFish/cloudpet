@@ -23,7 +23,9 @@ export const STAGES: StageDef[] = [
   { stage: "adult", order: 4, expReq: 1700, minDays: 21, cap: 100, bondGate: 400 },
 ];
 
-export const MAX_STAGE_V1: Stage = "child";
+// V3: the divergent fork lands AT teen (already-rendered sprites), so teen is the
+// visible payoff. adult stays Phase 2. Was 'child' in V1/V2.
+export const MAX_STAGE_V1: Stage = "teen";
 
 const BY_STAGE = new Map(STAGES.map((s) => [s.stage, s]));
 

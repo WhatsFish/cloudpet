@@ -3,11 +3,12 @@
 
 import type { Tx } from "@/lib/db";
 import { query } from "@/lib/db";
-import type { ActionAvailability, CopyContext, PetRow, PetView, Snapshot, Stage, Verb } from "@/lib/types";
+import type { ActionAvailability, CareCounts, CopyContext, PetRow, PetView, Snapshot, Stage, Verb } from "@/lib/types";
 import { creature } from "@/data/bestiary";
 import { capForStage, expForNextStage } from "@/data/stage-table";
 import { ACTIONS, CARE_COVERED_AT } from "@/lib/game/constants";
 import { recompute } from "@/lib/game/tick";
+import { nurtureTilt } from "@/lib/game/evolve";
 import { levelFromExp, levelProgress } from "@/lib/game/levels";
 import { badges, dominant, moodBand } from "@/lib/game/state";
 import { STATE } from "@/lib/types";
@@ -19,13 +20,15 @@ export type Rows = {
   state: Snapshot;
   cooldown: CooldownRow;
   lastActionMs: number;
+  care: CareCounts; // V3: persisted care-history aggregates (pet_state)
 };
 
 const PET_COLS = "id, user_id, archetype_key, species_id, name, stage, created_at::text AS created_at";
 const STATE_COLS =
   "satiety, mood, cleanliness, energy, health, bond, exp::int AS exp, " +
   "last_tick::text AS last_tick, state_flags, state_since::text AS state_since, " +
-  "asleep, sleep_since::text AS sleep_since";
+  "asleep, sleep_since::text AS sleep_since, " +
+  "care_feed, care_clean, care_doctor, affection_taps";
 const CD_COLS =
   "daily_reset_on::text AS daily_reset_on, streak_days, streak_state, " +
   "last_active_date::text AS last_active_date, care_charges, charges_updated_at::text AS charges_updated_at";
@@ -36,12 +39,15 @@ export async function loadRows(q: Tx, userId: string, forUpdate = false): Promis
   const pet = pets[0];
   if (!pet) return null;
 
-  const states = await q<Snapshot>(`SELECT ${STATE_COLS} FROM pet_state WHERE pet_id = $1${lock}`, [pet.id]);
+  type StateRow = Snapshot & { care_feed: number; care_clean: number; care_doctor: number; affection_taps: number };
+  const states = await q<StateRow>(`SELECT ${STATE_COLS} FROM pet_state WHERE pet_id = $1${lock}`, [pet.id]);
   const cds = await q<CooldownRow>(`SELECT ${CD_COLS} FROM pet_cooldown WHERE pet_id = $1${lock}`, [pet.id]);
   const la = await q<{ m: string | null }>(`SELECT max(created_at)::text AS m FROM action_log WHERE pet_id = $1`, [pet.id]);
   const lastActionMs = la[0]?.m ? Date.parse(la[0].m) : 0;
 
-  return { pet, state: states[0], cooldown: cds[0], lastActionMs };
+  const st = states[0];
+  const care: CareCounts = { feed: st.care_feed, clean: st.care_clean, doctor: st.care_doctor, affection: st.affection_taps };
+  return { pet, state: st, cooldown: cds[0], lastActionMs, care };
 }
 
 export function lastInteractionMs(rows: Rows): number {
@@ -59,6 +65,8 @@ export async function tickAndPersistTz(
     lastInteractionMs: lastInteractionMs(rows),
     creature: creature(rows.pet.species_id),
     nowMs,
+    seedArchetype: rows.pet.archetype_key,
+    care: rows.care,
   });
   await q(
     `UPDATE pet_state SET satiety=$2, mood=$3, cleanliness=$4, energy=$5, health=$6,
@@ -68,7 +76,12 @@ export async function tickAndPersistTz(
      out.s.bond, out.s.exp, out.s.last_tick, out.s.state_flags, out.s.state_since, out.s.asleep, out.s.sleep_since],
   );
   if (out.promoted) await q(`UPDATE pet SET stage=$2 WHERE id=$1`, [rows.pet.id, out.stage]);
-  return { rows: { ...rows, pet: { ...rows.pet, stage: out.stage }, state: out.s }, promoted: out.promoted };
+  // V3: the teen fork may diverge the species — persist the resolved form.
+  const species = out.resolvedSpecies ?? rows.pet.species_id;
+  if (out.resolvedSpecies && out.resolvedSpecies !== rows.pet.species_id) {
+    await q(`UPDATE pet SET species_id=$2 WHERE id=$1`, [rows.pet.id, out.resolvedSpecies]);
+  }
+  return { rows: { ...rows, pet: { ...rows.pet, stage: out.stage, species_id: species }, state: out.s }, promoted: out.promoted };
 }
 
 export function behaviorPattern(streakDays: number, noInteractionH: number, band: string): string[] {
@@ -169,6 +182,7 @@ export function buildPetView(rows: Rows, o: ViewOpts): PetView {
     theme: o.theme,
     voice: o.voice,
     actions: actionAvailability(pet.stage, state, o.charges, o.chargesRefreshInMs),
+    nurtureTilt: nurtureTilt(pet.archetype_key, rows.care),
   };
 }
 

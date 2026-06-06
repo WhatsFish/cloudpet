@@ -2,9 +2,10 @@
 // stored snapshot + last_tick, recompute the live state from elapsed real time
 // (PLAN §5.2–5.7). No client trust, no LLM, stateless between reads.
 
-import type { Snapshot, Stage } from "@/lib/types";
+import type { CareCounts, Snapshot, Stage } from "@/lib/types";
 import { STATE } from "@/lib/types";
 import type { BestiaryEntry } from "@/data/bestiary";
+import { resolveSpecies } from "./evolve";
 import {
   DECAY, DH_CAP, ENERGY_REGEN, H, HEALTH, HEALTH_FLOOR, LIVE_FLOOR,
   M_BOND_MAX_REDUCTION, M_SICK, M_SLEEP, M_STAGE,
@@ -23,6 +24,8 @@ export type RecomputeIn = {
   lastInteractionMs: number; // max(last_* cooldown, created_at)
   creature: BestiaryEntry;
   nowMs: number;
+  seedArchetype: string; // V3: the bonded seed (pet.archetype_key) for the teen fork
+  care: CareCounts; // V3: care history that steers divergence
 };
 
 export type RecomputeOut = {
@@ -30,6 +33,7 @@ export type RecomputeOut = {
   stage: Stage;
   promoted: Stage | null;
   sick: boolean;
+  resolvedSpecies: string | null; // V3: set when promoting into teen (the divergent form)
 };
 
 export function recompute(inp: RecomputeIn): RecomputeOut {
@@ -139,13 +143,16 @@ export function recompute(inp: RecomputeIn): RecomputeOut {
     s.state_flags = flags;
   }
 
-  // growth promotion (may chain), capped at MAX_STAGE_V1 via nextStage()
+  // growth promotion (may chain), capped at MAX_STAGE_V1 via nextStage(). When the pet
+  // crosses into teen, resolve the divergent form from its care history (V3 fork).
   let promoted: Stage | null = null;
+  let resolvedSpecies: string | null = null;
   const days = daysBetween(inp.createdAtMs, nowMs);
   let nxt = nextStage(stage);
   while (nxt && s.exp >= nxt.expReq && days >= nxt.minDays && s.bond >= nxt.bondGate) {
     stage = nxt.stage;
     promoted = nxt.stage;
+    if (nxt.stage === "teen") resolvedSpecies = resolveSpecies(inp.seedArchetype, inp.care);
     nxt = nextStage(stage);
   }
 
@@ -158,5 +165,5 @@ export function recompute(inp: RecomputeIn): RecomputeOut {
   s.bond = Math.round(s.bond);
   s.last_tick = new Date(nowMs).toISOString();
 
-  return { s, stage, promoted, sick: (s.state_flags & STATE.SICK) !== 0 };
+  return { s, stage, promoted, sick: (s.state_flags & STATE.SICK) !== 0, resolvedSpecies };
 }

@@ -41,8 +41,18 @@ export const STREAK_EXP = { day7: 50, day30: 150 };
 
 // --- V2 care battery + rewards ---
 export const CARE = { maxCharges: 3, regenMs: 5 * H };
-export const CARE_EXP = 25;
+export const CARE_EXP = 25; // legacy ceiling; live value is deficit-weighted (V3)
 export const CARE_BOND = 6;
+
+// V3: deficit-weighted EXP. Caring for a DEPLETED stat earns full EXP; topping off an
+// already-high one earns little. This is what makes satiety/cleanliness/health matter —
+// each care tap's value depends on whether the pet actually needed it (REDESIGN_V3 §1).
+export const CARE_EXP_MIN = 10;
+export const CARE_EXP_MAX = 25;
+export function careExp(preStat: number, cap: number): number {
+  const deficit = Math.max(0, Math.min(cap, cap - preStat));
+  return Math.round(CARE_EXP_MIN + (CARE_EXP_MAX - CARE_EXP_MIN) * (deficit / cap));
+}
 export const COMPLETE_BONUS = { exp: 30, bond: 10 }; // 「照顾够了」完成奖 (once/day)
 export const CHECKIN_BOND = 8; // auto check-in on first open
 export const CARE_COVERED_AT = 30; // careCoveredToday = all of satiety/cleanliness/health >= 30

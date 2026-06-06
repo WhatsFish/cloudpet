@@ -6,6 +6,7 @@ import { buildContext, buildPetView, careCoveredToday, loadRows, tickAndPersistT
 import { planAction } from "@/lib/game/actions";
 import { ACTIONS, CARE, COMPLETE_BONUS } from "@/lib/game/constants";
 import { computeCharges } from "@/lib/game/battery";
+import { resolveSpecies } from "@/lib/game/evolve";
 import { creature } from "@/data/bestiary";
 import { nextStage } from "@/data/stage-table";
 import { daysBetween, localDateStr } from "@/lib/game/time";
@@ -63,6 +64,12 @@ export async function POST(req: NextRequest) {
     await q(`UPDATE pet_state SET satiety=$2, mood=$3, cleanliness=$4, energy=$5, health=$6, bond=$7, exp=$8, last_tick=$9, state_flags=$10, state_since=$11, asleep=$12, sleep_since=$13, updated_at=NOW() WHERE pet_id=$1`,
       [rows.pet.id, s.satiety, s.mood, s.cleanliness, s.energy, s.health, s.bond, s.exp, s.last_tick, s.state_flags, s.state_since, s.asleep, s.sleep_since]);
 
+    // V3: record care history (steers the teen fork). Column is a fixed allow-listed name.
+    const CARE_COL: Partial<Record<Verb, "care_feed" | "care_clean" | "care_doctor">> = { feed: "care_feed", clean: "care_clean", doctor: "care_doctor" };
+    const col = CARE_COL[verb];
+    if (col) { await q(`UPDATE pet_state SET ${col} = ${col} + 1 WHERE pet_id=$1`, [rows.pet.id]); rows.care[verb as "feed" | "clean" | "doctor"] += 1; }
+    else if (verb === "play" || verb === "pet") { await q(`UPDATE pet_state SET affection_taps = affection_taps + 1 WHERE pet_id=$1`, [rows.pet.id]); rows.care.affection += 1; }
+
     // spend a care charge (start the regen timer if we just left full)
     let newCharges = cs.charges;
     let newUpdatedAt = cs.chargesUpdatedAt;
@@ -86,15 +93,21 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // growth re-check
+    // growth re-check (care just added EXP/bond → may cross a stage gate this request)
     let stage: Stage = rows.pet.stage;
     let promoted: Stage | null = null;
+    let species = rows.pet.species_id;
     const days = daysBetween(Date.parse(rows.pet.created_at), now);
     let nx = nextStage(stage);
-    while (nx && s.exp >= nx.expReq && days >= nx.minDays && s.bond >= nx.bondGate) { stage = nx.stage; promoted = nx.stage; nx = nextStage(stage); }
+    while (nx && s.exp >= nx.expReq && days >= nx.minDays && s.bond >= nx.bondGate) {
+      stage = nx.stage; promoted = nx.stage;
+      if (nx.stage === "teen") species = resolveSpecies(rows.pet.archetype_key, rows.care); // V3 fork
+      nx = nextStage(stage);
+    }
     if (promoted) await q(`UPDATE pet SET stage=$2 WHERE id=$1`, [rows.pet.id, stage]);
+    if (species !== rows.pet.species_id) await q(`UPDATE pet SET species_id=$2 WHERE id=$1`, [rows.pet.id, species]);
 
-    const rows2 = { ...rows, pet: { ...rows.pet, stage }, state: s };
+    const rows2 = { ...rows, pet: { ...rows.pet, stage, species_id: species }, state: s };
     const ctx = buildContext(rows2, now, tz);
     const line = selectCopy(pack, plan.event, ctx, `${verb}.${now}`).text;
     const promoteLine = promoted ? selectCopy(pack, "growth.promote", ctx, `promote.${now}`).text : null;

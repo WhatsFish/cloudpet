@@ -13,6 +13,19 @@ export const STATE = { SICK: 1, SULKING: 2, HIDING: 4, LONELY: 8 } as const;
 
 export type AxisVector = { attach: number; curio: number; express: number };
 
+// --- V3: care-history-driven divergent evolution (REDESIGN_V3 / Model C) ---
+// How you raise the pet (which care you favor) steers which form it grows into at
+// the teen fork. These counts are persisted aggregates on pet_state.
+export type CareCounts = { feed: number; clean: number; doctor: number; affection: number };
+export type NurtureLean = "feed" | "clean" | "doctor" | "play" | "balanced";
+export type NurtureTilt = {
+  leaning: NurtureLean;
+  towardSpeciesId: string; // the form it is currently growing toward
+  towardName: string;
+  shares: CareCounts; // 0..1 share of each care kind (affection = play + pet)
+  label: string; // 养育倾向 meter copy
+};
+
 // --- personality model ---
 export type Archetype = {
   key: string;
@@ -124,6 +137,7 @@ export type PetView = {
   theme: string; // device skin
   voice: { line: string; lineId: string } | null; // today's 心声
   actions: ActionAvailability[];
+  nurtureTilt: NurtureTilt; // V3: where your care is steering its evolution
 };
 
 // V2: 3 home buttons. care (battery) = feed/clean/doctor; affection (free) = play/pet/sleep.
