@@ -49,6 +49,11 @@ export async function POST(req: NextRequest) {
 
   try {
     const petId = await withTx(async (q) => {
+      // Self-heal: a device may hold a cached user_id whose app_user row was wiped
+      // (e.g. a data reset). Ensure it exists before creating FK-referencing rows,
+      // so onboarding can never 500 on an orphaned id.
+      await q(`INSERT INTO app_user (user_id, is_anonymous) VALUES ($1, TRUE) ON CONFLICT (user_id) DO NOTHING`, [userId]);
+
       const existing = await q<{ id: number }>(`SELECT id FROM pet WHERE user_id = $1`, [userId]);
       if (existing[0]) throw new Error("already_bonded");
 
