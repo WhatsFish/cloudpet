@@ -11,8 +11,10 @@ type Result = {
 Page({
   data: {
     result: null as Result | null,
-    phase: "reveal" as "reveal" | "name",
+    phase: "reveal" as "reveal" | "name" | "hatched",
     spriteSrc: "",
+    babySrc: "",
+    birthLine: "",
     name: "",
     submitting: false,
   },
@@ -43,13 +45,24 @@ Page({
     try {
       await ensureUserId();
       await request({ path: "/pet/rename", method: "POST", body: { name } });
+      const hatched = await request<{ line: string; sprite: { creatureId: string; stage: string; mood: string } }>({
+        path: "/pet/hatch", method: "POST",
+      });
       wx.removeStorageSync("hatch_result");
-      wx.reLaunch({ url: "/pages/home/home" });
+      this.setData({
+        phase: "hatched",
+        submitting: false,
+        name,
+        babySrc: spritePath(hatched.sprite.creatureId, hatched.sprite.stage, hatched.sprite.mood),
+        birthLine: hatched.line || "我出来啦！",
+      });
     } catch (e) {
-      console.error("rename failed", e);
-      // even if rename fails, the pet exists with its default name — go home.
+      console.error("hatch failed", e);
+      // pet exists regardless — just go home.
       wx.removeStorageSync("hatch_result");
       wx.reLaunch({ url: "/pages/home/home" });
     }
   },
+
+  goHome() { wx.reLaunch({ url: "/pages/home/home" }); },
 });

@@ -8,15 +8,24 @@
     <view class="btn btn--block reveal-btn" bindtap="toName">见见它 →</view>
   </block>
 
-  <block wx:else>
+  <block wx:elif="{{phase === 'name'}}">
     <view class="hatch-stage">
       <image class="egg anim-wobble" src="{{spriteSrc}}" mode="aspectFit" />
     </view>
-    <view class="hatch-tip">给这只<text class="hl">「{{result.displayName}}」</text>取个名字吧</view>
+    <view class="hatch-tip">给这只<text class="hl">「{{result.displayName}}」</text>取个名字，然后把它孵出来吧</view>
     <input class="name-input" value="{{name}}" maxlength="12" bindinput="onNameInput"
            placeholder="给它起个名字" confirm-type="done" />
-    <view class="btn btn--block" bindtap="confirm">{{submitting ? '…' : '就叫这个名字'}}</view>
+    <view class="btn btn--block" bindtap="confirm">{{submitting ? '孵化中…' : '孵化它！'}}</view>
     <view class="use-default" bindtap="useDefault">用默认名字「{{result.displayName}}」</view>
+  </block>
+
+  <block wx:else>
+    <view class="hatch-stage">
+      <image class="baby anim-hatch pixel" src="{{babySrc}}" mode="aspectFit" />
+    </view>
+    <view class="born-name">{{name}} 出生啦！</view>
+    <view class="bubble born-bubble">{{birthLine}}</view>
+    <view class="btn btn--block" style="margin-top:64rpx" bindtap="goHome">进去看看它呀 →</view>
   </block>
 
 </view>

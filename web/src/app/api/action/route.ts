@@ -102,14 +102,24 @@ export async function POST(req: NextRequest) {
       await q(`UPDATE pet_cooldown SET ${set} WHERE pet_id=$1`, [rows.pet.id, ...entries.map(([, v]) => v)]);
     }
 
-    // inventory
+    // inventory. NOTE: a CHECK(qty>=0) is evaluated on the proposed INSERT tuple
+    // BEFORE ON CONFLICT can redirect to UPDATE, so a negative literal would fail
+    // even when the row exists. Decrements (always on an existing, validated row)
+    // use a plain UPDATE; only positive gifts upsert.
     for (const [item, delta] of Object.entries(plan.inventoryDelta) as [ItemKey, number][]) {
       if (!delta) continue;
-      await q(
-        `INSERT INTO pet_inventory (pet_id, item_key, qty) VALUES ($1,$2,$3)
-         ON CONFLICT (pet_id, item_key) DO UPDATE SET qty = pet_inventory.qty + EXCLUDED.qty`,
-        [rows.pet.id, item, delta],
-      );
+      if (delta > 0) {
+        await q(
+          `INSERT INTO pet_inventory (pet_id, item_key, qty) VALUES ($1,$2,$3)
+           ON CONFLICT (pet_id, item_key) DO UPDATE SET qty = pet_inventory.qty + EXCLUDED.qty`,
+          [rows.pet.id, item, delta],
+        );
+      } else {
+        await q(
+          `UPDATE pet_inventory SET qty = qty + $3 WHERE pet_id=$1 AND item_key=$2`,
+          [rows.pet.id, item, delta],
+        );
+      }
     }
 
     // updated rows for ctx/view

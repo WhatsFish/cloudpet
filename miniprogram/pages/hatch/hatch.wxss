@@ -13,8 +13,14 @@
 
 .hatch-stage { display: flex; justify-content: center; margin: 40rpx 0 48rpx; }
 .egg { width: 300rpx; height: 300rpx; }
+.baby { width: 300rpx; height: 300rpx; }
 @keyframes wobble { 0%,100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
 .anim-wobble { animation: wobble 1.6s ease-in-out infinite; }
+@keyframes hatch { 0% { transform: scale(0.2); opacity: 0; } 55% { transform: scale(1.18); opacity: 1; } 75% { transform: scale(0.94); } 100% { transform: scale(1); } }
+.anim-hatch { animation: hatch 0.7s cubic-bezier(0.2, 0.9, 0.3, 1.2); }
+
+.born-name { text-align: center; font-size: 38rpx; font-weight: 700; color: #E8845B; margin-bottom: 28rpx; }
+.born-bubble { margin: 0 24rpx; }
 
 .hatch-tip { text-align: center; font-size: 30rpx; color: #6A5E50; margin-bottom: 36rpx; }
 .hl { color: #E8845B; font-weight: 700; }
