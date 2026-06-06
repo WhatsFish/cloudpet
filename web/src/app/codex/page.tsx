@@ -5,14 +5,17 @@
 // neighbour upscaled. Public sprites live at web/public/pets (synced by scripts/sync-art.sh)
 // and, because the app runs under basePath /cloudpet, are served at /cloudpet/pets/...
 
-import { ARCHETYPES, AXES } from "@/data/personality";
+import { ARCHETYPES, AXES, archetype } from "@/data/personality";
 import { creature } from "@/data/bestiary";
 import { STAGES } from "@/data/stage-table";
+import { SEED_KEYS, branchesFor } from "@/lib/game/evolve";
 import type { Stage } from "@/lib/types";
 
 export const dynamic = "force-static";
 
 const BP = "/cloudpet";
+
+const LEAN_CN: Record<string, string> = { feed: "喂食多", clean: "洗澡多", doctor: "看医生多", play: "陪玩多" };
 
 const STAGE_CN: Record<Stage, string> = {
   egg: "蛋", baby: "幼年", child: "童年", teen: "少年", adult: "成年",
@@ -37,6 +40,18 @@ function Sprite({ id, file, size, alt }: { id: string; file: string; size: numbe
       alt={alt}
       style={{ imageRendering: "pixelated", display: "block" }}
     />
+  );
+}
+
+function Outcome({ id, leanCN, name, highlight }: { id: string; leanCN: string; name: string; highlight?: boolean }) {
+  return (
+    <div className="flex flex-col items-center shrink-0 w-20">
+      <span className={`text-[10px] mb-1 px-1.5 py-0.5 rounded ${highlight ? "bg-amber-100 text-amber-700" : "bg-neutral-100 text-neutral-500"}`}>{leanCN}</span>
+      <div className={`rounded-lg border p-1 ${highlight ? "bg-amber-50 border-amber-200" : "bg-neutral-50 border-neutral-200"}`}>
+        <Sprite id={id} file="teen_idle" size={56} alt={name} />
+      </div>
+      <span className="text-[10px] text-neutral-500 mt-1 text-center leading-tight">{name}</span>
+    </div>
   );
 }
 
@@ -87,9 +102,44 @@ export default function Codex() {
         <h1 className="text-xl font-bold tracking-tight">云宠物 · 图鉴</h1>
         <p className="text-neutral-500 text-sm mt-1">
           全 10 只小宠的形象设计与进化路线总览（程序化像素美术，{STAGES.length} 段成长 × 7 表情）。
+          <strong className="text-neutral-600">V3 养成分支</strong>：测试给你一只本命宝宝，
+          但<strong className="text-neutral-600">怎么养决定它长成谁</strong>（喂食 / 洗澡 / 看医生 / 陪玩 各有去向，均衡→本来的样子）。
           这是给设计审阅用的内部页面。
         </p>
       </header>
+
+      {/* V3 branch trees — the actual evolution routes under Model C */}
+      <section className="mb-10 space-y-5">
+        <div className="text-sm font-semibold text-neutral-700">养成分支 · 进化路线（童年 → 少年的岔路）</div>
+        {SEED_KEYS.map((seed) => {
+          const branches = branchesFor(seed);
+          return (
+            <div key={seed} className="rounded-xl border border-neutral-200 p-4">
+              <div className="flex items-center gap-3 overflow-x-auto">
+                {/* before the fork: the shared seed baby/child */}
+                <div className="flex flex-col items-center shrink-0">
+                  <div className="rounded-lg bg-amber-50 border border-amber-200 p-1">
+                    <Sprite id={seed} file="child_idle" size={64} alt={archetype(seed).nameCN} />
+                  </div>
+                  <span className="text-[11px] font-medium text-neutral-700 mt-1">「{archetype(seed).nameCN}」宝宝</span>
+                  <span className="text-[10px] text-neutral-400">本命种子</span>
+                </div>
+                <span className="text-neutral-300 text-xl shrink-0">⟶</span>
+                {/* outcomes: balanced (true form) + each care lean */}
+                <div className="flex items-start gap-2">
+                  <Outcome id={seed} leanCN="均衡养" name={`${archetype(seed).nameCN}·真形`} highlight />
+                  {branches.map((b) => (
+                    <Outcome key={b.lean} id={b.speciesId} leanCN={LEAN_CN[b.lean]} name={archetype(b.speciesId).nameCN} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+        <p className="text-[11px] text-neutral-400">
+          少年（teen）是当前版本的封顶形态，分叉就发生在这里；成年留作 Phase 2。三只种子的分支合起来正好覆盖全部 10 只。
+        </p>
+      </section>
 
       {/* overview strip */}
       <section className="mb-10 rounded-xl border border-neutral-200 bg-neutral-50 p-4">

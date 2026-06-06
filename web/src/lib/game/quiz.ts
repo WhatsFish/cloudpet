@@ -7,14 +7,16 @@
 import type { AxisVector } from "@/lib/types";
 import { ARCHETYPES, MATCH_WEIGHTS, archetype, weightedDist2 } from "@/data/personality";
 import { SHIPPED_IDS } from "@/data/bestiary";
+import { reachableFor } from "@/lib/game/evolve";
 import { QUIZ } from "@/data/quiz-questions";
 
 const EPS = 2.0;
 
 export type QuizScore = {
   vector: AxisVector;
-  archetypeKey: string; // bonded creature (one of the shipped)
+  archetypeKey: string; // bonded SEED creature (one of the shipped) — the baby you meet
   reveal: { title: string; lines: string[] };
+  reachable: { id: string; name: string }[]; // V3: the forms it could grow into (care decides)
 };
 
 function hashStr(s: string): number {
@@ -85,24 +87,28 @@ const USER_MIRROR: Record<string, { pos: string; neg: string }> = {
   express: { pos: "你的情绪藏不住，开心就想让全世界知道。", neg: "你把在乎放在心里，不轻易说出口。" },
 };
 
+// V3: the bonded baby is a starting point, not a fixed identity. The intro frames the
+// adult form as "what you'll grow into together" (care decides), never a creature that
+// later swaps — the panel's bait-and-switch mitigation.
 const CREATURE_INTRO: Record<string, string> = {
-  mochi_pudding: "于是，一只最黏人、把你当成全世界的「抖抖布丁」找到了你——它只想一直待在你手心里。",
-  echo_fox: "于是，一只清冷又独立的「墨影狐」选中了你——它的偏爱要你慢慢赢得，而那也正是它珍贵的地方。",
-  ember_imp: "于是，一团一点就炸、一哄就笑的「炸毛团」扑向了你——它要的，是你随时都在。",
+  mochi_pudding: "于是，一只软乎乎、把你当成全世界的「抖抖布丁」宝宝赖进了你手心里。它会长成什么样子，就看你往后怎么疼它了。",
+  echo_fox: "于是，一只清冷又好奇的「墨影狐」宝宝悄悄认下了你。它将来是什么模样，藏在你日复一日的喂养里。",
+  ember_imp: "于是，一团一点就炸、一哄就笑的「炸毛团」宝宝扑进了你怀里。你怎么养，它就怎么长。",
 };
 
 export function reveal(v: AxisVector, archetypeKey: string): { title: string; lines: string[] } {
   const axis = loudestAxis(v);
   const sign = v[axis] >= 0 ? "pos" : "neg";
   const mirror = USER_MIRROR[axis][sign as "pos" | "neg"];
-  const intro = CREATURE_INTRO[archetypeKey] ?? "于是，它找到了你。";
-  return { title: `你的本命宠 · ${archetype(archetypeKey).nameCN}`, lines: [mirror, intro] };
+  const intro = CREATURE_INTRO[archetypeKey] ?? "于是，它找到了你。接下来怎么长，要看你怎么养。";
+  return { title: `你的本命宝宝 · ${archetype(archetypeKey).nameCN}`, lines: [mirror, intro] };
 }
 
 export function scoreQuiz(answers: Record<string, string>, userId: string): QuizScore {
   const vector = scoreVector(answers);
   const archetypeKey = matchShipped(vector, answers, userId);
-  return { vector, archetypeKey, reveal: reveal(vector, archetypeKey) };
+  const reachable = reachableFor(archetypeKey).map((id) => ({ id, name: archetype(id).nameCN }));
+  return { vector, archetypeKey, reveal: reveal(vector, archetypeKey), reachable };
 }
 
 // re-export for callers/tests

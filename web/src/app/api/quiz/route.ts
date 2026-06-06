@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "incomplete answers" }, { status: 400 });
   }
 
-  const { vector, archetypeKey, reveal } = scoreQuiz(answers, userId);
+  const { vector, archetypeKey, reveal, reachable } = scoreQuiz(answers, userId);
   const displayName = creature(archetypeKey).displayName;
 
   try {
@@ -82,6 +82,7 @@ export async function POST(req: NextRequest) {
       archetypeKey,
       displayName,
       reveal,
+      reachable,
       vector,
     });
   } catch (e) {

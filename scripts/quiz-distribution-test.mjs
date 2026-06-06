@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Guard: enumerate every Q1–Q6 answer combination, score → match among the 3
+// Guard: enumerate every Q1–Q5 answer combination, score → match among the 3
 // shipped creatures, and assert the distribution is balanced (no creature < 22%
 // or > 45%). Run: `node scripts/quiz-distribution-test.mjs`. Keep the weights in
 // sync with web/src/data/quiz-questions.ts and the anchors with personality.ts.
@@ -12,14 +12,13 @@ const ANCHORS = {
   ember_imp: { attach: 6, curio: 3, express: 8 },
 };
 
-// Q1–Q6 option weights — mirror web/src/data/quiz-questions.ts.
+// Q1–Q5 option weights — mirror web/src/data/quiz-questions.ts.
 const Q = [
   [{ attach: 3 }, { attach: 2 }, { attach: 0 }, { attach: -2 }],
   [{ curio: 3, express: 1 }, { curio: 1 }, { curio: -1 }, { curio: -3, express: -1 }],
   [{ attach: 2, express: 3 }, { attach: 1, express: 2 }, { express: -1 }, { attach: -1, express: -2 }],
   [{ attach: 2, curio: 1, express: 2 }, { attach: 1, express: -2 }, { attach: -2, express: 1 }, { attach: -1, curio: -1, express: -1 }],
   [{ attach: 1, curio: 2, express: 2 }, { curio: -2, express: -1 }, { curio: 2, express: -1 }, { attach: -1, curio: -2 }],
-  [{ attach: 2, curio: 2 }, { attach: 2, curio: -2 }, { attach: -2, curio: -1 }, { attach: -2, curio: 1 }],
 ];
 
 const dist2 = (v, a) => {
@@ -47,7 +46,7 @@ function match(v) {
 const tally = { mochi_pudding: 0, echo_fox: 0, ember_imp: 0 };
 let n = 0;
 (function rec(i, v) {
-  if (i === 6) { tally[match(v)]++; n++; return; }
+  if (i === Q.length) { tally[match(v)]++; n++; return; }
   for (const w of Q[i]) {
     rec(i + 1, {
       attach: v.attach + (w.attach ?? 0),

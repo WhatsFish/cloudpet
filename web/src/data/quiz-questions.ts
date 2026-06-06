@@ -1,8 +1,10 @@
-// 性格测试: 6 scored scenarios (Q1–Q6) + 1 flavor wildcard (Q7, tiebreak only).
+// 性格测试: 5 scored scenarios (Q1–Q5). V3 compresses the quiz from 7→5 (user ask):
+// under Model C the quiz only SEEDS the bonded baby + biases the journey — care then
+// steers the divergent form — so it no longer needs the 6th question or the wildcard.
 // Weights carry a mild, intentional "most people lean a little social/expressive"
 // prior (PLAN §6): a perfectly origin-centred quiz over-selects the lone aloof
-// creature, so a gentle lean evens the 3-way V1 routing. The distribution is a
-// committed guard: scripts/quiz-distribution-test.mjs (mochi 38 / echo 34 / ember 27).
+// creature, so a gentle lean evens the 3-way seed routing. The distribution is a
+// committed guard: scripts/quiz-distribution-test.mjs.
 
 import type { AxisVector } from "@/lib/types";
 
@@ -68,26 +70,6 @@ export const QUIZ: QuizQuestion[] = [
       { id: "q5b", label: "宅在家里，安安静静做点喜欢的小事", w: { curio: -2, express: -1 } },
       { id: "q5c", label: "去没去过的地方，慢慢逛慢慢看", w: { curio: 2, express: -1 } },
       { id: "q5d", label: "老地方、老朋友、老节目，最放松", w: { attach: -1, curio: -2 } },
-    ],
-  },
-  {
-    id: "q6", scored: true,
-    prompt: "交朋友这件事，你更像——",
-    options: [
-      { id: "q6a", label: "自来熟，很快和一群人打成一片", w: { attach: 2, curio: 2 } },
-      { id: "q6b", label: "慢热，但认定了就特别黏", w: { attach: 2, curio: -2 } },
-      { id: "q6c", label: "三两知己就够，不爱社交", w: { attach: -2, curio: -1 } },
-      { id: "q6d", label: "对新朋友好奇，但习惯保持距离", w: { attach: -2, curio: 1 } },
-    ],
-  },
-  {
-    id: "q7", scored: false,
-    prompt: "最后——如果送你一盏灯，你希望它是？",
-    options: [
-      { id: "q7a", label: "暖黄的小灯，照着就安心", map: ["mochi_pudding", "puff_seal", "clay_golem"] },
-      { id: "q7b", label: "冷白的探照灯，照向没去过的远方", map: ["echo_fox", "wisp_moth"] },
-      { id: "q7c", label: "会蹦会跳的彩色灯，热闹好玩", map: ["ember_imp", "spark_sprite"] },
-      { id: "q7d", label: "柔柔的小夜灯，安静地陪着", map: ["stone_egg", "dream_jelly", "sproutling"] },
     ],
   },
 ];

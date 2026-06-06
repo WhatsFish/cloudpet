@@ -23,6 +23,17 @@ const KINDS: [Exclude<NurtureLean, "balanced">, keyof CareCounts][] = [
   ["feed", "feed"], ["clean", "clean"], ["doctor", "doctor"], ["play", "affection"],
 ];
 
+// Seeds that have an authored branch tree (the V1 quiz-reachable seeds).
+export const SEED_KEYS = Object.keys(BRANCH);
+
+// The branch tree for a seed (for the codex / onboarding preview): which care lean grows
+// it into which form. Balanced (→ the seed's own true form) is implicit.
+export function branchesFor(seedKey: string): { lean: Exclude<NurtureLean, "balanced">; speciesId: string }[] {
+  const b = BRANCH[seedKey] ?? {};
+  return (["feed", "clean", "doctor", "play"] as const)
+    .filter((l) => b[l]).map((l) => ({ lean: l, speciesId: b[l]! }));
+}
+
 // Which care leans hardest. Needs a few interactions AND a clear lead, else "balanced".
 export function dominantLean(care: CareCounts): NurtureLean {
   const total = care.feed + care.clean + care.doctor + care.affection;
