@@ -33,7 +33,7 @@ cost tracking. All game state is server-authoritative; the client clock is never
 docker compose up -d --build --force-recreate web
 
 # Regenerate placeholder sprites (until real pixel art lands).
-node scripts/gen-placeholder-art.mjs
+node scripts/gen-art.mjs
 ```
 
 Mini program: open `miniprogram/` in WeChat DevTools, set the real AppID, 编译 → 上传 → 体验版.
