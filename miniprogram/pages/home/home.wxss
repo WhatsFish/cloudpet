@@ -39,9 +39,21 @@ page { font-family: "Zpix", "PingFang SC", -apple-system, "Microsoft YaHei", san
 
 .stage-wrap { position:relative; z-index:2; display:flex; justify-content:center; align-items:flex-end; height:220rpx; }
 .sprite { width:208rpx; height:208rpx; image-rendering:pixelated; -ms-interpolation-mode:nearest-neighbor; }
-.fx { position:absolute; top:18rpx; left:50%; margin-left:-26rpx; font-size:52rpx; animation:floatup 1s ease-out forwards; }
-.floattag { position:absolute; top:30rpx; right:24rpx; font-size:26rpx; font-weight:700; color:var(--accent); background:rgba(255,255,255,0.7); border-radius:10rpx; padding:2rpx 10rpx; animation:floatup 1s ease-out forwards; }
-@keyframes floatup { 0%{transform:translateY(0) scale(0.5);opacity:0;} 25%{opacity:1;transform:translateY(-12rpx) scale(1);} 100%{transform:translateY(-96rpx) scale(1);opacity:0;} }
+/* particle burst (multiple flying emojis per action) */
+.particle { position:absolute; top:70rpx; font-size:40rpx; animation:floatburst 1s ease-out forwards; }
+@keyframes floatburst { 0%{transform:translateY(24rpx) scale(0.4) rotate(0);opacity:0;} 22%{opacity:1;} 100%{transform:translateY(-130rpx) scale(1.15) rotate(var(--rot,0));opacity:0;} }
+.floattag { position:absolute; top:24rpx; right:20rpx; z-index:3; font-size:26rpx; font-weight:700; color:var(--accent); background:rgba(255,255,255,0.78); border-radius:10rpx; padding:2rpx 12rpx; animation:floatup 1s ease-out forwards; }
+@keyframes floatup { 0%{transform:translateY(0) scale(0.5);opacity:0;} 25%{opacity:1;transform:translateY(-12rpx) scale(1);} 100%{transform:translateY(-72rpx) scale(1);opacity:0;} }
+.zzz { position:absolute; top:36rpx; right:40rpx; font-size:30rpx; color:#8FA0C8; letter-spacing:4rpx; animation:zzzfloat 2.4s ease-in-out infinite; }
+@keyframes zzzfloat { 0%,100%{transform:translateY(0);opacity:0.5;} 50%{transform:translateY(-8rpx);opacity:1;} }
+
+/* bond hearts + growth */
+.metarow { position:relative; z-index:2; display:flex; align-items:center; justify-content:space-between; margin-top:4rpx; }
+.hearts { display:flex; align-items:center; gap:2rpx; }
+.heart { font-size:26rpx; color:rgba(90,70,50,0.28); }
+.heart.on { color:#E8607A; }
+.bondlab { font-size:18rpx; color:var(--lcd-ink); margin-left:8rpx; opacity:0.8; }
+.growth { font-size:20rpx; color:var(--lcd-ink); opacity:0.85; }
 
 /* the pet's voice / need card */
 .needcard { position:relative; z-index:2; margin-top:6rpx; background:rgba(255,255,255,0.62); border:2rpx solid var(--lcd2); border-radius:16rpx; padding:14rpx 18rpx; font-size:26rpx; line-height:1.45; color:var(--lcd-ink); min-height:36rpx; }
@@ -55,6 +67,11 @@ page { font-family: "Zpix", "PingFang SC", -apple-system, "Microsoft YaHei", san
 .anim-bob{animation:bob 2.6s ease-in-out infinite;} .anim-jiggle{animation:jiggle 2.2s ease-in-out infinite;}
 .anim-float{animation:flt 3.4s ease-in-out infinite;} .anim-pop{animation:pop 2s ease-in-out infinite;}
 .anim-bounce{animation:bounce 0.5s ease-out;}
+/* per-action reactions (richer feedback for 摸摸 / 陪玩 / 喂食) */
+@keyframes squish { 0%,100%{transform:scale(1,1);} 35%{transform:scale(1.2,0.82);} 65%{transform:scale(0.9,1.12);} 82%{transform:scale(1.04,0.97);} }
+@keyframes hop { 0%,100%{transform:translateY(0) scale(1);} 28%{transform:translateY(-34rpx) scale(1.06,0.96);} 52%{transform:translateY(0) scale(0.94,1.08);} 74%{transform:translateY(-14rpx);} }
+@keyframes eat { 0%,100%{transform:scale(1);} 22%{transform:scale(1.08,0.92) translateY(4rpx);} 48%{transform:scale(0.95,1.06);} 72%{transform:scale(1.03,0.98);} }
+.anim-squish{animation:squish 0.55s ease;} .anim-hop{animation:hop 0.62s ease;} .anim-eat{animation:eat 0.5s ease;}
 
 /* ===== primary CTA + free affection ===== */
 .cta-row { display:flex; gap:16rpx; margin-top:18rpx; }
@@ -76,6 +93,7 @@ page { font-family: "Zpix", "PingFang SC", -apple-system, "Microsoft YaHei", san
 .dacts { display:flex; gap:14rpx; }
 .dact { flex:1; display:flex; flex-direction:column; align-items:center; background:var(--hi); border-radius:16rpx; padding:12rpx 0; }
 .dact:active { background:#fff; }
+.dact--off { opacity:0.4; }
 .de { font-size:38rpx; } .dl { font-size:21rpx; color:var(--shell-ink); margin-top:2rpx; }
 .dchips { display:flex; flex-wrap:wrap; gap:12rpx; margin-top:14rpx; }
 .dchip { flex:1; min-width:140rpx; text-align:center; font-size:22rpx; color:var(--shell-ink); background:rgba(255,255,255,0.4); border-radius:12rpx; padding:12rpx 0; }

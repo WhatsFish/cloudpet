@@ -6,7 +6,6 @@
       <image class="bg" src="{{bgSrc}}" mode="aspectFill" />
       <view class="lcd-grid"></view>
 
-      <!-- roadmap strip -->
       <view class="road" bindtap="onC">
         <text class="lvchip">Lv{{levelNum}}</text>
         <view class="lvbar"><view class="lvfill" style="width:{{levelPct}}%"></view></view>
@@ -15,38 +14,44 @@
 
       <view class="stage-wrap">
         <image class="sprite {{animClass}}" src="{{spriteSrc}}" mode="aspectFit" binderror="onSpriteError" />
-        <view wx:if="{{fxEmoji}}" class="fx">{{fxEmoji}}</view>
+        <view wx:for="{{particles}}" wx:key="key" class="particle" style="left:{{item.x}}rpx; --rot:{{item.rot}}deg; animation-delay:{{item.delay}}ms">{{item.emoji}}</view>
         <view wx:if="{{floatTag}}" class="floattag">{{floatTag}}</view>
+        <view wx:if="{{asleepNow}}" class="zzz">z z Z</view>
       </view>
 
-      <!-- the pet's own voice / current need -->
+      <view class="metarow">
+        <view class="hearts">
+          <text wx:for="{{hearts}}" wx:key="*this" class="heart {{item ? 'on' : ''}}">{{item ? '♥' : '♡'}}</text>
+          <text class="bondlab">亲密</text>
+        </view>
+        <text class="growth">📈 +{{growthPerDay}}/天</text>
+      </view>
+
       <view class="needcard">{{needCard}}</view>
     </view>
 
-    <!-- primary CTA + free affection -->
     <view class="cta-row">
       <view class="cta {{ctaPrimary ? 'cta--need' : ''}}" bindtap="onPrimary">
         <text class="cta-emoji">{{ctaEmoji}}</text>
         <text class="cta-label">{{ctaLabel}}</text>
         <text wx:if="{{ctaReward}}" class="cta-reward">{{ctaReward}}</text>
       </view>
-      <view class="free-btn" bindtap="onPetFree"><text class="free-emoji">💛</text><text class="free-lab">摸摸</text></view>
+      <view class="free-btn" bindtap="onFree"><text class="free-emoji">{{freeEmoji}}</text><text class="free-lab">{{freeLabel}}</text></view>
     </view>
 
-    <!-- more drawer -->
     <view class="handle" bindtap="toggleDrawer">{{showDrawer ? '收起 ▾' : '更多操作 ▸'}}</view>
     <view class="drawer {{showDrawer ? 'open' : ''}}">
-      <view class="drow-lab">照顾（喂养决定它长成谁）</view>
+      <view class="drow-lab">照顾（到饭点 / 该洗澡 / 生病时才需要 · 决定它长成谁）</view>
       <view class="dacts">
-        <view class="dact" data-verb="feed" bindtap="onDrawerAction"><text class="de">🍙</text><text class="dl">喂食</text></view>
-        <view class="dact" data-verb="clean" bindtap="onDrawerAction"><text class="de">🛁</text><text class="dl">洗澡</text></view>
-        <view class="dact" data-verb="doctor" bindtap="onDrawerAction"><text class="de">💊</text><text class="dl">看医生</text></view>
+        <view wx:for="{{careActs}}" wx:key="verb" class="dact {{item.enabled ? '' : 'dact--off'}}" data-verb="{{item.verb}}" bindtap="onDrawerAction">
+          <text class="de">{{item.emoji}}</text><text class="dl">{{item.label}}</text>
+        </view>
       </view>
-      <view class="drow-lab">陪伴（免费 · 涨亲密 · 不影响形态）</view>
+      <view class="drow-lab">陪伴（随时 · 免费 · 涨亲密，不影响形态）</view>
       <view class="dacts">
-        <view class="dact" data-verb="play" bindtap="onDrawerAction"><text class="de">🎮</text><text class="dl">陪玩</text></view>
-        <view class="dact" data-verb="pet" bindtap="onDrawerAction"><text class="de">💛</text><text class="dl">摸摸</text></view>
-        <view class="dact" data-verb="sleep" bindtap="onDrawerAction"><text class="de">🌙</text><text class="dl">哄睡</text></view>
+        <view wx:for="{{funActs}}" wx:key="verb" class="dact {{item.enabled ? '' : 'dact--off'}}" data-verb="{{item.verb}}" bindtap="onDrawerAction">
+          <text class="de">{{item.emoji}}</text><text class="dl">{{item.label}}</text>
+        </view>
       </view>
       <view class="dchips">
         <view class="dchip" bindtap="openStatus">📊 状态</view>
@@ -56,15 +61,13 @@
       </view>
     </view>
 
-    <!-- A=选(照顾) B=摸 C=看(路线) -->
     <view class="buttons">
-      <view class="abtn" bindtap="onA"><text class="ab">A</text><text class="blabel">{{ctaPrimary ? '照顾' : '玩'}}</text></view>
-      <view class="abtn" bindtap="onB"><text class="ab">B</text><text class="blabel">摸摸</text></view>
+      <view class="abtn" bindtap="onA"><text class="ab">A</text><text class="blabel">{{ctaPrimary ? '照顾' : (asleepNow ? '摸摸' : '玩')}}</text></view>
+      <view class="abtn" bindtap="onB"><text class="ab">B</text><text class="blabel">{{asleepNow ? '叫醒' : '摸摸'}}</text></view>
       <view class="abtn" bindtap="onC"><text class="ab">C</text><text class="blabel">路线</text></view>
     </view>
   </view>
 
-  <!-- away-then-grew recap -->
   <view wx:if="{{recap}}" class="mask" bindtap="dismissRecap">
     <view class="recap" catchtap="noop">
       <view class="recap-title">我长大啦！</view>
@@ -75,19 +78,18 @@
     </view>
   </view>
 
-  <!-- roadmap modal -->
   <view wx:if="{{showRoadmap}}" class="mask" bindtap="closeModals">
     <view class="panel" catchtap="noop">
       <view class="panel-title">成长路线</view>
       <view class="road-big">{{roadmapLine}}</view>
       <view class="srow2" wx:if="{{pet.roadmap.stage}}">下一阶段「{{pet.roadmap.stage.towardName}}」：经验差 {{pet.roadmap.stage.expRemaining}} · 还要 {{pet.roadmap.stage.daysRemaining}} 天 · 亲密差 {{pet.roadmap.stage.bondRemaining}}</view>
+      <view class="srow2">每天自然成长约 +{{growthPerDay}} 经验（养得越好长得越快）</view>
       <view class="srow2">养育倾向：{{pet.nurtureTilt.label}}</view>
-      <view class="srow2">Lv {{levelNum}} · 本级进度 {{levelPct}}% · 连续 {{pet.streakDays}} 天</view>
+      <view class="srow2">亲密度 {{pet.bond}}/1000 · 连续 {{pet.streakDays}} 天</view>
       <view class="pbtn" bindtap="closeModals">知道啦</view>
     </view>
   </view>
 
-  <!-- status modal -->
   <view wx:if="{{showStatus}}" class="mask" bindtap="closeModals">
     <view class="panel" catchtap="noop">
       <view class="panel-title">状态 · {{pet.pet.name}}</view>
@@ -101,7 +103,6 @@
     </view>
   </view>
 
-  <!-- settings modal -->
   <view wx:if="{{showSettings}}" class="mask" bindtap="closeModals">
     <view class="panel" catchtap="noop">
       <view class="panel-title">设置</view>
