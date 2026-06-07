@@ -82,6 +82,14 @@ function bodyOverlay(b, lineId, variant, cy, hw, hh) {
   if (variant === "dorm") { for (const [dx, dy] of [[-hw + 3, -hh + 3], [hw - 4, -2], [-2, hh - 4]]) px(b, 32 + dx, cy + dy, [120, 168, 90]); } // moss
 }
 
+// activity props (the pet DOING the action) — drawn over an idle body
+function actProp(b, act, cy, hw, hh) {
+  const dark = [60, 62, 72];
+  if (act === "feed") { stroke(b, 32 + hw, cy + 3, 32 + hw + 7, cy + 2, 1, [120, 92, 64]); ell(b, 32 + hw + 11, cy + 3, 4, 2, dark); disc(b, 32 + hw + 11, cy + 2, 1, [240, 184, 92]); } // frying pan
+  else if (act === "clean") { rrect(b, 32, cy + hh + 1, hw, 3, 2, [156, 120, 80]); for (const [dx, dy] of [[-hw + 2, -hh + 1], [hw - 2, -hh + 4], [-3, -hh - 3], [5, -hh - 1]]) { disc(b, 32 + dx, cy + dy, 2, [232, 244, 252]); px(b, 32 + dx - 1, cy + dy - 1, [255, 255, 255]); } } // tub + bubbles
+  else if (act === "play") { rrect(b, 32, cy + hh + 3, 7, 3, 2, [86, 90, 104]); px(b, 32 - 3, cy + hh + 3, [232, 96, 96]); px(b, 32 + 3, cy + hh + 2, [96, 164, 232]); } // controller
+}
+
 function drawClaude(b, lineId, variant, node, mood) {
   const L = LINE[lineId];
   let body = [...L.body], leg = [...L.leg];
@@ -119,6 +127,7 @@ function drawClaude(b, lineId, variant, node, mood) {
   if (mood === "sad") { px(b, 32 + ex, cy + 2, [120, 180, 230]); px(b, 32 + ex, cy + 3, [120, 180, 230]); }
   if (mood === "sulk") { const c = [230, 80, 60]; px(b, 41, cy - 6, c); px(b, 43, cy - 6, c); px(b, 42, cy - 5, c); px(b, 41, cy - 4, c); px(b, 43, cy - 4, c); }
   bodyOverlay(b, lineId, variant, cy, hw, hh);
+  if (mood === "feed" || mood === "clean" || mood === "play") actProp(b, mood, cy, hw, hh);
 }
 
 function drawEgg(b, body) {
@@ -130,6 +139,7 @@ function drawEgg(b, body) {
 
 const NODE = { egg: 0, baby: 1, child: 2, teen: 3, adult: 4 };
 const MOODS = ["idle", "happy", "sad", "sleeping", "sulk", "hide", "eating"];
+const ACTS = ["feed", "clean", "play"]; // transient activity poses (client swaps to these on tap)
 
 function renderBuf(lineId, variant, stage, mood) {
   const b = canvas();
@@ -162,6 +172,7 @@ function writeSet(dir, lineId, variant, stages) {
   for (const stage of stages) {
     if (stage === "egg") { writeFileSync(join(dir, "egg.png"), render(lineId, variant, "egg", "idle")); n++; continue; }
     for (const mood of MOODS) { writeFileSync(join(dir, `${stage}_${mood}.png`), render(lineId, variant, stage, mood)); n++; }
+    for (const act of ACTS) { writeFileSync(join(dir, `${stage}_${act}.png`), render(lineId, variant, stage, act)); n++; }
   }
 }
 if (isMain) {

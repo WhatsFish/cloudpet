@@ -140,6 +140,7 @@ Page({
       const resp = await request<ActionResp>({ path: "/action", method: "POST", body: { verb } });
       this.burst(PARTICLE[resp.fx] || "✨", verb);
       this.apply(resp);
+      this.activityPose(verb, resp); // briefly show it DOING the action (颠锅/泡泡/手柄)
       const tag = resp.needReward ? (resp.needReward.exp ? `+${resp.needReward.exp} 正好需要!` : `+${resp.needReward.bond}♥ 懂它!`) : "";
       if (tag) { this.setData({ floatTag: tag }); setTimeout(() => this.setData({ floatTag: "" }), 1100); }
       if (resp.line) wx.showToast({ title: resp.line, icon: "none", duration: 1800 });
@@ -190,6 +191,15 @@ Page({
       const pet = this.data.pet;
       this.setData({ particles: [], animClass: pet ? (IDLE_ANIM[pet.pet.archetypeKey] || "anim-bob") : "anim-bob" });
     }, 1000);
+  },
+  // show the activity pose (颠锅/泡泡/手柄) for ~1.3s, then settle back to the mood sprite
+  activityPose(verb: string, resp: ActionResp) {
+    if ((verb !== "feed" && verb !== "clean" && verb !== "play") || !resp.sprite) return;
+    this.setData({ spriteSrc: spritePath(resp.sprite.creatureId, resp.sprite.stage, verb) });
+    setTimeout(() => {
+      const p = this.data.pet;
+      if (p && p.sprite) this.setData({ spriteSrc: spritePath(p.sprite.creatureId, p.sprite.stage, p.sprite.mood) });
+    }, 1300);
   },
   onSpriteError() { this.setData({ spriteSrc: FALLBACK_SPRITE }); },
 
