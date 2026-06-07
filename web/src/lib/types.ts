@@ -77,6 +77,7 @@ export type CopyRequires = {
   bondMin?: number;
   daysMin?: number;
   pattern?: string[];
+  need?: NeedKind[]; // V4: gate a line on the pet's current top need
 };
 
 export type CopyLine = {
@@ -113,6 +114,7 @@ export type CopyContext = {
   bond: number;
   daysKnown: number;
   pattern: string[]; // behavioral aggregates, e.g. ["late_feeder","overfeeder"]
+  need: NeedKind | null; // V4: the pet's current top need (drives need-voiced copy)
   seed: number; // stable-but-varying selection seed
 };
 

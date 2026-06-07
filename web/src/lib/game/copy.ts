@@ -42,6 +42,7 @@ function requiresMatch(req: CopyRequires | undefined, ctx: CopyContext): boolean
   if (req.bondMin != null && ctx.bond < req.bondMin) return false;
   if (req.daysMin != null && ctx.daysKnown < req.daysMin) return false;
   if (req.pattern && !req.pattern.some((p) => ctx.pattern.includes(p))) return false;
+  if (req.need && (!ctx.need || !req.need.includes(ctx.need))) return false;
   return true;
 }
 
@@ -82,6 +83,7 @@ const FALLBACK: Record<string, string[]> = {
   "feed.overfed": ["feed.neutral", "feed.love"],
   "feed.sick_refuse": ["state.sick", "idle.mutter"],
   "snack": ["feed.love"],
+  "state.bored": ["beg.want", "play.declined", "idle.mutter"], // V4: bored → wants to play, in persona
   "play.declined": ["idle.mutter"],
   "mood.elated": ["greet.open"],
   "beg.want": ["idle.mutter"],

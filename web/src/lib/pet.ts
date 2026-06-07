@@ -126,6 +126,7 @@ export function buildContext(rows: Rows, nowMs: number, tzOffsetMin: number): Co
     bond: state.bond,
     daysKnown,
     pattern: behaviorPattern(cooldown.streak_days, noInteractionH, band),
+    need: deriveNeeds(state, rows.needTimes, nowMs)[0]?.kind ?? null,
     seed: seed >>> 0,
   };
 }
@@ -198,6 +199,7 @@ export type ViewOpts = {
   theme: string;
   voice: { line: string; lineId: string } | null;
   recap: Recap | null;
+  needLine?: (kind: import("@/lib/types").NeedKind) => string; // V4: persona voice for the need card
 };
 
 export function buildPetView(rows: Rows, o: ViewOpts): PetView {
@@ -206,6 +208,7 @@ export function buildPetView(rows: Rows, o: ViewOpts): PetView {
   const daysKnown = Math.max(1, Math.floor(daysBetween(Date.parse(pet.created_at), o.nowMs)) + 1);
   const level = levelFromExp(state.exp);
   const needs = deriveNeeds(state, rows.needTimes, o.nowMs);
+  if (o.needLine) for (const n of needs) n.label = o.needLine(n.kind) || n.label; // persona voice
 
   return {
     pet: { id: pet.id, name: pet.name, archetypeKey: pet.archetype_key, stage: pet.stage, daysKnown, level },

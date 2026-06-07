@@ -1,0 +1,89 @@
+{
+  "archetypeKey": "sproutling",
+  "displayName": "探探芽",
+  "slots": {
+    "kaomoji": ["(๑°⌓°๑)", "( •̀ ω •́ )✧", "(｡･o･｡)", "ヽ(°〇°)ﾉ", "(◍•ᴗ•◍)"],
+    "endearment": ["你", "你呀"],
+    "food": ["没尝过的果子", "新鲜的叶尖", "甜甜的露水", "脆脆的种子"],
+    "activity": ["去没去过的地方逛逛", "翻翻新鲜的角落", "追那只飞过去的虫子"],
+    "find": ["新发现", "小秘密", "没见过的东西", "亮晶晶的小玩意"]
+  },
+  "lines": [
+    { "id": "sp.greet.open.1", "event": "greet.open", "text": "{endearment}来啦！我刚发现了一个{find}，快过来看{kaomoji}" },
+    { "id": "sp.greet.open.2", "event": "greet.open", "text": "嫩芽一抖——是{endearment}的脚步声！今天去哪儿探险呀{kaomoji}" },
+    { "id": "sp.greet.morning.1", "event": "greet.morning", "text": "早呀{endearment}，露水里好像藏着{find}，我们去瞧瞧{kaomoji}", "requires": { "timeBand": ["清晨"] } },
+    { "id": "sp.greet.latenight.1", "event": "greet.latenight", "text": "这么晚还来…那、那我陪你看会儿星星，悄悄的{kaomoji}", "requires": { "timeBand": ["深夜"] } },
+    { "id": "sp.greet.return.1", "event": "greet.return", "text": "你回来啦！我把刚才的{find}给你留着呢{kaomoji}" },
+    { "id": "sp.greet.return_long.1", "event": "greet.return_long", "text": "{endearment}…我等你的时候，自己悄悄探了好多地方。都想讲给你听{kaomoji}", "requires": { "daysMin": 2 } },
+
+    { "id": "sp.feed.love.1", "event": "feed.love", "text": "{food}！我还没尝过这个味道——嗯…好新奇，谢谢{endearment}{kaomoji}" },
+    { "id": "sp.feed.love.2", "event": "feed.love", "text": "原来{food}是这个味道呀，又记下一个{find}{kaomoji}" },
+    { "id": "sp.feed.neutral.1", "event": "feed.neutral", "text": "唔，吃饱啦，可以去探险更久一点了{kaomoji}" },
+    { "id": "sp.feed.dislike.1", "event": "feed.dislike", "text": "这个…我试过了，下次想尝点别的{kaomoji}" },
+    { "id": "sp.feed.overfed.1", "event": "feed.overfed", "text": "圆滚滚的…走不动路啦，先歇会儿再去逛{kaomoji}" },
+    { "id": "sp.feed.sick_refuse.1", "event": "feed.sick_refuse", "text": "现在…叶子有点蔫，闻不出味道，吃不下呢{kaomoji}" },
+
+    { "id": "sp.clean.1", "event": "clean", "text": "土洗掉啦，叶尖又能感知到风的方向了{kaomoji}" },
+    { "id": "sp.clean.2", "event": "clean", "text": "清爽！探险沾的泥都不见啦{kaomoji}" },
+
+    { "id": "sp.play.1", "event": "play", "text": "走走走，那边！我带你去看一个{find}{kaomoji}" },
+    { "id": "sp.play.2", "event": "play", "text": "触须都竖起来啦——和{endearment}一起最好玩{kaomoji}" },
+    { "id": "sp.play.declined.1", "event": "play.declined", "text": "嗯…现在不太想动，叶子在打盹{kaomoji}" },
+
+    { "id": "sp.pet.1", "event": "pet", "text": "被{endearment}摸摸嫩芽…痒痒的，但好安心{kaomoji}" },
+    { "id": "sp.pet.2", "event": "pet", "text": "唔…探险再有趣，也比不上你的手心{kaomoji}" },
+
+    { "id": "sp.sleep.tuck.1", "event": "sleep.tuck", "text": "那…我把今天的{find}收进梦里，晚安{endearment}{kaomoji}" },
+    { "id": "sp.sleep.wake.1", "event": "sleep.wake", "text": "睡醒啦！我梦见一个新地方，醒来第一眼就想告诉你{kaomoji}" },
+
+    { "id": "sp.medicine.1", "event": "medicine", "text": "苦…不过喝完，又能去探险了对不对？我忍{kaomoji}" },
+    { "id": "sp.checkin.1", "event": "checkin", "text": "今天{endearment}也来啦，那我们的探险日记又记上一笔{kaomoji}" },
+
+    { "id": "sp.state.hungry.1", "event": "state.hungry", "text": "肚子有点空…探险用掉好多力气呢，想吃{food}{kaomoji}" },
+    { "id": "sp.state.hungry.2", "event": "state.hungry", "text": "嫩芽有点垂…给我一口{food}，我又能跑啦{kaomoji}" },
+    { "id": "sp.state.dirty.1", "event": "state.dirty", "text": "叶子沾了好多土，感知都迟钝了，想洗洗{kaomoji}" },
+    { "id": "sp.state.sick.1", "event": "state.sick", "text": "唔…整株都蔫蔫的，连{find}都提不起劲了{kaomoji}" },
+    { "id": "sp.state.sick.2", "event": "state.sick", "text": "好难受…{endearment}陪我一会儿，我会慢慢挺直的{kaomoji}" },
+    { "id": "sp.state.sleepy.1", "event": "state.sleepy", "text": "探了一整天…叶子合不拢了，好困{kaomoji}" },
+    { "id": "sp.state.sulky.1", "event": "state.sulky", "text": "哼…我自己去探险好了，才不等你呢（偷偷回头）{kaomoji}" },
+    { "id": "sp.state.hiding.1", "event": "state.hiding", "text": "（缩进叶子里，只露出一对好奇又躲闪的眼睛）" },
+    { "id": "sp.state.lonely.1", "event": "state.lonely", "text": "一个人探险…没那么好玩。有点想{endearment}了{kaomoji}" },
+    { "id": "sp.state.bored.1", "event": "state.bored", "text": "好闷呀…{endearment}，我们去{activity}好不好{kaomoji}" },
+    { "id": "sp.state.bored.2", "event": "state.bored", "text": "触须都发痒了，想去探点新鲜的——陪我嘛{kaomoji}" },
+
+    { "id": "sp.beg.want.1", "event": "beg.want", "text": "那个…可以陪我去{activity}吗？就一小会儿{kaomoji}" },
+    { "id": "sp.beg.want.2", "event": "beg.want", "text": "我闻到一个{find}的味道…带我去找找嘛{kaomoji}" },
+
+    { "id": "sp.mood.elated.1", "event": "mood.elated", "text": "今天发现了好多{find}，开心得叶子都在转圈圈！{kaomoji}" },
+    { "id": "sp.idle.mutter.1", "event": "idle.mutter", "text": "（踮着根，朝没去过的方向张望）{kaomoji}" },
+    { "id": "sp.idle.mutter.2", "event": "idle.mutter", "text": "那边的风…好像带来了一个{find}的气味{kaomoji}" },
+
+    { "id": "sp.growth.promote.1", "event": "growth.promote", "text": "我…抽高了一截！能看到更远的地方了，{endearment}快来看{kaomoji}" },
+    { "id": "sp.streak.milestone.1", "event": "streak.milestone", "text": "我们一起探险已经{streak}天啦，日记快记满咯{kaomoji}" },
+    { "id": "sp.reunion.gift.1", "event": "reunion.gift", "text": "你回来啦…我把这阵子攒下的{find}，全都想分给你{kaomoji}" },
+    { "id": "sp.name.given.1", "event": "name.given", "text": "这是我的名字呀…我会带着它，去探更多地方的{kaomoji}" }
+  ],
+  "diary": {
+    "openers": [
+      { "id": "sp.o.1", "text": "今天" },
+      { "id": "sp.o.2", "text": "这一天，又" },
+      { "id": "sp.o.3", "text": "夜里，悄悄", "requires": { "timeBand": ["深夜"] } }
+    ],
+    "bodies": [
+      { "id": "sp.b.1", "text": "发现了一个{find}，第一个想到的就是你。" },
+      { "id": "sp.b.2", "text": "朝没去过的方向张望了好久。" },
+      { "id": "sp.b.3", "text": "和{endearment}一起逛，连熟悉的角落都变新鲜了。" },
+      { "id": "sp.b.hungry", "text": "探得太投入，忘了肚子在叫。", "requires": { "need": ["hungry"] } },
+      { "id": "sp.b.bored", "text": "有点闷，盼着{endearment}带我去探点新的。", "requires": { "need": ["bored"] } }
+    ],
+    "memory": [
+      { "id": "sp.m.streak", "text": "我们已经一起探险第{streak}天啦，", "requires": { "streakMin": 7 } },
+      { "id": "sp.m.days", "text": "认识{endearment}第{days}天，攒下的小秘密越来越多，", "requires": { "daysMin": 3 } }
+    ],
+    "signoffs": [
+      { "id": "sp.s.1", "text": "明天还想拉你去看新东西。" },
+      { "id": "sp.s.2", "text": "这些都记进探险日记里啦。" },
+      { "id": "sp.s.3", "text": "晚安，{endearment}。" }
+    ]
+  }
+}

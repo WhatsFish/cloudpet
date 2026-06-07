@@ -7,8 +7,9 @@ import { levelFromExp } from "@/lib/game/levels";
 import { speciesName } from "@/lib/game/evolve";
 import { localDateStr } from "@/lib/game/time";
 import { getPack } from "@/data/copybank";
-import { buildDiary } from "@/lib/game/copy";
-import type { Recap, Stage } from "@/lib/types";
+import { buildDiary, selectCopy } from "@/lib/game/copy";
+import { NEED_EVENT } from "@/lib/game/needs";
+import type { NeedKind, Recap, Stage } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -115,5 +116,6 @@ export async function GET(req: NextRequest) {
     await query(`UPDATE growth_event SET seen=true WHERE pet_id=$1 AND seen=false`, [rows.pet.id]);
   }
 
-  return NextResponse.json(buildPetView(rows, { nowMs: now, theme, voice, recap }));
+  const needLine = (kind: NeedKind) => selectCopy(pack, NEED_EVENT[kind], ctx, `need.${kind}.${localDate}`).text;
+  return NextResponse.json(buildPetView(rows, { nowMs: now, theme, voice, recap, needLine }));
 }

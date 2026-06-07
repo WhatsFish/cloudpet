@@ -6,12 +6,14 @@ import type { CreatureCopyPack } from "@/lib/types";
 import mochi from "./mochi_pudding.json";
 import echo from "./echo_fox.json";
 import ember from "./ember_imp.json";
+import sprout from "./sproutling.json";
 import { DEFAULT_PACK } from "./_default";
 
 const PACKS: Record<string, CreatureCopyPack> = {
   mochi_pudding: mochi as CreatureCopyPack,
   echo_fox: echo as CreatureCopyPack,
   ember_imp: ember as CreatureCopyPack,
+  sproutling: sprout as CreatureCopyPack,
 };
 
 export function getPack(creatureId: string): CreatureCopyPack {

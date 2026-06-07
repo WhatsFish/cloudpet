@@ -26,6 +26,11 @@ export const NEED_LABEL: Record<NeedKind, string> = {
 // which need a given action satisfies (for the need-reward check)
 export const VERB_NEED: Partial<Record<Verb, NeedKind>> = { feed: "hungry", clean: "dirty", doctor: "unwell", play: "bored", pet: "wants" };
 
+// the copy event that voices each need IN PERSONA (M4). The pet asks in its own voice.
+export const NEED_EVENT: Record<NeedKind, string> = {
+  hungry: "state.hungry", dirty: "state.dirty", unwell: "state.sick", bored: "state.bored", wants: "beg.want",
+};
+
 // The due needs, ordered by priority, capped. wants-X (persona/time) is deferred to M4.
 export function deriveNeeds(s: Snapshot, t: NeedTimes, nowMs: number): Need[] {
   const sick = (s.state_flags & STATE.SICK) !== 0;

@@ -4,7 +4,7 @@ import { getUserId } from "@/lib/auth";
 import { buildContext, buildPetView, loadRows, tickAndPersistTz } from "@/lib/pet";
 import { planAction } from "@/lib/game/actions";
 import { ACTIONS, NEED_REWARD, PET_BOND_SOFTCAP } from "@/lib/game/constants";
-import { deriveNeeds, isDue, VERB_NEED } from "@/lib/game/needs";
+import { deriveNeeds, isDue, NEED_EVENT, VERB_NEED } from "@/lib/game/needs";
 import { resolveSpecies } from "@/lib/game/evolve";
 import { creature } from "@/data/bestiary";
 import { nextStage } from "@/data/stage-table";
@@ -111,7 +111,8 @@ export async function POST(req: NextRequest) {
     await q(`INSERT INTO action_log (pet_id, user_id, verb, local_date, line, line_intent, delta) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
       [rows.pet.id, userId, verb, localDate, line, plan.event, JSON.stringify({ exp: plan.expGain + needBonusExp, bond: bondGain + needBonusBond, need: fulfilled ? fulfilledKind : null })]);
 
-    const view = buildPetView(rows2, { nowMs: now, theme, voice: null, recap: null });
+    const needLine = (kind: NeedKind) => selectCopy(pack, NEED_EVENT[kind], ctx, `need.${kind}.${now}`).text;
+    const view = buildPetView(rows2, { nowMs: now, theme, voice: null, recap: null, needLine });
     return {
       http: 200,
       body: {
