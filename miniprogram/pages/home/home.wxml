@@ -1,14 +1,17 @@
 <view class="screen theme-{{theme}}" wx:if="{{pet}}">
   <view class="device">
-    <view class="brand">● 本命小宠 ●</view>
+    <view class="brand">● {{pet.pet.name}} · {{stageLabel}} ●</view>
 
     <view class="lcd">
+      <image class="bg" src="{{bgSrc}}" mode="aspectFill" />
       <view class="lcd-grid"></view>
-      <view class="pips">
-        <view wx:for="{{pips}}" wx:key="*this" class="pip pip--{{item}}"></view>
-      </view>
 
-      <view class="bubble" wx:if="{{bubble}}">{{bubble}}</view>
+      <!-- roadmap strip -->
+      <view class="road" bindtap="onC">
+        <text class="lvchip">Lv{{levelNum}}</text>
+        <view class="lvbar"><view class="lvfill" style="width:{{levelPct}}%"></view></view>
+        <text class="roadtxt">{{roadmapLine}}</text>
+      </view>
 
       <view class="stage-wrap">
         <image class="sprite {{animClass}}" src="{{spriteSrc}}" mode="aspectFit" binderror="onSpriteError" />
@@ -16,30 +19,75 @@
         <view wx:if="{{floatTag}}" class="floattag">{{floatTag}}</view>
       </view>
 
-      <view class="lcd-foot">
-        <view class="nm">{{pet.pet.name}} · {{stageLabel}} · Lv{{pet.level}}</view>
-        <view class="evo"><view class="evo-fill" style="width:{{pet.evolveProgress}}%"></view></view>
+      <!-- the pet's own voice / current need -->
+      <view class="needcard">{{needCard}}</view>
+    </view>
+
+    <!-- primary CTA + free affection -->
+    <view class="cta-row">
+      <view class="cta {{ctaPrimary ? 'cta--need' : ''}}" bindtap="onPrimary">
+        <text class="cta-emoji">{{ctaEmoji}}</text>
+        <text class="cta-label">{{ctaLabel}}</text>
+        <text wx:if="{{ctaReward}}" class="cta-reward">{{ctaReward}}</text>
+      </view>
+      <view class="free-btn" bindtap="onPetFree"><text class="free-emoji">💛</text><text class="free-lab">摸摸</text></view>
+    </view>
+
+    <!-- more drawer -->
+    <view class="handle" bindtap="toggleDrawer">{{showDrawer ? '收起 ▾' : '更多操作 ▸'}}</view>
+    <view class="drawer {{showDrawer ? 'open' : ''}}">
+      <view class="drow-lab">照顾（喂养决定它长成谁）</view>
+      <view class="dacts">
+        <view class="dact" data-verb="feed" bindtap="onDrawerAction"><text class="de">🍙</text><text class="dl">喂食</text></view>
+        <view class="dact" data-verb="clean" bindtap="onDrawerAction"><text class="de">🛁</text><text class="dl">洗澡</text></view>
+        <view class="dact" data-verb="doctor" bindtap="onDrawerAction"><text class="de">💊</text><text class="dl">看医生</text></view>
+      </view>
+      <view class="drow-lab">陪伴（免费 · 涨亲密 · 不影响形态）</view>
+      <view class="dacts">
+        <view class="dact" data-verb="play" bindtap="onDrawerAction"><text class="de">🎮</text><text class="dl">陪玩</text></view>
+        <view class="dact" data-verb="pet" bindtap="onDrawerAction"><text class="de">💛</text><text class="dl">摸摸</text></view>
+        <view class="dact" data-verb="sleep" bindtap="onDrawerAction"><text class="de">🌙</text><text class="dl">哄睡</text></view>
+      </view>
+      <view class="dchips">
+        <view class="dchip" bindtap="openStatus">📊 状态</view>
+        <view class="dchip" bindtap="goDiary">📓 心声</view>
+        <view class="dchip" bindtap="goCodex">📖 图鉴</view>
+        <view class="dchip" bindtap="openSettings">⚙️ 设置</view>
       </view>
     </view>
 
-    <view class="hint">{{pet.needHint}}</view>
-
-    <view class="menu">
-      <view wx:for="{{icons}}" wx:key="key"
-            class="icon icon--{{item.kind}} {{cursor===index ? 'cursor' : ''}}"
-            data-key="{{item.key}}" bindtap="onIcon">
-        <text class="emoji">{{item.emoji}}</text>
-        <text class="ilabel">{{item.label}}</text>
-      </view>
-    </view>
-
+    <!-- A=选(照顾) B=摸 C=看(路线) -->
     <view class="buttons">
-      <view class="abtn" bindtap="onA"><text class="ab">A</text><text class="blabel">选</text></view>
-      <view class="abtn" bindtap="onB"><text class="ab">B</text><text class="blabel">确定</text></view>
-      <view class="abtn" bindtap="onC"><text class="ab">C</text><text class="blabel">返回</text></view>
+      <view class="abtn" bindtap="onA"><text class="ab">A</text><text class="blabel">{{ctaPrimary ? '照顾' : '玩'}}</text></view>
+      <view class="abtn" bindtap="onB"><text class="ab">B</text><text class="blabel">摸摸</text></view>
+      <view class="abtn" bindtap="onC"><text class="ab">C</text><text class="blabel">路线</text></view>
     </view>
   </view>
 
+  <!-- away-then-grew recap -->
+  <view wx:if="{{recap}}" class="mask" bindtap="dismissRecap">
+    <view class="recap" catchtap="noop">
+      <view class="recap-title">我长大啦！</view>
+      <image class="recap-sprite" src="{{spriteSrc}}" mode="aspectFit" binderror="onSpriteError" />
+      <view class="recap-line">{{recap.line}}</view>
+      <view class="recap-meta">Lv{{recap.levelFrom}} → Lv{{recap.levelTo}}<block wx:if="{{recap.evolvedToName}}"> · 长成「{{recap.evolvedToName}}」</block></view>
+      <view class="recap-btn" bindtap="dismissRecap">抱抱它 💛</view>
+    </view>
+  </view>
+
+  <!-- roadmap modal -->
+  <view wx:if="{{showRoadmap}}" class="mask" bindtap="closeModals">
+    <view class="panel" catchtap="noop">
+      <view class="panel-title">成长路线</view>
+      <view class="road-big">{{roadmapLine}}</view>
+      <view class="srow2" wx:if="{{pet.roadmap.stage}}">下一阶段「{{pet.roadmap.stage.towardName}}」：经验差 {{pet.roadmap.stage.expRemaining}} · 还要 {{pet.roadmap.stage.daysRemaining}} 天 · 亲密差 {{pet.roadmap.stage.bondRemaining}}</view>
+      <view class="srow2">养育倾向：{{pet.nurtureTilt.label}}</view>
+      <view class="srow2">Lv {{levelNum}} · 本级进度 {{levelPct}}% · 连续 {{pet.streakDays}} 天</view>
+      <view class="pbtn" bindtap="closeModals">知道啦</view>
+    </view>
+  </view>
+
+  <!-- status modal -->
   <view wx:if="{{showStatus}}" class="mask" bindtap="closeModals">
     <view class="panel" catchtap="noop">
       <view class="panel-title">状态 · {{pet.pet.name}}</view>
@@ -48,19 +96,18 @@
         <view class="sbar"><view class="sfill" style="width:{{item.pct}}%;background:{{item.color}}"></view></view>
         <text class="sval">{{item.value}}</text>
       </view>
-      <view class="srow2">亲密度 {{pet.bond}}/1000 · 认识第 {{pet.pet.daysKnown}} 天 · 连续 {{pet.streakDays}} 天</view>
-      <view class="srow2">Lv {{pet.level}} · {{pet.pet.stage === 'child' ? '已达童年（V1 封顶，Lv 继续涨）' : '进化进度 ' + pet.evolveProgress + '%'}}</view>
+      <view class="srow2">亲密度 {{pet.bond}}/1000 · 认识第 {{pet.pet.daysKnown}} 天</view>
       <view class="pbtn" bindtap="closeModals">关闭</view>
     </view>
   </view>
 
+  <!-- settings modal -->
   <view wx:if="{{showSettings}}" class="mask" bindtap="closeModals">
     <view class="panel" catchtap="noop">
       <view class="panel-title">设置</view>
       <view class="plabel">机身配色</view>
       <view class="themes">
-        <view wx:for="{{['cream','mint','dusk']}}" wx:key="*this"
-              class="swatch theme-{{item}} {{theme === item ? 'sel' : ''}}" data-theme="{{item}}" bindtap="pickTheme">
+        <view wx:for="{{['cream','mint','dusk']}}" wx:key="*this" class="swatch theme-{{item}} {{theme === item ? 'sel' : ''}}" data-theme="{{item}}" bindtap="pickTheme">
           <view class="swatch-shell"></view>
           <text class="swatch-name">{{item === 'cream' ? '奶油' : item === 'mint' ? '薄荷' : '暮光'}}</text>
         </view>
