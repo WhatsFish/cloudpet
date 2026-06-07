@@ -32,7 +32,7 @@ const VERB_META: Record<string, { emoji: string; label: string; stat: string }> 
 };
 const PARTICLE: Record<string, string> = { hearts: "💛", sparkle: "✨", food: "🍚", bubbles: "🫧", notes: "🎵", zzz: "💤" };
 const REACT_ANIM: Record<string, string> = { feed: "anim-eat", clean: "anim-bounce", doctor: "anim-bounce", play: "anim-hop", pet: "anim-squish", sleep: "" };
-const IDLE_ANIM: Record<string, string> = { mochi_pudding: "anim-jiggle", ember_imp: "anim-pop", echo_fox: "anim-float", sproutling: "anim-bob" };
+const IDLE_ANIM: Record<string, string> = { puff: "anim-jiggle", bear: "anim-pop", penguin: "anim-float", claude: "anim-bob", blocky: "anim-bob" };
 const STAGE_CN: Record<string, string> = { egg: "蛋", baby: "幼年", child: "童年", teen: "少年", adult: "成年" };
 const STAGE_CAP: Record<string, number> = { egg: 80, baby: 85, child: 90, teen: 95, adult: 100 };
 const STAT_META = [

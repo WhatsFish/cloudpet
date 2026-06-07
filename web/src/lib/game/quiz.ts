@@ -91,10 +91,11 @@ const USER_MIRROR: Record<string, { pos: string; neg: string }> = {
 // adult form as "what you'll grow into together" (care decides), never a creature that
 // later swaps — the panel's bait-and-switch mitigation.
 const CREATURE_INTRO: Record<string, string> = {
-  mochi_pudding: "于是，一只软乎乎、把你当成全世界的「抖抖布丁」宝宝赖进了你手心里。它会长成什么样子，就看你往后怎么疼它了。",
-  echo_fox: "于是，一只清冷又好奇的「墨影狐」宝宝悄悄认下了你。它将来是什么模样，藏在你日复一日的喂养里。",
-  ember_imp: "于是，一团一点就炸、一哄就笑的「炸毛团」宝宝扑进了你怀里。你怎么养，它就怎么长。",
-  sproutling: "于是，一颗顶着好奇嫩芽的「探探芽」宝宝拱开土认下了你。你带它去经历什么，它就往哪个方向抽枝。",
+  puff: "于是，一只软乎乎、把你当成全世界的「奶团」赖进了你手心里。它会长成什么样子，全看你往后怎么疼它。",
+  claude: "于是，一只好奇又淡定的「克劳德」认下了你——它爱捣鼓、爱陪你做事。往后长成什么样，藏在你们一起折腾的日子里。",
+  blocky: "于是，一只方头方脑、冷面又靠谱的「方头崽」选中了你。它话不多，但你的节奏它都记着。",
+  penguin: "于是，一只高冷优雅的「波波企鹅」慢悠悠踱到你身边。它的偏爱要你慢慢赢，而那正是它珍贵的地方。",
+  bear: "于是，一只顶着大红脸蛋、傻乎乎直乐的「墩墩熊」一头扑进你怀里。它要的，是你随时都在。",
 };
 
 export function reveal(v: AxisVector, archetypeKey: string): { title: string; lines: string[] } {

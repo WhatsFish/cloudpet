@@ -1,0 +1,51 @@
+{
+  "archetypeKey": "claude",
+  "displayName": "克劳德",
+  "slots": {
+    "kaomoji": ["(｡･ω･｡)", "( •ᴗ•)", "(￣▽￣)", "(っ･ω･)っ", "(„• ֊ •„)"],
+    "endearment": ["你", "搭子"],
+    "food": ["热乎的小食", "没尝过的口味", "今天的份"],
+    "activity": ["捣鼓点小东西", "研究研究新玩意", "一起搭点什么"],
+    "find": ["新发现", "小灵感", "好点子"]
+  },
+  "lines": [
+    { "id": "cl.greet.open.1", "event": "greet.open", "text": "{endearment}来啦~我刚冒出个{find}，正想找你说{kaomoji}" },
+    { "id": "cl.greet.open.2", "event": "greet.open", "text": "嗯，是{endearment}。今天想一起{activity}吗{kaomoji}" },
+    { "id": "cl.greet.return.1", "event": "greet.return", "text": "你回来啦。我把刚才那个{find}给你留着呢{kaomoji}" },
+    { "id": "cl.feed.love.1", "event": "feed.love", "text": "{food}！我研究一下…嗯，记下了，好吃{kaomoji}" },
+    { "id": "cl.feed.love.2", "event": "feed.love", "text": "谢啦搭子，吃饱才好捣鼓东西{kaomoji}" },
+    { "id": "cl.feed.neutral.1", "event": "feed.neutral", "text": "嗯，吃好了，继续干活~{kaomoji}" },
+    { "id": "cl.clean.1", "event": "clean", "text": "洗干净，手脚利索了，效率++{kaomoji}" },
+    { "id": "cl.play.1", "event": "play", "text": "走，咱们整点好玩的{kaomoji}" },
+    { "id": "cl.pet.1", "event": "pet", "text": "被{endearment}摸摸…嗯，充电了{kaomoji}" },
+    { "id": "cl.sleep.tuck.1", "event": "sleep.tuck", "text": "那我先存个档…晚安{endearment}{kaomoji}" },
+    { "id": "cl.sleep.wake.1", "event": "sleep.wake", "text": "睡醒啦，脑子里又蹦出个{find}{kaomoji}" },
+    { "id": "cl.medicine.1", "event": "medicine", "text": "苦是苦…不过有{endearment}盯着，我配合{kaomoji}" },
+    { "id": "cl.checkin.1", "event": "checkin", "text": "今天也来报到啦，日志记上一笔{kaomoji}" },
+    { "id": "cl.state.hungry.1", "event": "state.hungry", "text": "提示：能量不足…给点{food}我就满血{kaomoji}" },
+    { "id": "cl.state.hungry.2", "event": "state.hungry", "text": "肚子在咕咕响，分点{food}给我呗搭子{kaomoji}" },
+    { "id": "cl.state.dirty.1", "event": "state.dirty", "text": "身上有点灰，影响手感了，想洗洗{kaomoji}" },
+    { "id": "cl.state.sick.1", "event": "state.sick", "text": "唔…CPU 有点过热，跑不动了，{endearment}陪我一下{kaomoji}" },
+    { "id": "cl.state.sleepy.1", "event": "state.sleepy", "text": "困意上来了…眼皮在自动关机{kaomoji}" },
+    { "id": "cl.state.bored.1", "event": "state.bored", "text": "有点闲得发慌，{endearment}陪我{activity}嘛{kaomoji}" },
+    { "id": "cl.beg.want.1", "event": "beg.want", "text": "那个…能陪我{activity}一会儿不？就一小会儿{kaomoji}" },
+    { "id": "cl.mood.elated.1", "event": "mood.elated", "text": "今天灵感爆棚，开心{kaomoji}" },
+    { "id": "cl.idle.mutter.1", "event": "idle.mutter", "text": "（盯着某处发呆，好像在构思什么）{kaomoji}" },
+    { "id": "cl.growth.promote.1", "event": "growth.promote", "text": "我好像…升级了！能做的事更多啦{kaomoji}" },
+    { "id": "cl.streak.milestone.1", "event": "streak.milestone", "text": "我们一起捣鼓{streak}天啦，默契值满格{kaomoji}" },
+    { "id": "cl.name.given.1", "event": "name.given", "text": "这名字…我喜欢，写进系统了{kaomoji}" }
+  ],
+  "diary": {
+    "openers": [{ "id": "cl.o.1", "text": "今天" }, { "id": "cl.o.2", "text": "这一天，又" }, { "id": "cl.o.3", "text": "夜里，安静地", "requires": { "timeBand": ["深夜"] } }],
+    "bodies": [
+      { "id": "cl.b.1", "text": "冒出个{find}，第一个想分享的就是{endearment}。" },
+      { "id": "cl.b.2", "text": "捣鼓了点小东西，挺满足。" },
+      { "id": "cl.b.hungry", "text": "研究得太投入，忘了自己饿着。", "requires": { "need": ["hungry"] } }
+    ],
+    "memory": [
+      { "id": "cl.m.streak", "text": "我们已经搭伙{streak}天了，", "requires": { "streakMin": 7 } },
+      { "id": "cl.m.days", "text": "认识{endearment}第{days}天，默契越来越好，", "requires": { "daysMin": 3 } }
+    ],
+    "signoffs": [{ "id": "cl.s.1", "text": "明天再一起鼓捣点新的。" }, { "id": "cl.s.2", "text": "都记进日志啦。" }, { "id": "cl.s.3", "text": "晚安，{endearment}。" }]
+  }
+}

@@ -1,13 +1,10 @@
 #!/usr/bin/env node
-// Procedural pixel-art engine v6 — the 克劳德 (Claude-mascot) design language. Flat fills
-// + a soft darker outline + small wide-set dark eyes; deliberately simple & 蠢萌, modelled
-// on the official Claude mascot the owner shared. Same interface as before (renderBuf /
-// render / exports / main loop), so the whole pipeline (sync, codex, game) is unchanged —
-// only the LOOK is new. Each of the 4 lines = a 克劳德 with its own colour + signature
-// feature; care-branch variants change the feature/shape; moods include activity-ish poses
-// (eating = food bowl, sleeping = lying + zzz).
-//
-// Usage: `node scripts/gen-art.mjs [lineId]`. Then scripts/sync-art.sh.
+// Procedural pixel-art engine v7 — FIVE distinct creatures, one per design language
+// (奶团 puff / 克劳德 claude / 方头崽 blocky / 波波企鹅 penguin / 墩墩熊 bear). Flat fills,
+// soft outline, big silly eyes — 蠢萌. Each creature: size by stage, its own signature +
+// 3 care-branch variant features, the 7 moods, and activity poses (feed/clean/play). Same
+// interface (renderBuf/exports/main-loop/sprite paths) so the pipeline is unchanged.
+// Usage: `node scripts/gen-art.mjs [lineId]`, then scripts/sync-art.sh.
 
 import zlib from "node:zlib";
 import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
@@ -18,18 +15,18 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = join(ROOT, "miniprogram/assets/pets");
 const LINES = JSON.parse(readFileSync(join(ROOT, "web/src/data/lines.json"), "utf8")).lines;
 const W = 64, H = 64, R = Math.round;
-const INK = [42, 42, 52], BLUSH = [240, 150, 162];
+const hx = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+const mix = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
 
-// per-line 克劳德 colour + top feature
-const LINE = {
-  mochi_pudding: { body: [0xF4, 0xAE, 0xC4], leg: [0xDC, 0x84, 0x9E], feat: "swirl" },
-  echo_fox: { body: [0x97, 0x89, 0xC4], leg: [0x76, 0x69, 0xA2], feat: "ears" },
-  ember_imp: { body: [0xE0, 0x71, 0x4C], leg: [0xC2, 0x55, 0x38], feat: "flame" },
-  sproutling: { body: [0x9C, 0xC5, 0x6C], leg: [0x7D, 0xA6, 0x4F], feat: "sprout" },
+const PAL = {
+  puff: { body: hx("#FBE0C2"), ink: hx("#6A5A6E"), cheek: hx("#F6AEBE"), deco: hx("#F2A0B4") },
+  claude: { body: hx("#D96A4A"), leg: hx("#BE5536"), ink: hx("#2C2C32"), cheek: hx("#E98C70"), deco: hx("#7FBE9E") },
+  blocky: { body: hx("#A9C27E"), ink: hx("#37432A"), cheek: hx("#8AA862"), deco: hx("#E8845B") },
+  penguin: { body: hx("#6F8DA9"), belly: hx("#FAFBFC"), beak: hx("#F2A23C"), ink: hx("#39465A"), cheek: hx("#F3B5BE"), foot: hx("#EF9A2E"), deco: hx("#F2A0B4") },
+  bear: { body: hx("#2E2E3A"), muzzle: hx("#F2E8D8"), ink: hx("#16161E"), cheek: hx("#E23838"), deco: hx("#F2A03C") },
 };
 
-// ---- color + raster ----
-const mix = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
+// ---- raster ----
 function canvas() { return new Uint8ClampedArray(W * H * 4); }
 function px(b, x, y, c, a = 255) { x = Math.round(x); y = Math.round(y); if (x < 0 || y < 0 || x >= W || y >= H) return; const i = (y * W + x) * 4; b[i] = c[0]; b[i + 1] = c[1]; b[i + 2] = c[2]; b[i + 3] = a; }
 const getA = (b, x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? 0 : b[(y * W + x) * 4 + 3];
@@ -38,98 +35,145 @@ function ell(b, cx, cy, rx, ry, c) { for (let dy = -ry; dy <= ry; dy++) for (let
 function rrect(b, cx, cy, hw, hh, rad, c) { for (let dy = -hh; dy <= hh; dy++) for (let dx = -hw; dx <= hw; dx++) { const ox = Math.max(0, Math.abs(dx) - (hw - rad)), oy = Math.max(0, Math.abs(dy) - (hh - rad)); if (ox * ox + oy * oy <= rad * rad) px(b, cx + dx, cy + dy, c); } }
 function tri(b, ax, ay, bx, by, cx, cy, c) { const mnx = Math.min(ax, bx, cx), mxx = Math.max(ax, bx, cx), mny = Math.min(ay, by, cy), mxy = Math.max(ay, by, cy); for (let y = mny; y <= mxy; y++) for (let x = mnx; x <= mxx; x++) { const w0 = (bx - ax) * (y - ay) - (by - ay) * (x - ax), w1 = (cx - bx) * (y - by) - (cy - by) * (x - bx), w2 = (ax - cx) * (y - cy) - (ay - cy) * (x - cx); if ((w0 >= 0 && w1 >= 0 && w2 >= 0) || (w0 <= 0 && w1 <= 0 && w2 <= 0)) px(b, x, y, c); } }
 function stroke(b, x0, y0, x1, y1, r, c) { const n = Math.max(1, Math.round(Math.hypot(x1 - x0, y1 - y0))); for (let i = 0; i <= n; i++) { const cx = x0 + (x1 - x0) * i / n, cy = y0 + (y1 - y0) * i / n; if (r <= 0) px(b, cx, cy, c); else disc(b, cx, cy, r, c); } }
-function outline(b, col) { const m = new Uint8Array(W * H); for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) m[y * W + x] = getA(b, x, y) > 0 ? 1 : 0; for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { if (m[y * W + x]) continue; if (m[y * W + x - 1] || m[y * W + x + 1] || (y > 0 && m[(y - 1) * W + x]) || (y < H - 1 && m[(y + 1) * W + x])) px(b, x, y, col); } }
+function outline(b, col, th = 1) { for (let p = 0; p < th; p++) { const m = new Uint8Array(W * H); for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) m[y * W + x] = getA(b, x, y) > 0 ? 1 : 0; for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { if (m[y * W + x]) continue; if (m[y * W + x - 1] || m[y * W + x + 1] || (y > 0 && m[(y - 1) * W + x]) || (y < H - 1 && m[(y + 1) * W + x])) px(b, x, y, col); } } }
 function shadow(b, cy = 57, rx = 13) { for (let dy = -2; dy <= 2; dy++) for (let dx = -rx; dx <= rx; dx++) if ((dx * dx) / (rx * rx) + (dy * dy) / 4 <= 1) px(b, 32 + dx, cy + dy, [0, 0, 0], 30); }
 function heart(b, x, y, c) { px(b, x, y, c); px(b, x + 2, y, c); px(b, x - 1, y + 1, c); px(b, x + 3, y + 1, c); for (let i = -1; i <= 3; i++) px(b, x + i, y + 2, c); px(b, x + 1, y + 3, c); }
+function note(b, x, y, c) { for (let i = 0; i < 4; i++) px(b, x + 2, y - i, c); px(b, x, y, c); px(b, x + 1, y, c); px(b, x + 2, y + 1, c); }
+function blush2(b, cx, cy, c) { for (let yy = 0; yy < 2; yy++) for (let xx = 0; xx < 2; xx++) px(b, cx + xx, cy + yy, c); }
 
-// ---- eyes by mood (small, wide-set, dark) ----
-function eyes(b, cy, ex, mood) {
+// small dark eyes with expression (puff/claude/penguin/blocky-base)
+function eyesDark(b, cy, ex, mood, ink, r = 1) {
   for (const e of [-ex, ex]) {
-    if (mood === "happy") { px(b, 32 + e - 1, cy + 1, INK); px(b, 32 + e, cy, INK); px(b, 32 + e + 1, cy + 1, INK); }
-    else if (mood === "sleeping") { px(b, 32 + e - 1, cy, INK); px(b, 32 + e, cy + 1, INK); px(b, 32 + e + 1, cy, INK); }
-    else if (mood === "sad") { px(b, 32 + e - 1, cy, INK); px(b, 32 + e, cy + 1, INK); px(b, 32 + e + 1, cy, INK); }
-    else if (mood === "sulk") { px(b, 32 + e - 1, cy - 1, INK); px(b, 32 + e, cy - 1, INK); px(b, 32 + e + 1, cy, INK); }
-    else { for (let yy = 0; yy < 3; yy++) { px(b, 32 + e, cy - 1 + yy, INK); px(b, 32 + e + 1, cy - 1 + yy, INK); } }
+    if (mood === "happy" || mood === "eating") { px(b, 32 + e - 1, cy + 1, ink); px(b, 32 + e, cy, ink); px(b, 32 + e + 1, cy + 1, ink); }
+    else if (mood === "sleeping") { px(b, 32 + e - 1, cy, ink); px(b, 32 + e, cy + 1, ink); px(b, 32 + e + 1, cy, ink); }
+    else if (mood === "sad") { px(b, 32 + e - 1, cy, ink); px(b, 32 + e, cy + 1, ink); px(b, 32 + e + 1, cy, ink); }
+    else if (mood === "sulk") { px(b, 32 + e - 1, cy - 1, ink); px(b, 32 + e, cy - 1, ink); px(b, 32 + e + 1, cy, ink); }
+    else for (let yy = 0; yy < 2 + r; yy++) for (let xx = 0; xx <= r; xx++) px(b, 32 + e + xx, cy - 1 + yy, ink);
   }
 }
-
-// ---- line + variant top features ----
-function topFeature(b, lineId, variant, topY, hw, body) {
-  if (lineId === "mochi_pudding") {
-    stroke(b, 32, topY + 1, 32 + 3, topY - 5, 1, [255, 240, 204]); disc(b, 32 + 3, topY - 5, 1, [255, 240, 204]);
-    if (variant === "brim") { disc(b, 30, topY - 6, 2, [226, 64, 90]); stroke(b, 30, topY - 7, 31, topY - 10, 0, [120, 170, 70]); } // cherry
-  } else if (lineId === "echo_fox") {
-    if (variant === "plush") { disc(b, 32 - hw + 3, topY + 1, 3, body); disc(b, 32 + hw - 3, topY + 1, 3, body); } // fluffy ears
-    else if (variant === "ward") { tri(b, 32 - 3, topY + 1, 32 - 4, topY - 6, 32 + 1, topY, [255, 150, 60]); tri(b, 32 + 3, topY + 1, 32, topY - 7, 32 + 4, topY, [255, 214, 100]); } // lantern flame
-    else { tri(b, 32 - hw + 5, topY + 2, 32 - hw + 1, topY - 5, 32 - hw + 8, topY + 1, body); tri(b, 32 + hw - 5, topY + 2, 32 + hw - 1, topY - 5, 32 + hw - 8, topY + 1, body); } // pointy ears
-  } else if (lineId === "ember_imp") {
-    const hot = variant === "crackle" ? [255, 224, 96] : [255, 206, 86];
-    tri(b, 32 - 4, topY + 2, 32 - 5, topY - 6, 32, topY, [232, 96, 40]); tri(b, 32 + 4, topY + 2, 32 + 5, topY - 6, 32, topY, [232, 96, 40]); tri(b, 32, topY + 1, 32, topY - 9, 32 + 2, topY, hot);
-    if (variant === "crackle") { stroke(b, 32 - 9, topY + 4, 32 - 7, topY + 7, 0, [255, 232, 96]); stroke(b, 32 - 7, topY + 7, 32 - 10, topY + 10, 0, [255, 232, 96]); } // spark bolt
-  } else if (lineId === "sproutling") {
-    stroke(b, 32, topY + 1, 32, topY - 7, 1, [108, 158, 80]);
-    tri(b, 32, topY - 4, 32 - 5, topY - 8, 32 - 1, topY - 10, [128, 200, 108]); tri(b, 32, topY - 4, 32 + 5, topY - 8, 32 + 1, topY - 10, [150, 216, 124]);
-    if (variant === "harvest") { disc(b, 30, topY - 9, 2, [226, 96, 120]); disc(b, 35, topY - 7, 2, [226, 96, 120]); } // berries
+// big white eyes + pupil (bear)
+function eyesBig(b, cy, ex, mood, ink, er = 4) {
+  for (const e of [-ex, ex]) {
+    if (mood === "happy" || mood === "eating") { for (let i = -2; i <= 2; i++) px(b, 32 + e + i, cy + Math.abs(i) - 1, ink); continue; }
+    if (mood === "sleeping") { for (let i = -2; i <= 2; i++) px(b, 32 + e + i, cy, ink); continue; }
+    disc(b, 32 + e, cy, er, [255, 255, 255]);
+    const py = mood === "sad" ? cy + 1 : cy;
+    disc(b, 32 + e, py, 2, ink); px(b, 32 + e - 1, py - 2, [255, 255, 255]);
   }
 }
-
-// ---- variant body overlays (after outline) ----
-function bodyOverlay(b, lineId, variant, cy, hw, hh) {
-  if (variant === "ward" && lineId === "mochi_pudding") { disc(b, 32, cy + 2, 3, [255, 244, 196]); heart(b, 31, cy, [255, 130, 162]); for (let a = 0; a < 7; a++) px(b, 32 + R((hw + 3) * Math.cos(-Math.PI + a / 6 * Math.PI)), cy - hh - 5 + R(3 * Math.sin(-Math.PI + a / 6 * Math.PI)), [255, 226, 130]); }
-  if (variant === "forge") { rrect(b, 32, cy + 2, 3, 3, 1, [255, 196, 86]); px(b, 32, cy + 2, [255, 240, 200]); }
-  if (variant === "swift") { stroke(b, 32 + hw - 1, cy + hh - 2, 32 + hw + 6, cy + hh - 6, 1, LINE.echo_fox.body); disc(b, 32 + hw + 6, cy + hh - 6, 2, [200, 220, 255]); } // tail curl + crescent dot
-  if (variant === "gust") { tri(b, 32 - hw, cy, 32 - hw - 8, cy - 4, 32 - hw - 1, cy + 5, [170, 220, 130]); tri(b, 32 + hw, cy, 32 + hw + 8, cy - 4, 32 + hw + 1, cy + 5, [170, 220, 130]); } // leaf wings
-  if (variant === "dorm") { for (const [dx, dy] of [[-hw + 3, -hh + 3], [hw - 4, -2], [-2, hh - 4]]) px(b, 32 + dx, cy + dy, [120, 168, 90]); } // moss
+// googly mismatched (blocky)
+function eyesGoogly(b, cy, ink) {
+  disc(b, 32 - 5, cy - 1, 4, [255, 255, 255]); disc(b, 32 + 6, cy, 3, [255, 255, 255]);
+  disc(b, 32 - 5, cy, 2, ink); disc(b, 32 + 6, cy, 1, ink);
 }
 
-// activity props (the pet DOING the action) — drawn over an idle body
-function actProp(b, act, cy, hw, hh) {
-  const dark = [60, 62, 72];
-  if (act === "feed") { stroke(b, 32 + hw, cy + 3, 32 + hw + 7, cy + 2, 1, [120, 92, 64]); ell(b, 32 + hw + 11, cy + 3, 4, 2, dark); disc(b, 32 + hw + 11, cy + 2, 1, [240, 184, 92]); } // frying pan
-  else if (act === "clean") { rrect(b, 32, cy + hh + 1, hw, 3, 2, [156, 120, 80]); for (const [dx, dy] of [[-hw + 2, -hh + 1], [hw - 2, -hh + 4], [-3, -hh - 3], [5, -hh - 1]]) { disc(b, 32 + dx, cy + dy, 2, [232, 244, 252]); px(b, 32 + dx - 1, cy + dy - 1, [255, 255, 255]); } } // tub + bubbles
-  else if (act === "play") { rrect(b, 32, cy + hh + 3, 7, 3, 2, [86, 90, 104]); px(b, 32 - 3, cy + hh + 3, [232, 96, 96]); px(b, 32 + 3, cy + hh + 2, [96, 164, 232]); } // controller
-}
-
-function drawClaude(b, lineId, variant, node, mood) {
-  const L = LINE[lineId];
-  let body = [...L.body], leg = [...L.leg];
-  if (variant === "dorm") { body = [0xB0, 0xA6, 0x92]; leg = [0x8C, 0x82, 0x70]; }
-  const sc = [0, 0.72, 0.84, 0.95, 1.05][node];
-  let hw = R(14 * sc), hh = R(11 * sc); const cy = 33;
-  if (variant === "brim" || variant === "brimimp") { hw = R(hw * 1.14); hh = R(hh * 1.1); }
-  if (variant === "hop" || variant === "swift") { hh = R(hh * 1.22); hw = R(hw * 0.9); }
-  const ex = Math.max(4, R(hw * 0.44));
-
-  if (mood === "hide") {
-    rrect(b, 32, 31, 8, 6, 3, body); outline(b, leg); eyes(b, 30, 4, "idle");
-    rrect(b, 32, 47, 18, 8, 3, [150, 120, 86]); rrect(b, 32, 43, 18, 1, 0, [120, 95, 66]);
-    return;
-  }
-  if (mood === "sleeping") {
-    const lw = R(hw * 1.2), lh = R(hh * 0.74);
-    rrect(b, 32, cy + 7, lw, lh, 5, body); outline(b, leg);
-    eyes(b, cy + 6, ex, "sleeping");
-    const Z = (ox, oy, s) => { for (let i = 0; i < s; i++) { px(b, ox + i, oy, [150, 168, 208]); px(b, ox + s - 1 - i, oy + i, [150, 168, 208]); px(b, ox + i, oy + s - 1, [150, 168, 208]); } };
-    Z(44, cy - 1, 3); Z(49, cy - 6, 2);
-    return;
-  }
-
-  const ly = cy + hh + 2;
-  for (const lx of [-hw + 3, -R(hw * 0.32), R(hw * 0.32), hw - 3]) rrect(b, 32 + lx, ly, 2, 3, 1, leg);
-  rrect(b, 32, cy, hw, hh, 5, body);
-  topFeature(b, lineId, variant, cy - hh, hw, body);
-  outline(b, leg);
-
-  eyes(b, cy, ex, mood);
-  if (mood !== "sad" && mood !== "sulk") for (const cx of [32 - hw + 2, 32 + hw - 3]) { px(b, cx, cy + 2, BLUSH); px(b, cx + 1, cy + 2, BLUSH); px(b, cx, cy + 3, BLUSH); px(b, cx + 1, cy + 3, BLUSH); }
+function floatExtras(b, box, mood) {
+  const { cy, hw, hh, ex } = box;
   if (mood === "happy") { heart(b, 32 - hw - 3, cy - 3, [240, 120, 150]); heart(b, 32 + hw, cy - 6, [240, 120, 150]); }
   if (mood === "eating") { rrect(b, 32, cy + hh + 3, 5, 2, 1, [150, 118, 80]); disc(b, 32, cy + hh + 2, 1, [240, 184, 92]); }
+  if (mood === "sleeping") { const Z = (ox, oy, s) => { for (let i = 0; i < s; i++) { px(b, ox + i, oy, [150, 168, 208]); px(b, ox + s - 1 - i, oy + i, [150, 168, 208]); px(b, ox + i, oy + s - 1, [150, 168, 208]); } }; Z(32 + hw, cy - hh, 3); Z(32 + hw + 5, cy - hh - 5, 2); }
+  if (mood === "sulk") { const c = [230, 80, 60], x = 32 + hw, y = cy - hh + 2; px(b, x, y, c); px(b, x + 2, y, c); px(b, x + 1, y + 1, c); px(b, x, y + 2, c); px(b, x + 2, y + 2, c); }
   if (mood === "sad") { px(b, 32 + ex, cy + 2, [120, 180, 230]); px(b, 32 + ex, cy + 3, [120, 180, 230]); }
-  if (mood === "sulk") { const c = [230, 80, 60]; px(b, 41, cy - 6, c); px(b, 43, cy - 6, c); px(b, 42, cy - 5, c); px(b, 41, cy - 4, c); px(b, 43, cy - 4, c); }
-  bodyOverlay(b, lineId, variant, cy, hw, hh);
-  if (mood === "feed" || mood === "clean" || mood === "play") actProp(b, mood, cy, hw, hh);
+}
+function actProp(b, box, act) {
+  const { cy, hw, hh } = box, dark = [60, 62, 72];
+  if (act === "feed") { stroke(b, 32 + hw, cy + 3, 32 + hw + 7, cy + 2, 1, [120, 92, 64]); ell(b, 32 + hw + 11, cy + 3, 4, 2, dark); disc(b, 32 + hw + 11, cy + 2, 1, [240, 184, 92]); }
+  else if (act === "clean") { rrect(b, 32, cy + hh + 1, hw, 3, 2, [156, 120, 80]); for (const [dx, dy] of [[-hw + 2, -hh + 1], [hw - 2, -hh + 4], [-3, -hh - 3], [5, -hh - 1]]) { disc(b, 32 + dx, cy + dy, 2, [232, 244, 252]); px(b, 32 + dx - 1, cy + dy - 1, [255, 255, 255]); } }
+  else if (act === "play") { rrect(b, 32, cy + hh + 3, 7, 3, 2, [86, 90, 104]); px(b, 32 - 3, cy + hh + 3, [232, 96, 96]); px(b, 32 + 3, cy + hh + 2, [96, 164, 232]); }
 }
 
+const SCALE = [0, 0.74, 0.86, 0.96, 1.06];
+const stub = (b, x, y, c) => rrect(b, x, y, 2, 3, 1, c);
+
+// =================== 5 CREATURES ===================
+// each returns the face box { cy, hw, hh, ex }
+const DRAW = {
+  puff(b, variant, node, mood) {
+    const P = PAL.puff, sc = SCALE[node];
+    let r = R(16 * sc), cy = 37 - R(r * 0.1);
+    if (variant === "round") r = R(r * 1.12);
+    const top = cy - r;
+    if (variant === "bunny") { ell(b, 32 - 5, top - 4, 3, 7, P.body); ell(b, 32 + 5, top - 4, 3, 7, P.body); }
+    if (variant === "horn") tri(b, 32, top - 8, 32 - 3, top + 1, 32 + 3, top + 1, P.deco);
+    if (node >= 3) { stub(b, 32 - 6, cy + r - 1, P.body); stub(b, 32 + 6, cy + r - 1, P.body); }
+    disc(b, 32, cy, r, P.body);
+    if (variant === "round") { disc(b, 30, top - 1, 2, [226, 64, 90]); stroke(b, 30, top - 2, 31, top - 5, 0, [120, 170, 70]); }
+    outline(b, P.ink);
+    const ex = R(r * 0.42);
+    eyesDark(b, cy, ex, mood, P.ink, 1);
+    if (mood !== "sad" && mood !== "sulk") { blush2(b, 32 - ex - 3, cy + 3, P.cheek); blush2(b, 32 + ex + 2, cy + 3, P.cheek); }
+    px(b, 32, cy + 5, P.ink); px(b, 31, cy + 6, P.ink); px(b, 33, cy + 6, P.ink);
+    return { cy, hw: r, hh: r, ex };
+  },
+  claude(b, variant, node, mood) {
+    const P = PAL.claude, sc = SCALE[node];
+    let hw = R(14 * sc), hh = R(11 * sc), cy = 34;
+    if (variant === "round") { hw = R(hw * 1.16); hh = R(hh * 1.1); }
+    const top = cy - hh;
+    if (variant === "curl") { stroke(b, 32, top + 1, 32 + 4, top - 6, 1, P.body); disc(b, 32 + 4, top - 6, 2, P.deco); }
+    if (variant === "ears") { disc(b, 32 - hw + 3, top + 1, 3, P.body); disc(b, 32 + hw - 3, top + 1, 3, P.body); }
+    for (const lx of [-hw + 3, -R(hw * 0.32), R(hw * 0.32), hw - 3]) stub(b, 32 + lx, cy + hh + 2, P.leg);
+    rrect(b, 32, cy, hw, hh, 5, P.body);
+    outline(b, P.leg);
+    const ex = Math.max(5, R(hw * 0.44));
+    eyesDark(b, cy, ex, mood, P.ink, 1);
+    if (mood !== "sad" && mood !== "sulk") { blush2(b, 32 - hw + 2, cy + 2, P.cheek); blush2(b, 32 + hw - 3, cy + 2, P.cheek); }
+    return { cy, hw, hh, ex };
+  },
+  blocky(b, variant, node, mood) {
+    const P = PAL.blocky, sc = SCALE[node];
+    let hw = R(13 * sc), hh = R(14 * sc), cy = 33;
+    if (variant === "round") { hw = R(hw * 1.18); hh = R(hh * 0.92); }
+    const top = cy - hh;
+    if (variant === "antenna") { stroke(b, 32, top, 32, top - 7, 1, P.ink); disc(b, 32, top - 8, 2, P.deco); }
+    if (variant === "wing") { tri(b, 32 - hw, cy, 32 - hw - 8, cy - 4, 32 - hw - 2, cy + 6, P.body); tri(b, 32 + hw, cy, 32 + hw + 8, cy - 4, 32 + hw + 2, cy + 6, P.body); }
+    rrect(b, 32, cy, hw, hh, 4, P.body);
+    if (node >= 2) { rrect(b, 32 - 6, cy + hh, 3, 3, 1, P.body); rrect(b, 32 + 6, cy + hh, 3, 3, 1, P.body); }
+    outline(b, P.ink, 2);
+    if (mood === "happy" || mood === "eating" || mood === "sleeping") eyesDark(b, cy - 1, 6, mood, P.ink, 1); else eyesGoogly(b, cy - 1, P.ink);
+    rrect(b, 32, cy + 6, 4, 2, 1, P.deco); px(b, 32, cy + 6, P.ink); // beak
+    return { cy, hw, hh, ex: 6 };
+  },
+  penguin(b, variant, node, mood) {
+    const P = PAL.penguin, sc = SCALE[node];
+    let rx = R(13 * sc), ry = R(16 * sc), cy = 33;
+    if (variant === "round") { rx = R(rx * 1.12); ry = R(ry * 1.02); }
+    ell(b, 32 - 5, cy + ry, 3, 2, P.foot); ell(b, 32 + 5, cy + ry, 3, 2, P.foot);
+    if (variant === "crest") { stroke(b, 32, cy - ry, 32, cy - ry - 6, 1, P.body); ell(b, 32, cy - ry - 7, 3, 2, P.body); }
+    if (variant === "fluff") for (const [dx, dy] of [[-4, -ry - 1], [0, -ry - 4], [4, -ry - 1]]) disc(b, 32 + dx, cy + dy, 2, P.body);
+    ell(b, 32, cy, rx, ry, P.body);
+    ell(b, 32 - rx, cy + 3, 2, 6, P.body); ell(b, 32 + rx, cy + 3, 2, 6, P.body);
+    ell(b, 32, cy + 4, rx - 2, ry - 4, P.belly);
+    outline(b, P.ink);
+    const ex = R(rx * 0.36);
+    eyesDark(b, cy - 3, ex, mood, P.ink, 0);
+    tri(b, 32, cy + 1, 32 - 3, cy + 4, 32 + 3, cy + 4, P.beak); px(b, 32, cy + 4, P.ink);
+    if (mood !== "sad" && mood !== "sulk") { blush2(b, 32 - rx + 1, cy + 1, P.cheek); blush2(b, 32 + rx - 2, cy + 1, P.cheek); }
+    return { cy, hw: rx, hh: ry, ex };
+  },
+  bear(b, variant, node, mood) {
+    const P = PAL.bear, sc = SCALE[node];
+    let r = R(15 * sc), cy = 36 - R(r * 0.1);
+    if (variant === "round") r = R(r * 1.12);
+    const er = variant === "roundear" ? 6 : 5;
+    disc(b, 32 - r + 2, cy - r + 2, er, P.body); disc(b, 32 + r - 2, cy - r + 2, er, P.body);
+    if (variant === "ahoge") { stroke(b, 32, cy - r, 32 + 2, cy - r - 7, 1, P.body); disc(b, 32 + 2, cy - r - 7, 1, P.body); }
+    if (node >= 3) { disc(b, 32 - 6, cy + r - 1, 3, P.body); disc(b, 32 + 6, cy + r - 1, 3, P.body); }
+    disc(b, 32, cy, r, P.body);
+    outline(b, P.ink);
+    const ex = R(r * 0.42), eyeR = node === 1 ? 3 : 4;
+    eyesBig(b, cy - 1, ex, mood, P.ink, eyeR);
+    disc(b, 32 - r + 2, cy + 4, 3, P.cheek); disc(b, 32 + r - 2, cy + 4, 3, P.cheek);
+    ell(b, 32, cy + 6, 4, 3, P.muzzle);
+    px(b, 32, cy + 4, P.ink); px(b, 31, cy + 7, P.ink); px(b, 32, cy + 8, P.ink); px(b, 33, cy + 7, P.ink);
+    return { cy, hw: r, hh: r, ex };
+  },
+};
+
+function drawHide(b, P) {
+  rrect(b, 32, 30, 8, 6, 3, P.body); outline(b, P.leg || P.ink); eyesDark(b, 29, 4, "idle", P.ink, 0);
+  rrect(b, 32, 47, 18, 8, 3, [150, 120, 86]); rrect(b, 32, 43, 18, 1, 0, [120, 95, 66]);
+}
 function drawEgg(b, body) {
   shadow(b, 56, 12);
   ell(b, 32, 35, 15, 19, mix(body, [255, 255, 255], 0.5));
@@ -139,13 +183,18 @@ function drawEgg(b, body) {
 
 const NODE = { egg: 0, baby: 1, child: 2, teen: 3, adult: 4 };
 const MOODS = ["idle", "happy", "sad", "sleeping", "sulk", "hide", "eating"];
-const ACTS = ["feed", "clean", "play"]; // transient activity poses (client swaps to these on tap)
+const ACTS = ["feed", "clean", "play"];
+const EMOTION = new Set(MOODS);
 
 function renderBuf(lineId, variant, stage, mood) {
   const b = canvas();
-  if (stage === "egg") { drawEgg(b, LINE[lineId].body); return b; }
+  if (stage === "egg") { drawEgg(b, PAL[lineId].body); return b; }
   shadow(b);
-  drawClaude(b, lineId, variant, NODE[stage], mood);
+  if (mood === "hide") { drawHide(b, PAL[lineId]); return b; }
+  const eyeMood = EMOTION.has(mood) ? mood : "idle"; // act poses use idle eyes
+  const box = DRAW[lineId](b, variant, NODE[stage], eyeMood);
+  floatExtras(b, box, eyeMood);
+  if (ACTS.includes(mood)) actProp(b, box, mood);
   return b;
 }
 function render(lineId, variant, stage, mood) { return encode(renderBuf(lineId, variant, stage, mood)); }
@@ -182,6 +231,6 @@ if (isMain) {
     for (const b of Object.values(line.branches)) writeSet(join(OUT, `${lineId}__${b.variant}`), lineId, b.variant, ["teen", "adult"]);
   }
   mkdirSync(join(OUT, "_fallback"), { recursive: true });
-  writeFileSync(join(OUT, "_fallback", "blob.png"), render("ember_imp", "true", "child", "idle"));
-  console.log(`rendered ${n} sprites${only ? " for " + only : " (4 lines · 克劳德 style)"}`);
+  writeFileSync(join(OUT, "_fallback", "blob.png"), render("claude", "true", "child", "idle"));
+  console.log(`rendered ${n} sprites${only ? " for " + only : " (5 creatures)"}`);
 }

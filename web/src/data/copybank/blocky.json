@@ -1,0 +1,49 @@
+{
+  "archetypeKey": "blocky",
+  "displayName": "方头崽",
+  "slots": {
+    "kaomoji": ["▪_▪", "·_·", "—_—", "◽◽", "᎒̮᎒"],
+    "endearment": ["你", "操作员"],
+    "food": ["能量块", "口粮", "补给"],
+    "activity": ["待机", "巡个逻", "发会儿呆"]
+  },
+  "lines": [
+    { "id": "bk.greet.open.1", "event": "greet.open", "text": "……{endearment}。已上线。{kaomoji}" },
+    { "id": "bk.greet.open.2", "event": "greet.open", "text": "哔。检测到{endearment}。心情值，+1。{kaomoji}" },
+    { "id": "bk.greet.return.1", "event": "greet.return", "text": "……回来了。位置已记录。{kaomoji}" },
+    { "id": "bk.feed.love.1", "event": "feed.love", "text": "{food}入库。……还行。{kaomoji}" },
+    { "id": "bk.feed.neutral.1", "event": "feed.neutral", "text": "已饱和。继续{activity}。{kaomoji}" },
+    { "id": "bk.clean.1", "event": "clean", "text": "外壳清洁完毕。……舒服。{kaomoji}" },
+    { "id": "bk.play.1", "event": "play", "text": "陪玩模式。……勉强启动。{kaomoji}" },
+    { "id": "bk.pet.1", "event": "pet", "text": "……这个动作，允许。{kaomoji}" },
+    { "id": "bk.sleep.tuck.1", "event": "sleep.tuck", "text": "进入休眠。……晚安，操作员。{kaomoji}" },
+    { "id": "bk.sleep.wake.1", "event": "sleep.wake", "text": "重启完成。第一眼，是{endearment}。{kaomoji}" },
+    { "id": "bk.medicine.1", "event": "medicine", "text": "修复程序，运行中。……能忍。{kaomoji}" },
+    { "id": "bk.checkin.1", "event": "checkin", "text": "今日签到。……记下了。{kaomoji}" },
+    { "id": "bk.state.hungry.1", "event": "state.hungry", "text": "系统提示：能量低。请投放{food}。{kaomoji}" },
+    { "id": "bk.state.hungry.2", "event": "state.hungry", "text": "……饿。不催。但你懂的。{kaomoji}" },
+    { "id": "bk.state.dirty.1", "event": "state.dirty", "text": "外壳沾灰。……不太体面。{kaomoji}" },
+    { "id": "bk.state.sick.1", "event": "state.sick", "text": "警告：核心过载。……守着我一会儿。{kaomoji}" },
+    { "id": "bk.state.sleepy.1", "event": "state.sleepy", "text": "电量告急……该休眠了。{kaomoji}" },
+    { "id": "bk.state.bored.1", "event": "state.bored", "text": "无聊指数，超标。……陪我{activity}。{kaomoji}" },
+    { "id": "bk.beg.want.1", "event": "beg.want", "text": "……请求一次陪玩。（小声）{kaomoji}" },
+    { "id": "bk.mood.elated.1", "event": "mood.elated", "text": "心情值：满。……今天不错。{kaomoji}" },
+    { "id": "bk.idle.mutter.1", "event": "idle.mutter", "text": "（盯着远方，一动不动）{kaomoji}" },
+    { "id": "bk.growth.promote.1", "event": "growth.promote", "text": "版本更新完成。……我变强了。{kaomoji}" },
+    { "id": "bk.streak.milestone.1", "event": "streak.milestone", "text": "连续运行{streak}天。……稳定。{kaomoji}" },
+    { "id": "bk.name.given.1", "event": "name.given", "text": "命名已写入。……不会丢的。{kaomoji}" }
+  ],
+  "diary": {
+    "openers": [{ "id": "bk.o.1", "text": "今日日志：" }, { "id": "bk.o.2", "text": "记录——" }, { "id": "bk.o.3", "text": "深夜值守，", "requires": { "timeBand": ["深夜"] } }],
+    "bodies": [
+      { "id": "bk.b.1", "text": "和{endearment}待在一起，系统稳定。" },
+      { "id": "bk.b.2", "text": "{activity}，无异常。" },
+      { "id": "bk.b.hungry", "text": "能量偏低，但没声张。", "requires": { "need": ["hungry"] } }
+    ],
+    "memory": [
+      { "id": "bk.m.streak", "text": "已连续运行{streak}天，", "requires": { "streakMin": 7 } },
+      { "id": "bk.m.days", "text": "与操作员相处第{days}天，", "requires": { "daysMin": 3 } }
+    ],
+    "signoffs": [{ "id": "bk.s.1", "text": "……明天照常。" }, { "id": "bk.s.2", "text": "日志结束。" }, { "id": "bk.s.3", "text": "晚安，操作员。" }]
+  }
+}

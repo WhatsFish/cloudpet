@@ -1,0 +1,49 @@
+{
+  "archetypeKey": "penguin",
+  "displayName": "波波企鹅",
+  "slots": {
+    "kaomoji": ["(￣ー￣)", "(´･_･`)", "(｀・ω・´)", "( ˙꒳​˙ )", "(¬‿¬)"],
+    "endearment": ["你", "凡人"],
+    "food": ["新鲜的鱼", "上好的点心", "讲究的那一口"],
+    "activity": ["散个步", "看会儿风景", "晒晒太阳"]
+  },
+  "lines": [
+    { "id": "pg.greet.open.1", "event": "greet.open", "text": "……来了。本企鹅，赏你一眼。{kaomoji}" },
+    { "id": "pg.greet.open.2", "event": "greet.open", "text": "{endearment}来啦。嗯，勉强算准时。{kaomoji}" },
+    { "id": "pg.greet.return.1", "event": "greet.return", "text": "……回来了啊。我可没等你。（其实有）{kaomoji}" },
+    { "id": "pg.feed.love.1", "event": "feed.love", "text": "这口{food}…还算讲究。赏脸收下了。{kaomoji}" },
+    { "id": "pg.feed.neutral.1", "event": "feed.neutral", "text": "嗯。够了。撤吧。{kaomoji}" },
+    { "id": "pg.clean.1", "event": "clean", "text": "羽毛重归整洁。这才合本企鹅的体面。{kaomoji}" },
+    { "id": "pg.play.1", "event": "play", "text": "玩就玩…慢点，别毛躁。{kaomoji}" },
+    { "id": "pg.pet.1", "event": "pet", "text": "……手法尚可。准你再摸一下。{kaomoji}" },
+    { "id": "pg.sleep.tuck.1", "event": "sleep.tuck", "text": "本企鹅要养神了。……守好门。{kaomoji}" },
+    { "id": "pg.sleep.wake.1", "event": "sleep.wake", "text": "醒了。睁眼第一个看到你……算你有福。{kaomoji}" },
+    { "id": "pg.medicine.1", "event": "medicine", "text": "苦。但本企鹅病着也得优雅。……喂吧。{kaomoji}" },
+    { "id": "pg.checkin.1", "event": "checkin", "text": "今日，你又来觐见了。……记你一功。{kaomoji}" },
+    { "id": "pg.state.hungry.1", "event": "state.hungry", "text": "……本企鹅不饿。只是想要那口{food}罢了。{kaomoji}" },
+    { "id": "pg.state.hungry.2", "event": "state.hungry", "text": "肚子的事，本企鹅自有分寸。……不过你看着办。{kaomoji}" },
+    { "id": "pg.state.dirty.1", "event": "state.dirty", "text": "羽毛乱了，失了体面。本企鹅不喜欢这样。{kaomoji}" },
+    { "id": "pg.state.sick.1", "event": "state.sick", "text": "……没事。只是不太舒展。你守着，本企鹅不拦。{kaomoji}" },
+    { "id": "pg.state.sleepy.1", "event": "state.sleepy", "text": "困意来了…本企鹅要去养神。{kaomoji}" },
+    { "id": "pg.state.bored.1", "event": "state.bored", "text": "有些无趣。……陪本企鹅{activity}吧，赏你的。{kaomoji}" },
+    { "id": "pg.beg.want.1", "event": "beg.want", "text": "那个…陪本企鹅{activity}片刻，如何。（难得开口）{kaomoji}" },
+    { "id": "pg.mood.elated.1", "event": "mood.elated", "text": "今日心情上佳。……连你都顺眼了几分。{kaomoji}" },
+    { "id": "pg.idle.mutter.1", "event": "idle.mutter", "text": "（背着手，慢悠悠踱步，望着远处）{kaomoji}" },
+    { "id": "pg.growth.promote.1", "event": "growth.promote", "text": "本企鹅…又长进了一截。气度更足了。{kaomoji}" },
+    { "id": "pg.streak.milestone.1", "event": "streak.milestone", "text": "你已伴本企鹅{streak}日。……难得的恒心。{kaomoji}" },
+    { "id": "pg.name.given.1", "event": "name.given", "text": "这名号…本企鹅收下了。配得上。{kaomoji}" }
+  ],
+  "diary": {
+    "openers": [{ "id": "pg.o.1", "text": "今日" }, { "id": "pg.o.2", "text": "这一日，" }, { "id": "pg.o.3", "text": "夜深，独自", "requires": { "timeBand": ["深夜"] } }],
+    "bodies": [
+      { "id": "pg.b.1", "text": "有{endearment}在侧，倒也不算无趣。" },
+      { "id": "pg.b.2", "text": "慢悠悠看了会儿风景。" },
+      { "id": "pg.b.hungry", "text": "饿是有点，但本企鹅没声张。", "requires": { "need": ["hungry"] } }
+    ],
+    "memory": [
+      { "id": "pg.m.streak", "text": "你已陪本企鹅{streak}日不曾间断，", "requires": { "streakMin": 7 } },
+      { "id": "pg.m.days", "text": "相识第{days}日，本企鹅渐渐准你靠近，", "requires": { "daysMin": 3 } }
+    ],
+    "signoffs": [{ "id": "pg.s.1", "text": "明日，许你再来。" }, { "id": "pg.s.2", "text": "如此而已。" }, { "id": "pg.s.3", "text": "退下吧，晚安。" }]
+  }
+}

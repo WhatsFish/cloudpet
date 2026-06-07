@@ -63,12 +63,11 @@ export default function Codex() {
   return (
     <main className="max-w-5xl mx-auto px-5 py-10" style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}>
       <header className="mb-8">
-        <h1 className="text-xl font-bold tracking-tight">云宠物 · 图鉴 <span className="text-sm font-normal text-neutral-400">V4 养成进化</span></h1>
+        <h1 className="text-xl font-bold tracking-tight">云宠物 · 图鉴 <span className="text-sm font-normal text-neutral-400">蠢萌 5 只</span></h1>
         <p className="text-neutral-500 text-sm mt-1 leading-relaxed">
-          4 条<strong className="text-neutral-700">同源进化线</strong>。每只宠物从蛋到成年都是<strong>同一只</strong>——
-          <strong className="text-neutral-700">养育决定它长成自己的哪一面</strong>：蛋→幼年→童年是共享主干，
+          <strong className="text-neutral-700">5 只各有性格的小宠</strong>（奶团 / 克劳德 / 方头崽 / 波波企鹅 / 墩墩熊）。每只从蛋到成年都是<strong>同一只</strong>——
+          <strong className="text-neutral-700">养育决定它长成自己的哪一面</strong>：蛋→幼年→童年是主干，
           到<strong>少年</strong>按你最常做的事分叉成 3 种自己的变体 + 均衡的本形；成年形态先画好留作 Phase 2。
-          关键节点有<strong className="text-neutral-700">真实的形态变化</strong>(尾巴分叉/焰尾/叶翼/石壳…)，不是单纯变大。
         </p>
       </header>
 
@@ -164,7 +163,7 @@ export default function Codex() {
       </div>
 
       <footer className="mt-12 pt-6 border-t border-neutral-200 text-xs text-neutral-400">
-        程序化美术引擎 v3 · scripts/gen-art.mjs（4 线 × 真形+3变体 = 16 种成年剪影）。养育→分叉：喂食→丰裕形，洗澡梳理→敏捷形，看医生→守护形，均衡→本形（陪玩·摸摸免费，不影响形态）。
+        程序化美术引擎 v7 · scripts/gen-art.mjs（5 只 × 真形+3变体 = 20 种成年形态 + 活动姿态）。养育→分叉：喂食→丰裕形，洗澡梳理→敏捷形，看医生→守护形，均衡→本形（陪玩·摸摸免费，不影响形态）。
       </footer>
     </main>
   );

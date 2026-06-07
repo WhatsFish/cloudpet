@@ -1,0 +1,50 @@
+{
+  "archetypeKey": "bear",
+  "displayName": "墩墩熊",
+  "slots": {
+    "kaomoji": ["ヽ(°〇°)ﾉ", "(≧▽≦)", "ʕ•ᴥ•ʔ", "(/^▽^)/", "ʕっ•ᴥ•ʔっ"],
+    "endearment": ["你", "老铁"],
+    "food": ["大份的饭饭", "甜甜的蜂蜜", "好多好吃的"],
+    "activity": ["冲出去疯一会儿", "打个滚", "一起蹦跶"]
+  },
+  "lines": [
+    { "id": "be.greet.open.1", "event": "greet.open", "text": "{endearment}来啦！嘿嘿嘿，等你老半天啦！{kaomoji}" },
+    { "id": "be.greet.open.2", "event": "greet.open", "text": "是{endearment}是{endearment}！冲冲冲，今天玩啥！{kaomoji}" },
+    { "id": "be.greet.return.1", "event": "greet.return", "text": "你回来啦！我我我都想你一万遍了！{kaomoji}" },
+    { "id": "be.feed.love.1", "event": "feed.love", "text": "哇！{food}！谢啦老铁，吃饱饱有劲儿！{kaomoji}" },
+    { "id": "be.feed.love.2", "event": "feed.love", "text": "嗷呜——大口炫掉！还想再来！{kaomoji}" },
+    { "id": "be.feed.neutral.1", "event": "feed.neutral", "text": "嗝~吃撑啦，肚皮圆鼓鼓{kaomoji}" },
+    { "id": "be.clean.1", "event": "clean", "text": "搓澡澡！哗啦哗啦，香喷喷啦！{kaomoji}" },
+    { "id": "be.play.1", "event": "play", "text": "玩玩玩！来嘛{endearment}，{activity}！{kaomoji}" },
+    { "id": "be.pet.1", "event": "pet", "text": "嘿嘿被摸头头，舒服得直蹬腿{kaomoji}" },
+    { "id": "be.sleep.tuck.1", "event": "sleep.tuck", "text": "唔…玩累啦，那我先睡咯，晚安{endearment}！{kaomoji}" },
+    { "id": "be.sleep.wake.1", "event": "sleep.wake", "text": "睡饱啦！精神百倍！冲鸭！{kaomoji}" },
+    { "id": "be.medicine.1", "event": "medicine", "text": "呜苦苦…不过为了快点好起来玩，我喝！{kaomoji}" },
+    { "id": "be.checkin.1", "event": "checkin", "text": "今天你也来看我啦！开心到原地转圈圈！{kaomoji}" },
+    { "id": "be.state.hungry.1", "event": "state.hungry", "text": "饿饿！肚子在打鼓啦！快投喂大份{food}！{kaomoji}" },
+    { "id": "be.state.hungry.2", "event": "state.hungry", "text": "前胸贴后背啦老铁，给我来口{food}嘛！{kaomoji}" },
+    { "id": "be.state.dirty.1", "event": "state.dirty", "text": "呜，身上脏兮兮的，黏糊糊好难受，洗澡澡！{kaomoji}" },
+    { "id": "be.state.sick.1", "event": "state.sick", "text": "呜呜…我蔫了，跑不动了，{endearment}抱抱我嘛{kaomoji}" },
+    { "id": "be.state.sleepy.1", "event": "state.sleepy", "text": "呼啊…困死啦，眼皮打架，玩不动了{kaomoji}" },
+    { "id": "be.state.bored.1", "event": "state.bored", "text": "无聊死啦无聊死啦！{endearment}快陪我{activity}！{kaomoji}" },
+    { "id": "be.beg.want.1", "event": "beg.want", "text": "嘛~陪我{activity}一下下嘛！求求啦！{kaomoji}" },
+    { "id": "be.mood.elated.1", "event": "mood.elated", "text": "今天超开心！开心到能蹦三尺高！{kaomoji}" },
+    { "id": "be.idle.mutter.1", "event": "idle.mutter", "text": "（晃来晃去，嘴里哼着乱七八糟的调子）{kaomoji}" },
+    { "id": "be.growth.promote.1", "event": "growth.promote", "text": "哇我长大啦！变厉害了！快看快看！{kaomoji}" },
+    { "id": "be.streak.milestone.1", "event": "streak.milestone", "text": "我们一起疯了{streak}天啦！老铁就是讲义气！{kaomoji}" },
+    { "id": "be.name.given.1", "event": "name.given", "text": "这是我的名字嘛？！嘿嘿我超喜欢！{kaomoji}" }
+  ],
+  "diary": {
+    "openers": [{ "id": "be.o.1", "text": "今天" }, { "id": "be.o.2", "text": "这一天超棒！" }, { "id": "be.o.3", "text": "夜里偷偷", "requires": { "timeBand": ["深夜"] } }],
+    "bodies": [
+      { "id": "be.b.1", "text": "和{endearment}一起疯，开心到飞起！" },
+      { "id": "be.b.2", "text": "打了好几个滚，爽歪歪。" },
+      { "id": "be.b.hungry", "text": "玩太疯啦，把肚子都饿瘪了。", "requires": { "need": ["hungry"] } }
+    ],
+    "memory": [
+      { "id": "be.m.streak", "text": "我们已经一起嗨了{streak}天啦，", "requires": { "streakMin": 7 } },
+      { "id": "be.m.days", "text": "认识{endearment}第{days}天，越来越亲啦，", "requires": { "daysMin": 3 } }
+    ],
+    "signoffs": [{ "id": "be.s.1", "text": "明天还要一起疯！" }, { "id": "be.s.2", "text": "嘿嘿，记心里啦！" }, { "id": "be.s.3", "text": "晚安老铁，做个好梦！" }]
+  }
+}
