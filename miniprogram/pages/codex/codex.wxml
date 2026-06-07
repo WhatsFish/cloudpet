@@ -1,11 +1,16 @@
 <view class="page">
-  <view class="codex-intro muted">十只各有性格的小宠。你的本命宠会带「本命」徽，其余的慢慢来认识～</view>
-  <view class="grid">
-    <view wx:for="{{list}}" wx:key="key" class="cell {{item.bonded ? 'cell--bonded' : ''}}">
-      <image class="cell-sprite pixel {{item.shipped ? '' : 'is-preview'}}" src="{{item.sprite}}" mode="aspectFit" />
-      <view class="cell-name">{{item.name}}</view>
-      <view wx:if="{{item.bonded}}" class="cell-tag">本命</view>
-      <view wx:elif="{{!item.shipped}}" class="cell-tag cell-tag--soon">敬请期待</view>
+  <view class="codex-intro muted">4 条同源进化线。你的本命宠会带「本命」徽。养育决定它长成自己的哪一面——喂食→丰裕，洗澡→敏捷，看医生→守护，均衡→本形（陪玩·摸摸免费，不影响形态）。</view>
+  <view wx:for="{{lines}}" wx:for-item="line" wx:key="key" class="linecard {{line.bonded ? 'linecard--bonded' : ''}}">
+    <view class="line-head">
+      <text class="line-name">{{line.name}}</text>
+      <text wx:if="{{line.bonded}}" class="line-tag">本命</text>
+    </view>
+    <view class="forms">
+      <view wx:for="{{line.forms}}" wx:for-item="f" wx:key="id" class="form {{f.lean === '均衡养' ? 'form--true' : ''}}">
+        <image class="form-sprite" src="{{f.sprite}}" mode="aspectFit" />
+        <text class="form-label">{{f.label}}</text>
+        <text class="form-lean">{{f.lean}}</text>
+      </view>
     </view>
   </view>
 </view>
