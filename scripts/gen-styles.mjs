@@ -117,31 +117,50 @@ const SCHEMES = {
       if (s.deco) deco(b, s.deco, cy - hh, pal);
     },
   },
-  // D — 豆豆 (bean sprout derpy): a bean body on stick legs, stick arms, a sprout that
-  // grows into leaves/flower — built-in 成长 + 装饰; big dumb grin.
-  bean: {
-    name: "豆豆", tag: "豆芽精 · 火柴肢 · 傻乐脸",
-    pal: { body: hx("#D7E59A"), deco: hx("#F4C6D8"), ink: hx("#56632F"), cheek: hx("#E7B0A0"), sprout: hx("#7FB85E") },
-    variants: ["base", "flower", "fruit"],
+  // D — 企鹅 (Suica-card penguin): chubby slate-blue oval, white face+belly hood,
+  // little orange beak + feet, tiny flippers. Calm, round, derpy.
+  penguin: {
+    name: "企鹅", tag: "Suica 卡小企鹅风 · 圆滚滚蓝灰",
+    pal: { body: hx("#6F8DA9"), belly: hx("#FAFBFC"), beak: hx("#F2A23C"), ink: hx("#39465A"), cheek: hx("#F3B5BE"), foot: hx("#EF9A2E"), deco: hx("#F2A0B4") },
+    variants: ["base", "crest", "fluff"],
     draw(b, s, pal) {
-      const sc = [0, 0.72, 0.86, 1][s.stage], rx = Math.round(11 * sc), ry = Math.round(14 * sc), cy = 34;
-      // stick legs + arms
-      stroke(b, 32 - 4, cy + ry - 1, 32 - 5, cy + ry + 7, 1, pal.ink); stroke(b, 32 + 4, cy + ry - 1, 32 + 5, cy + ry + 7, 1, pal.ink);
-      disc(b, 32 - 5, cy + ry + 8, 1, pal.ink); disc(b, 32 + 5, cy + ry + 8, 1, pal.ink);
-      stroke(b, 32 - rx, cy + 2, 32 - rx - 6, cy - 2, 1, pal.ink); stroke(b, 32 + rx, cy + 2, 32 + rx + 6, cy - 2, 1, pal.ink);
-      // sprout / variant crown
-      const top = cy - ry;
-      stroke(b, 32, top + 2, 32, top - 5 - s.stage * 2, 1, pal.sprout);
-      if (s.variant === "flower") { for (let a = 0; a < 5; a++) { const an = a / 5 * 6.283; disc(b, 32 + Math.round(3 * Math.cos(an)), top - 8 + Math.round(3 * Math.sin(an)), 1, pal.deco); } disc(b, 32, top - 8, 1, [255, 240, 150]); }
-      else if (s.variant === "fruit") { disc(b, 31, top - 8, 2, hx("#E2607A")); disc(b, 35, top - 6, 2, hx("#E2607A")); }
-      else { tri(b, 32, top - 4, 32 - 5, top - 8, 32 - 1, top - 10, pal.sprout); tri(b, 32, top - 4, 32 + 5, top - 8, 32 + 1, top - 10, pal.sprout); }
-      ell(b, 32, cy, rx, ry, pal.body);
+      const sc = [0, 0.74, 0.88, 1][s.stage], rx = Math.round(13 * sc), ry = Math.round(16 * sc), cy = 33;
+      ell(b, 32 - 5, cy + ry, 3, 2, pal.foot); ell(b, 32 + 5, cy + ry, 3, 2, pal.foot); // feet
+      if (s.variant === "crest") { stroke(b, 32, cy - ry, 32, cy - ry - 6, 1, pal.body); ell(b, 32, cy - ry - 7, 3, 2, pal.body); }
+      if (s.variant === "fluff") { for (const [dx, dy] of [[-4, -ry - 1], [0, -ry - 4], [4, -ry - 1]]) disc(b, 32 + dx, cy + dy, 2, pal.body); }
+      ell(b, 32, cy, rx, ry, pal.body); // body
+      ell(b, 32 - rx, cy + 3, 2, 6, pal.body); ell(b, 32 + rx, cy + 3, 2, 6, pal.body); // flippers
+      ell(b, 32, cy + 4, rx - 2, ry - 4, pal.belly); // white face + belly hood (top stays blue)
       outline(b, pal.ink, 1);
-      blush(b, 32, cy + 3, Math.round(rx * 0.7), pal.cheek);
-      eyes(b, 32, cy - 1, Math.round(rx * 0.5), s.stage === 1 ? 4 : 5, pal.ink, [0, 0], s.mood);
-      // big dumb open grin
-      ell(b, 32, cy + 6, 3, 2, pal.ink); ell(b, 32, cy + 6, 2, 1, hx("#E27A86"));
-      if (s.deco) deco(b, s.deco, top - (s.variant === "base" ? 10 : 4), pal);
+      eyes(b, 32, cy - 3, Math.round(rx * 0.34), s.stage === 1 ? 3 : 4, pal.ink, [0, 1], s.mood);
+      tri(b, 32, cy + 1, 32 - 3, cy + 4, 32 + 3, cy + 4, pal.beak); px(b, 32, cy + 4, pal.ink); // beak
+      blush(b, 32, cy + 2, Math.round(rx * 0.66), pal.cheek);
+      if (s.deco) deco(b, s.deco, cy - ry, pal);
+    },
+  },
+  // E — 熊本熊 (Kumamon-style bear): round charcoal blob, big white eyes, big RED round
+  // cheeks (the signature), round ears, a cream muzzle. Bold + derpy.
+  bear: {
+    name: "熊本熊", tag: "熊本熊 / くまモン风 · 黑团红脸蛋",
+    pal: { body: hx("#2E2E3A"), muzzle: hx("#F2E8D8"), ink: hx("#16161E"), cheek: hx("#E23838"), deco: hx("#F2A03C") },
+    variants: ["base", "roundear", "ahoge"],
+    draw(b, s, pal) {
+      const sc = [0, 0.74, 0.88, 1][s.stage], r = Math.round(15 * sc), cy = 36 - Math.round(r * 0.1);
+      const er = s.variant === "roundear" ? 6 : 5;
+      disc(b, 32 - r + 2, cy - r + 2, er, pal.body); disc(b, 32 + r - 2, cy - r + 2, er, pal.body); // round ears
+      if (s.variant === "ahoge") { stroke(b, 32, cy - r, 32 + 2, cy - r - 7, 1, pal.body); disc(b, 32 + 2, cy - r - 7, 1, pal.body); }
+      if (s.stage >= 3) { disc(b, 32 - 6, cy + r - 1, 3, pal.body); disc(b, 32 + 6, cy + r - 1, 3, pal.body); } // feet
+      disc(b, 32, cy, r, pal.body); // head/body
+      outline(b, pal.ink, 1);
+      const ex = Math.round(r * 0.42);
+      const eyeR = s.stage === 1 ? 3 : 4;
+      disc(b, 32 - ex, cy - 1, eyeR, [255, 255, 255]); disc(b, 32 + ex, cy - 1, eyeR, [255, 255, 255]); // big white eyes
+      disc(b, 32 - ex, cy, 2, pal.ink); disc(b, 32 + ex, cy, 2, pal.ink);
+      px(b, 32 - ex - 1, cy - 2, [255, 255, 255]); px(b, 32 + ex - 1, cy - 2, [255, 255, 255]);
+      disc(b, 32 - r + 2, cy + 4, 3, pal.cheek); disc(b, 32 + r - 2, cy + 4, 3, pal.cheek); // big red cheeks
+      ell(b, 32, cy + 6, 4, 3, pal.muzzle); // cream muzzle
+      px(b, 32, cy + 4, pal.ink); px(b, 31, cy + 7, pal.ink); px(b, 32, cy + 8, pal.ink); px(b, 33, cy + 7, pal.ink); // nose + mouth
+      if (s.deco) deco(b, s.deco, cy - r, pal);
     },
   },
 };

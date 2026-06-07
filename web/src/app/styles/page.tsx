@@ -15,8 +15,10 @@ const SCHEMES: Scheme[] = [
     vibe: "暖珊瑚色圆团，头顶一根小卷须，底下几条短触手。最像 Claude，温暖呆萌。", variants: "短触手 / 卷触手 / 长触手" },
   { key: "blocky", name: "方头崽", tag: "拓麻歌子风 · 厚嘴方块 · 复古点阵", ref: "拓麻歌子 / 复古 LCD",
     vibe: "方头方脑、粗黑描边、错位的呆滞眼睛 + 厚嘴。最简单、最复古、最像电子宠物机。", variants: "本体 / 天线 / 小翅膀" },
-  { key: "bean", name: "豆豆", tag: "豆芽精 · 火柴肢 · 傻乐脸", ref: "蠢萌豆子精",
-    vibe: "豆子身体 + 火柴棍手脚张得开开的，头顶发芽。最傻、最有动作感，发芽能长成花/果。", variants: "嫩芽 / 开花 / 结果" },
+  { key: "penguin", name: "企鹅", tag: "Suica 卡小企鹅风 · 圆滚滚蓝灰", ref: "Suica スイカペンギン",
+    vibe: "蓝灰圆身 + 白脸白肚，小橙嘴小橙脚，腮红呆呆的。最treat、辨识度最高。", variants: "本体 / 呆毛冠 / 绒球" },
+  { key: "bear", name: "熊本熊", tag: "熊本熊 / くまモン风 · 黑团红脸蛋", ref: "熊本熊 くまモン",
+    vibe: "炭黑圆团 + 圆耳朵，大白眼睛 + 标志性大红脸蛋。最大胆、最好认、最蠢萌。", variants: "本体 / 大圆耳 / 呆毛" },
 ];
 
 function Check({ children }: { children: ReactNode }) {
@@ -27,7 +29,7 @@ export default function Styles() {
   return (
     <main className="max-w-3xl mx-auto px-5 py-10" style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}>
       <header className="mb-7">
-        <h1 className="text-xl font-bold tracking-tight">云宠物 · 设计语言候选 <span className="text-sm font-normal text-neutral-400">4 套方案给你挑</span></h1>
+        <h1 className="text-xl font-bold tracking-tight">云宠物 · 设计语言候选 <span className="text-sm font-normal text-neutral-400">5 套方案给你挑</span></h1>
         <p className="text-neutral-600 text-sm mt-2 leading-relaxed">
           目标：更<strong>简单 · 蠢萌 · 可成长 · 可进化 · 可变形 · 可装饰</strong>。
           这套引擎比现在的更<strong>扁平干净 + 大眼睛</strong>，不再糊。下面 4 套是不同的「设计语言」，
