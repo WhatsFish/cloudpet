@@ -4,6 +4,7 @@
 
 export type Stage = "egg" | "baby" | "child" | "teen" | "adult";
 export type LiveStat = "satiety" | "mood" | "cleanliness" | "energy" | "health";
+export type NeedKind = "unwell" | "hungry" | "dirty" | "bored" | "wants";
 export type MoodBand = "极好" | "好" | "平" | "低" | "极低";
 export type TimeBand = "清晨" | "白天" | "傍晚" | "深夜";
 export type StateFlagName = "SICK" | "SULKING" | "HIDING" | "LONELY";
@@ -115,6 +116,25 @@ export type CopyContext = {
   seed: number; // stable-but-varying selection seed
 };
 
+// --- V4 needs / roadmap / recap view models ---
+export type NeedView = { kind: NeedKind; verb: Verb; label: string };
+export type Roadmap = {
+  level: { level: number; expInto: number; expSpan: number; expRemaining: number };
+  stage: {
+    stage: Stage | null; towardName: string;
+    expReq: number; minDays: number; bondGate: number;
+    expRemaining: number; daysRemaining: number; bondRemaining: number;
+    unmet: ("exp" | "days" | "bond")[]; etaDays: number;
+  } | null;
+  line: string; // one-glance summary, e.g. "再 2 天 + 多陪它一点 → 进化成「提灯蛾」"
+};
+export type Recap = {
+  kind: "level" | "stage" | "evolve";
+  daysAway: number; levelFrom: number; levelTo: number;
+  stageFrom: Stage; stageTo: Stage; evolvedToName: string | null;
+  expGained: number; line: string;
+};
+
 // --- API view models ---
 export type PetView = {
   pet: { id: number; name: string; archetypeKey: string; stage: Stage; daysKnown: number; level: number };
@@ -130,15 +150,15 @@ export type PetView = {
   needHint: string; // gentle "what to do" prompt (mirrors dominant precedence)
   asleep: boolean;
   sprite: { creatureId: string; stage: Stage; mood: string; animation: string };
-  careCharges: number; // 0–3 「照顾电池」
-  chargesRefreshInMs: number; // ms to next +1 (0 if full)
-  dailyResetInMs: number; // ms to local-midnight reset
-  careCoveredToday: boolean; // satiety/cleanliness/health all >= 30
+  needs: NeedView[]; // V4: up to 3 DUE needs, priority-ordered
+  topNeed: NeedView | null; // the single most important thing to do now (the primary CTA)
+  roadmap: Roadmap; // next level / next evolution + what it needs
+  recap: Recap | null; // GET only, one-shot: it grew while you were away
   streakDays: number;
   theme: string; // device skin
   voice: { line: string; lineId: string } | null; // today's 心声
   actions: ActionAvailability[];
-  nurtureTilt: NurtureTilt; // V3: where your care is steering its evolution
+  nurtureTilt: NurtureTilt; // where your care is steering its evolution
 };
 
 // V2: 3 home buttons. care (battery) = feed/clean/doctor; affection (free) = play/pet/sleep.

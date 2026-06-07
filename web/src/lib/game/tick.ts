@@ -8,10 +8,11 @@ import type { BestiaryEntry } from "@/data/bestiary";
 import { resolveSpecies } from "./evolve";
 import {
   DECAY, DH_CAP, ENERGY_REGEN, H, HEALTH, HEALTH_FLOOR, LIVE_FLOOR,
-  M_BOND_MAX_REDUCTION, M_SICK, M_SLEEP, M_STAGE,
+  M_BOND_MAX_REDUCTION, M_SICK, M_SLEEP, M_STAGE, PASSIVE_WINDOW_CAP,
 } from "./constants";
 import { bondFloorForStage, capForStage, nextStage } from "@/data/stage-table";
 import { resolveStateFlags } from "./state";
+import { passiveRatePerHour } from "./needs";
 import { daysBetween, isNight, nextLocalHour } from "./time";
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
@@ -48,6 +49,7 @@ export function recompute(inp: RecomputeIn): RecomputeOut {
   const sleepSinceMs = s.sleep_since ? Date.parse(s.sleep_since) : null;
   const wakeMs = asleep && sleepSinceMs != null ? nextLocalHour(sleepSinceMs, tzOffsetMin, 7) : null;
 
+  let passiveExp = 0;
   if (dhTotal > 0) {
     const startMs = nowMs - dhTotal * H; // clamped window start
     const bps: number[] = [startMs, nowMs];
@@ -117,9 +119,13 @@ export function recompute(inp: RecomputeIn): RecomputeOut {
       const nowSick = sick ? s.health < HEALTH.sickClearAt : s.health < HEALTH.sickBelow;
       if (nowSick) s.state_flags |= STATE.SICK;
       else s.state_flags &= ~STATE.SICK;
+
+      // V4 passive EXP drip — scaled by current stats + bond, accrued per segment.
+      passiveExp += passiveRatePerHour(s, cap) * dh;
     }
 
     s.bond = Math.max(bondFloorForStage(stage), Math.min(1000, s.bond - 0.05 * dhTotal));
+    s.exp += Math.min(PASSIVE_WINDOW_CAP, Math.round(passiveExp)); // bounded so a long absence can't fast-forward
   }
 
   // active-sleep wake-up

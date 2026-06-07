@@ -3,17 +3,20 @@
 
 import type { Tx } from "@/lib/db";
 import { query } from "@/lib/db";
-import type { ActionAvailability, CareCounts, CopyContext, PetRow, PetView, Snapshot, Stage, Verb } from "@/lib/types";
+import type { ActionAvailability, CareCounts, CopyContext, PetRow, PetView, Recap, Roadmap, Snapshot, Stage, Verb } from "@/lib/types";
 import { creature } from "@/data/bestiary";
-import { capForStage, expForNextStage } from "@/data/stage-table";
+import { capForStage, expForNextStage, nextStage } from "@/data/stage-table";
 import { ACTIONS, CARE_COVERED_AT } from "@/lib/game/constants";
 import { recompute } from "@/lib/game/tick";
-import { nurtureTilt } from "@/lib/game/evolve";
-import { levelFromExp, levelProgress } from "@/lib/game/levels";
+import { nurtureTilt, resolveSpecies, speciesName } from "@/lib/game/evolve";
+import { deriveNeeds, passiveRatePerHour, type NeedTimes } from "@/lib/game/needs";
+import { expToReach, levelFromExp, levelProgress } from "@/lib/game/levels";
 import { badges, dominant, moodBand } from "@/lib/game/state";
 import { STATE } from "@/lib/types";
 import { daysBetween, localDateStr, timeBand } from "@/lib/game/time";
 import type { CooldownRow } from "@/lib/game/actions";
+
+const STAGE_CN: Record<Stage, string> = { egg: "蛋", baby: "幼年", child: "童年", teen: "少年", adult: "成年" };
 
 export type Rows = {
   pet: PetRow;
@@ -21,6 +24,9 @@ export type Rows = {
   cooldown: CooldownRow;
   lastActionMs: number;
   care: CareCounts; // V3: persisted care-history aggregates (pet_state)
+  needTimes: NeedTimes; // V4: last-satisfied timestamps per need (cooldown anchors)
+  tapsToday: number; // V4: pet-bond soft-cap counter
+  tapsDay: string | null; // local date the tapsToday counter belongs to
 };
 
 const PET_COLS = "id, user_id, archetype_key, species_id, name, stage, created_at::text AS created_at";
@@ -28,7 +34,9 @@ const STATE_COLS =
   "satiety, mood, cleanliness, energy, health, bond, exp::int AS exp, " +
   "last_tick::text AS last_tick, state_flags, state_since::text AS state_since, " +
   "asleep, sleep_since::text AS sleep_since, " +
-  "care_feed, care_clean, care_doctor, affection_taps";
+  "care_feed, care_clean, care_doctor, affection_taps, " +
+  "need_fed_at::text, need_clean_at::text, need_bored_at::text, need_unwell_at::text, need_wants_at::text, " +
+  "pet_taps_today, taps_day::text";
 const CD_COLS =
   "daily_reset_on::text AS daily_reset_on, streak_days, streak_state, " +
   "last_active_date::text AS last_active_date, care_charges, charges_updated_at::text AS charges_updated_at";
@@ -39,7 +47,12 @@ export async function loadRows(q: Tx, userId: string, forUpdate = false): Promis
   const pet = pets[0];
   if (!pet) return null;
 
-  type StateRow = Snapshot & { care_feed: number; care_clean: number; care_doctor: number; affection_taps: number };
+  type StateRow = Snapshot & {
+    care_feed: number; care_clean: number; care_doctor: number; affection_taps: number;
+    need_fed_at: string | null; need_clean_at: string | null; need_bored_at: string | null;
+    need_unwell_at: string | null; need_wants_at: string | null;
+    pet_taps_today: number; taps_day: string | null;
+  };
   const states = await q<StateRow>(`SELECT ${STATE_COLS} FROM pet_state WHERE pet_id = $1${lock}`, [pet.id]);
   const cds = await q<CooldownRow>(`SELECT ${CD_COLS} FROM pet_cooldown WHERE pet_id = $1${lock}`, [pet.id]);
   const la = await q<{ m: string | null }>(`SELECT max(created_at)::text AS m FROM action_log WHERE pet_id = $1`, [pet.id]);
@@ -47,7 +60,9 @@ export async function loadRows(q: Tx, userId: string, forUpdate = false): Promis
 
   const st = states[0];
   const care: CareCounts = { feed: st.care_feed, clean: st.care_clean, doctor: st.care_doctor, affection: st.affection_taps };
-  return { pet, state: st, cooldown: cds[0], lastActionMs, care };
+  const ms = (v: string | null) => (v ? Date.parse(v) : null);
+  const needTimes: NeedTimes = { fed: ms(st.need_fed_at), clean: ms(st.need_clean_at), bored: ms(st.need_bored_at), unwell: ms(st.need_unwell_at), wants: ms(st.need_wants_at) };
+  return { pet, state: st, cooldown: cds[0], lastActionMs, care, needTimes, tapsToday: st.pet_taps_today, tapsDay: st.taps_day };
 }
 
 export function lastInteractionMs(rows: Rows): number {
@@ -130,27 +145,59 @@ export function needHint(s: Snapshot, covered: boolean): string {
   return low.length ? low[0][1] : "来照顾它一下，今天就长大一点点 🌱";
 }
 
-export function actionAvailability(stage: Stage, s: Snapshot, charges: number, chargesRefreshInMs: number): ActionAvailability[] {
+export function actionAvailability(stage: Stage, s: Snapshot): ActionAvailability[] {
   const order = ({ egg: 0, baby: 1, child: 2, teen: 3, adult: 4 } as Record<Stage, number>)[stage];
   const out: ActionAvailability[] = [];
   for (const verb of Object.keys(ACTIONS) as Verb[]) {
     const def = ACTIONS[verb];
-    let enabled = true; let reason: string | undefined; let remainingMs: number | undefined;
+    let enabled = true; let reason: string | undefined;
+    // V4: care is unlimited (no battery); only stage-lock and sick-block remain.
     if (order < def.unlockOrder) { enabled = false; reason = "locked"; }
     else if (def.blockedWhen?.includes("SICK") && s.state_flags & STATE.SICK) { enabled = false; reason = "sick"; }
-    else if (def.charge && charges <= 0) { enabled = false; reason = "no_charge"; remainingMs = chargesRefreshInMs; }
-    out.push({ verb, enabled, reason, remainingMs });
+    out.push({ verb, enabled, reason });
   }
   return out;
 }
 
+// V4 roadmap: next level + next stage gate (with the binding piece) so the player is
+// never in the dark about why to come back.
+export function buildRoadmap(rows: Rows, nowMs: number): Roadmap {
+  const { state, pet } = rows;
+  const lvl = levelFromExp(state.exp);
+  const lo = expToReach(lvl), hi = expToReach(lvl + 1);
+  const level = { level: lvl, expInto: state.exp - lo, expSpan: Math.max(1, hi - lo), expRemaining: Math.max(0, hi - state.exp) };
+
+  const nxt = nextStage(pet.stage);
+  if (!nxt) return { level, stage: null, line: "已经长成少年啦，还在一天天和你变熟（成年形态待开放）" };
+
+  const days = daysBetween(Date.parse(pet.created_at), nowMs);
+  const expRemaining = Math.max(0, nxt.expReq - state.exp);
+  const daysRemaining = Math.max(0, Math.ceil(nxt.minDays - days));
+  const bondRemaining = Math.max(0, nxt.bondGate - state.bond);
+  const unmet: ("exp" | "days" | "bond")[] = [];
+  if (expRemaining > 0) unmet.push("exp");
+  if (daysRemaining > 0) unmet.push("days");
+  if (bondRemaining > 0) unmet.push("bond");
+  const dailyEst = passiveRatePerHour(state, capForStage(pet.stage)) * 24 + 120; // passive + nominal active
+  const etaDays = Math.max(daysRemaining, Math.ceil(expRemaining / Math.max(1, dailyEst)));
+  const toTeen = nxt.stage === "teen";
+  const towardName = toTeen ? speciesName(resolveSpecies(pet.archetype_key, rows.care)) : speciesName(pet.archetype_key);
+  const stage = { stage: nxt.stage, towardName, expReq: nxt.expReq, minDays: nxt.minDays, bondGate: nxt.bondGate, expRemaining, daysRemaining, bondRemaining, unmet, etaDays };
+
+  const parts: string[] = [];
+  if (daysRemaining > 0) parts.push(`再 ${daysRemaining} 天`);
+  if (bondRemaining > 0) parts.push(`亲密度还差 ${bondRemaining}`);
+  if (expRemaining > 0 && daysRemaining === 0) parts.push(`经验还差 ${expRemaining}`);
+  const cond = parts.length ? parts.join("、") : "马上就";
+  const line = `${cond} → ${toTeen ? `长成「${towardName}」` : `长大到${STAGE_CN[nxt.stage]}`}`;
+  return { level, stage, line };
+}
+
 export type ViewOpts = {
   nowMs: number;
-  charges: number;
-  chargesRefreshInMs: number;
-  dailyResetInMs: number;
   theme: string;
   voice: { line: string; lineId: string } | null;
+  recap: Recap | null;
 };
 
 export function buildPetView(rows: Rows, o: ViewOpts): PetView {
@@ -158,7 +205,7 @@ export function buildPetView(rows: Rows, o: ViewOpts): PetView {
   const dom = dominant(state, state.asleep);
   const daysKnown = Math.max(1, Math.floor(daysBetween(Date.parse(pet.created_at), o.nowMs)) + 1);
   const level = levelFromExp(state.exp);
-  const covered = careCoveredToday(state);
+  const needs = deriveNeeds(state, rows.needTimes, o.nowMs);
 
   return {
     pet: { id: pet.id, name: pet.name, archetypeKey: pet.archetype_key, stage: pet.stage, daysKnown, level },
@@ -171,17 +218,17 @@ export function buildPetView(rows: Rows, o: ViewOpts): PetView {
     moodBand: moodBand(state.mood),
     dominantState: dom.stateName,
     badges: badges(state, state.asleep),
-    needHint: needHint(state, covered),
+    needHint: needs[0]?.label ?? "它现在很满足，陪它待一会儿就好～",
     asleep: state.asleep,
     sprite: { creatureId: pet.species_id, stage: pet.stage, mood: dom.spriteMood, animation: dom.animation },
-    careCharges: o.charges,
-    chargesRefreshInMs: o.chargesRefreshInMs,
-    dailyResetInMs: o.dailyResetInMs,
-    careCoveredToday: covered,
+    needs,
+    topNeed: needs[0] ?? null,
+    roadmap: buildRoadmap(rows, o.nowMs),
+    recap: o.recap,
     streakDays: cooldown.streak_days,
     theme: o.theme,
     voice: o.voice,
-    actions: actionAvailability(pet.stage, state, o.charges, o.chargesRefreshInMs),
+    actions: actionAvailability(pet.stage, state),
     nurtureTilt: nurtureTilt(pet.archetype_key, rows.care),
   };
 }

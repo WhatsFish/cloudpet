@@ -18,9 +18,12 @@ export const STAGES: StageDef[] = [
   { stage: "baby", order: 1, expReq: 120, minDays: 1, cap: 85, bondGate: 0 },
   // V2 (REDESIGN_V2 §4): expReq lands Lv chips exactly on stage-ups (Lv 2/4/7/11)
   // and keeps the day-gate binding before the exp-gate at a realistic ~80 EXP/day.
+  // V4: exp re-tuned down (teen 900→620, adult 1700→1100) so under the faster
+  // passive+need throughput a cared-for pet hits the exp gate ≈ at the day gate
+  // (days/bond stay fixed → care buys SPEED, stages still can't be one-sit rushed).
   { stage: "child", order: 2, expReq: 380, minDays: 5, cap: 90, bondGate: 60 },
-  { stage: "teen", order: 3, expReq: 900, minDays: 12, cap: 95, bondGate: 180 },
-  { stage: "adult", order: 4, expReq: 1700, minDays: 21, cap: 100, bondGate: 400 },
+  { stage: "teen", order: 3, expReq: 620, minDays: 12, cap: 95, bondGate: 180 },
+  { stage: "adult", order: 4, expReq: 1100, minDays: 21, cap: 100, bondGate: 400 },
 ];
 
 // V3: the divergent fork lands AT teen (already-rendered sprites), so teen is the

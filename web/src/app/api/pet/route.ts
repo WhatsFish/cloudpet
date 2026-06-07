@@ -2,17 +2,25 @@ import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { getUserId } from "@/lib/auth";
 import { buildContext, buildPetView, ensureDailyVoice, loadRows, tickAndPersistTz } from "@/lib/pet";
-import { computeCharges } from "@/lib/game/battery";
-import { CHECKIN_BOND, STREAK_EXP } from "@/lib/game/constants";
+import { CHECKIN_BOND, RECAP_MIN_AWAY_MS, STREAK_EXP } from "@/lib/game/constants";
+import { levelFromExp } from "@/lib/game/levels";
+import { speciesName } from "@/lib/game/evolve";
 import { localDateStr } from "@/lib/game/time";
 import { getPack } from "@/data/copybank";
 import { buildDiary } from "@/lib/game/copy";
+import type { Recap, Stage } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 function daysDiff(a: string, b: string): number {
   return Math.round((Date.parse(b + "T00:00:00Z") - Date.parse(a + "T00:00:00Z")) / 86400000);
+}
+
+function recapLine(kind: string, evolvedToName: string | null): string {
+  if (kind === "evolve" && evolvedToName) return `你不在的这阵子，我自己长大、还长成了「${evolvedToName}」！快看看我～`;
+  if (kind === "stage") return "你不在的这阵子，我自己又长大了一点点，快回来看看我～";
+  return "你不在的时候，我也在努力长大哦，等你好久啦～";
 }
 
 export async function GET(req: NextRequest) {
@@ -30,30 +38,32 @@ export async function GET(req: NextRequest) {
   let rows = await loadRows(query, userId);
   if (!rows) return NextResponse.json({ error: "no_pet" }, { status: 404 });
 
-  // Self-heal: the egg is only a transient onboarding ceremony — the home should
-  // never show one. If a pet is somehow still an egg here (abandoned/failed hatch,
-  // an older client), promote it to baby so it can never get stuck.
+  // Self-heal: the egg is only a transient onboarding ceremony — promote to baby.
   if (rows.pet.stage === "egg") {
     await query(`UPDATE pet SET stage='baby' WHERE id=$1`, [rows.pet.id]);
     rows.pet.stage = "baby";
   }
 
-  ({ rows } = await tickAndPersistTz(query, rows, now, tz));
+  // snapshot before the offline tick (for the away-then-grew recap)
+  const prevExp = rows.state.exp;
+  const prevStage = rows.pet.stage as Stage;
+  const prevSpecies = rows.pet.species_id;
+  const elapsedMs = now - Date.parse(rows.state.last_tick);
 
-  // battery (compute-on-read)
-  const cs = computeCharges(
-    rows.cooldown.care_charges, rows.cooldown.charges_updated_at, rows.cooldown.daily_reset_on, now, tz, localDate,
-  );
-  if (cs.changed) {
-    if (cs.resetDailyTo) {
-      await query(`UPDATE pet_cooldown SET care_charges=$2, charges_updated_at=$3, daily_reset_on=$4 WHERE pet_id=$1`,
-        [rows.pet.id, cs.charges, cs.chargesUpdatedAt, cs.resetDailyTo]);
-      rows.cooldown.daily_reset_on = cs.resetDailyTo;
-    } else {
-      await query(`UPDATE pet_cooldown SET care_charges=$2, charges_updated_at=$3 WHERE pet_id=$1`,
-        [rows.pet.id, cs.charges, cs.chargesUpdatedAt]);
-    }
-    rows.cooldown.care_charges = cs.charges;
+  let promoted: Stage | null;
+  ({ rows, promoted } = await tickAndPersistTz(query, rows, now, tz));
+
+  // record an offline growth event (recap source) when a long absence produced real growth
+  const levelFrom = levelFromExp(prevExp), levelTo = levelFromExp(rows.state.exp);
+  if (elapsedMs > RECAP_MIN_AWAY_MS && (promoted || levelTo - levelFrom >= 2)) {
+    const evolved = rows.pet.species_id !== prevSpecies;
+    const kind = promoted ? (evolved ? "evolve" : "stage") : "level";
+    await query(
+      `INSERT INTO growth_event (pet_id, kind, level_from, level_to, stage_from, stage_to, evolved_to, days_away, exp_gained, local_date)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+      [rows.pet.id, kind, levelFrom, levelTo, prevStage, rows.pet.stage, evolved ? rows.pet.species_id : null,
+       Number((elapsedMs / 86400000).toFixed(1)), rows.state.exp - prevExp, localDate],
+    );
   }
 
   // auto check-in (first open per local day; idempotent via uq_checkin_per_day)
@@ -89,8 +99,21 @@ export async function GET(req: NextRequest) {
   const pack = getPack(rows.pet.archetype_key); // V4: variants ride their line head's voice
   const voice = await ensureDailyVoice(rows, ctx, localDate, () => buildDiary(pack, ctx, recent.map((r) => r.line_id)));
 
-  return NextResponse.json(buildPetView(rows, {
-    nowMs: now, charges: cs.charges, chargesRefreshInMs: cs.chargesRefreshInMs,
-    dailyResetInMs: cs.dailyResetInMs, theme, voice,
-  }));
+  // one-shot recap: did it grow while you were away?
+  let recap: Recap | null = null;
+  const ge = await query<{ kind: string; level_from: number; level_to: number; stage_from: Stage; stage_to: Stage; evolved_to: string | null; days_away: string; exp_gained: number }>(
+    `SELECT kind, level_from, level_to, stage_from, stage_to, evolved_to, days_away, exp_gained
+     FROM growth_event WHERE pet_id=$1 AND seen=false ORDER BY created_at DESC LIMIT 1`, [rows.pet.id],
+  );
+  if (ge[0]) {
+    const g = ge[0];
+    const evolvedToName = g.evolved_to ? speciesName(g.evolved_to) : null;
+    recap = {
+      kind: g.kind as Recap["kind"], daysAway: Number(g.days_away), levelFrom: g.level_from, levelTo: g.level_to,
+      stageFrom: g.stage_from, stageTo: g.stage_to, evolvedToName, expGained: g.exp_gained, line: recapLine(g.kind, evolvedToName),
+    };
+    await query(`UPDATE growth_event SET seen=true WHERE pet_id=$1 AND seen=false`, [rows.pet.id]);
+  }
+
+  return NextResponse.json(buildPetView(rows, { nowMs: now, theme, voice, recap }));
 }

@@ -57,8 +57,33 @@ CREATE TABLE IF NOT EXISTS pet_state (
   care_clean     INTEGER NOT NULL DEFAULT 0,
   care_doctor    INTEGER NOT NULL DEFAULT 0,
   affection_taps INTEGER NOT NULL DEFAULT 0,
+  -- V4 needs loop (replaces 照顾电池): last time each need was satisfied (cooldown anchor).
+  need_fed_at    TIMESTAMPTZ,
+  need_clean_at  TIMESTAMPTZ,
+  need_bored_at  TIMESTAMPTZ,
+  need_unwell_at TIMESTAMPTZ,
+  need_wants_at  TIMESTAMPTZ,
+  pet_taps_today INTEGER NOT NULL DEFAULT 0,  -- pet-bond soft cap per local day
+  taps_day       DATE,
+  -- care_charges/charges_updated_at remain (dormant) — battery removed from read path in V4.
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- V4 away-then-grew recap source. One row per offline growth event; GET surfaces unseen.
+CREATE TABLE IF NOT EXISTS growth_event (
+  id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  pet_id      BIGINT NOT NULL REFERENCES pet(id) ON DELETE CASCADE,
+  kind        TEXT NOT NULL,                -- 'level' | 'stage' | 'evolve'
+  level_from  INTEGER, level_to INTEGER,
+  stage_from  TEXT, stage_to TEXT,
+  evolved_to  TEXT,                         -- species_id, if it changed
+  days_away   NUMERIC,
+  exp_gained  INTEGER,
+  local_date  DATE,
+  seen        BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_growth_unseen ON growth_event (pet_id, seen);
 
 CREATE TABLE IF NOT EXISTS pet_cooldown (
   pet_id           BIGINT PRIMARY KEY REFERENCES pet(id) ON DELETE CASCADE,

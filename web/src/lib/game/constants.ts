@@ -2,7 +2,8 @@
 // V2 economy: NO items/currency. Care (feed/clean/doctor) draws a shared 3-charge
 // "care battery"; affection (play/pet) is free & unlimited & 0-growth.
 
-import type { LiveStat, Stage, Verb } from "@/lib/types";
+import type { LiveStat, NeedKind, Stage, Verb } from "@/lib/types";
+export type { NeedKind };
 
 export const H = 3600_000;
 export const MIN = 60_000;
@@ -39,20 +40,42 @@ export const STATE_THRESH = {
 
 export const STREAK_EXP = { day7: 50, day30: 150 };
 
-// --- V2 care battery + rewards ---
-export const CARE = { maxCharges: 3, regenMs: 5 * H };
-export const CARE_EXP = 25; // legacy ceiling; live value is deficit-weighted (V3)
-export const CARE_BOND = 6;
+// --- V4 economy: needs loop (battery removed) ---
+export const CARE = { maxCharges: 3, regenMs: 5 * H }; // DORMANT (kept for legacy imports)
+export const CARE_EXP = 14; // ceiling label
 
-// V3: deficit-weighted EXP. Caring for a DEPLETED stat earns full EXP; topping off an
-// already-high one earns little. This is what makes satiety/cleanliness/health matter —
-// each care tap's value depends on whether the pet actually needed it (REDESIGN_V3 §1).
-export const CARE_EXP_MIN = 10;
-export const CARE_EXP_MAX = 25;
+// Deficit-weighted EXP for raw care taps — now deliberately SMALL (6..14): the big growth
+// comes from answering a DUE need (NEED_REWARD), not from button-mashing (V4 §F).
+export const CARE_EXP_MIN = 6;
+export const CARE_EXP_MAX = 14;
+export const CARE_BOND = 4;
 export function careExp(preStat: number, cap: number): number {
   const deficit = Math.max(0, Math.min(cap, cap - preStat));
   return Math.round(CARE_EXP_MIN + (CARE_EXP_MAX - CARE_EXP_MIN) * (deficit / cap));
 }
+
+// Needs: a need is DUE when its backing stat is low AND its cooldown has elapsed.
+export const NEED_DUE: Record<"hungry" | "dirty" | "bored" | "unwell", number> = { hungry: 45, dirty: 45, bored: 40, unwell: 35 };
+export const NEED_COOLDOWN_MS: Record<NeedKind, number> = { hungry: 3.5 * H, dirty: 5 * H, bored: 4 * H, unwell: 8 * H, wants: 6 * H };
+export const NEED_REWARD = { exp: 40, bond: 10 }; // answering what it ASKED FOR (the big draw)
+export const NEED_MAX_ACTIVE = 3;
+export const NEED_PRIORITY: NeedKind[] = ["unwell", "hungry", "dirty", "bored", "wants"];
+export const NEED_VERB: Record<NeedKind, Verb> = { unwell: "doctor", hungry: "feed", dirty: "clean", bored: "play", wants: "pet" };
+
+// Passive EXP drip over real time — rate scaled by stats + bond (good care → faster growth
+// even while away), bounded per recompute window so a long absence can't fast-forward.
+export const PASSIVE_BASE = 2.5; // exp/hour at neutral
+export const PASSIVE_CARE: [number, number] = [0.4, 1.5]; // multiplier range by avg stat
+export const PASSIVE_BOND: [number, number] = [0.6, 1.4]; // multiplier range by bond
+export const PASSIVE_WINDOW_CAP = 200; // max passive exp per single recompute
+
+// Affection bond (free, unlimited; pet has a daily soft cap then tapers).
+export const PET_BOND = 3;
+export const PLAY_BOND = 2;
+export const PET_BOND_SOFTCAP = 6; // taps/day at full PET_BOND, then +1
+
+export const WANTS_PERIOD_MS = 6 * H;
+export const RECAP_MIN_AWAY_MS = 8 * H;
 export const COMPLETE_BONUS = { exp: 30, bond: 10 }; // 「照顾够了」完成奖 (once/day)
 export const CHECKIN_BOND = 8; // auto check-in on first open
 export const CARE_COVERED_AT = 30; // careCoveredToday = all of satiety/cleanliness/health >= 30
@@ -79,9 +102,9 @@ export const ACTIONS: Record<Verb, ActionDef> = {
   feed: { verb: "feed", effects: { satiety: 25 }, charge: true, exp: CARE_EXP, bond: CARE_BOND, unlockOrder: 1, fx: "food", intent: "feed.love" },
   clean: { verb: "clean", effects: { cleanliness: 40 }, charge: true, exp: CARE_EXP, bond: CARE_BOND, unlockOrder: 1, fx: "bubbles", intent: "clean" },
   doctor: { verb: "doctor", effects: { health: 40 }, charge: true, exp: CARE_EXP, bond: CARE_BOND, unlockOrder: 1, fx: "sparkle", clearsSick: true, intent: "medicine" },
-  // affection — free, unlimited, 0 growth
-  play: { verb: "play", effects: { mood: 20 }, charge: false, exp: 0, bond: 0, unlockOrder: 1, fx: "notes", blockedWhen: ["SICK"], clearsSulk: true, intent: "play" },
-  pet: { verb: "pet", effects: { mood: 8 }, charge: false, exp: 0, bond: 0, unlockOrder: 1, fx: "hearts", intent: "pet" },
+  // affection — free, unlimited, 0 EXP, but now build BOND (V4). Never steer the form.
+  play: { verb: "play", effects: { mood: 20 }, charge: false, exp: 0, bond: PLAY_BOND, unlockOrder: 1, fx: "notes", blockedWhen: ["SICK"], clearsSulk: true, intent: "play" },
+  pet: { verb: "pet", effects: { mood: 8 }, charge: false, exp: 0, bond: PET_BOND, unlockOrder: 1, fx: "hearts", intent: "pet" },
   sleep: { verb: "sleep", effects: {}, charge: false, exp: 0, bond: 0, unlockOrder: 1, fx: "zzz", togglesSleep: true, intent: "sleep.tuck" },
 };
 

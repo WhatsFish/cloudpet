@@ -1,23 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withTx } from "@/lib/db";
-import { query } from "@/lib/db";
+import { withTx, query } from "@/lib/db";
 import { getUserId } from "@/lib/auth";
-import { buildContext, buildPetView, careCoveredToday, loadRows, tickAndPersistTz } from "@/lib/pet";
+import { buildContext, buildPetView, loadRows, tickAndPersistTz } from "@/lib/pet";
 import { planAction } from "@/lib/game/actions";
-import { ACTIONS, CARE, COMPLETE_BONUS } from "@/lib/game/constants";
-import { computeCharges } from "@/lib/game/battery";
+import { ACTIONS, NEED_REWARD, PET_BOND_SOFTCAP } from "@/lib/game/constants";
+import { deriveNeeds, isDue, VERB_NEED } from "@/lib/game/needs";
 import { resolveSpecies } from "@/lib/game/evolve";
 import { creature } from "@/data/bestiary";
 import { nextStage } from "@/data/stage-table";
 import { daysBetween, localDateStr } from "@/lib/game/time";
 import { getPack } from "@/data/copybank";
 import { selectCopy } from "@/lib/game/copy";
-import type { Stage, Verb } from "@/lib/types";
+import type { NeedKind, Stage, Verb } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const STATUS: Record<string, number> = { locked: 409, no_charge: 429, unavailable: 409 };
+const STATUS: Record<string, number> = { locked: 409, unavailable: 409 };
+const NEED_COL: Record<NeedKind, string> = { hungry: "need_fed_at", dirty: "need_clean_at", bored: "need_bored_at", unwell: "need_unwell_at", wants: "need_wants_at" };
+const NEED_TKEY: Record<NeedKind, "fed" | "clean" | "bored" | "unwell" | "wants"> = { hungry: "fed", dirty: "clean", bored: "bored", unwell: "unwell", wants: "wants" };
+const CARE_COL: Partial<Record<Verb, "care_feed" | "care_clean" | "care_doctor">> = { feed: "care_feed", clean: "care_clean", doctor: "care_doctor" };
 
 export async function POST(req: NextRequest) {
   const userId = getUserId(req);
@@ -41,59 +43,53 @@ export async function POST(req: NextRequest) {
     if (!rows) return { http: 404, body: { error: "no_pet" } };
     ({ rows } = await tickAndPersistTz(q, rows, now, tz));
 
-    // battery recompute + persist
-    const cs = computeCharges(rows.cooldown.care_charges, rows.cooldown.charges_updated_at, rows.cooldown.daily_reset_on, now, tz, localDate);
-    if (cs.changed) {
-      if (cs.resetDailyTo) { await q(`UPDATE pet_cooldown SET care_charges=$2, charges_updated_at=$3, daily_reset_on=$4 WHERE pet_id=$1`, [rows.pet.id, cs.charges, cs.chargesUpdatedAt, cs.resetDailyTo]); rows.cooldown.daily_reset_on = cs.resetDailyTo; }
-      else await q(`UPDATE pet_cooldown SET care_charges=$2, charges_updated_at=$3 WHERE pet_id=$1`, [rows.pet.id, cs.charges, cs.chargesUpdatedAt]);
-      rows.cooldown.care_charges = cs.charges;
-    }
-
-    const coveredBefore = careCoveredToday(rows.state);
     const c = creature(rows.pet.species_id);
     const pack = getPack(rows.pet.archetype_key); // variants speak in their line head's voice
-    const plan = planAction({ verb, stage: rows.pet.stage, state: rows.state, charges: cs.charges, creature: c, nowMs: now });
 
+    // which needs are DUE right now (before the action) — so we can reward answering one
+    const dueNeeds = deriveNeeds(rows.state, rows.needTimes, now);
+    const plan = planAction({ verb, stage: rows.pet.stage, state: rows.state, creature: c, nowMs: now });
     if (!plan.ok) {
-      let line: string | null = null;
-      if (plan.flavorEvent) line = selectCopy(pack, plan.flavorEvent, buildContext(rows, now, tz), `${verb}.${now}`).text;
-      return { http: STATUS[plan.error] ?? 409, body: { ok: false, error: plan.error, reason: plan.reason, line, chargesRefreshInMs: cs.chargesRefreshInMs } };
+      const line = plan.flavorEvent ? selectCopy(pack, plan.flavorEvent, buildContext(rows, now, tz), `${verb}.${now}`).text : null;
+      return { http: STATUS[plan.error] ?? 409, body: { ok: false, error: plan.error, reason: plan.reason, line } };
     }
 
     const s = plan.state;
-    await q(`UPDATE pet_state SET satiety=$2, mood=$3, cleanliness=$4, energy=$5, health=$6, bond=$7, exp=$8, last_tick=$9, state_flags=$10, state_since=$11, asleep=$12, sleep_since=$13, updated_at=NOW() WHERE pet_id=$1`,
-      [rows.pet.id, s.satiety, s.mood, s.cleanliness, s.energy, s.health, s.bond, s.exp, s.last_tick, s.state_flags, s.state_since, s.asleep, s.sleep_since]);
+    let bondGain = plan.bondGain; // base (CARE_BOND or PLAY/PET base)
 
-    // V3: record care history (steers the teen fork). Column is a fixed allow-listed name.
-    const CARE_COL: Partial<Record<Verb, "care_feed" | "care_clean" | "care_doctor">> = { feed: "care_feed", clean: "care_clean", doctor: "care_doctor" };
+    // pet-bond soft cap: after PET_BOND_SOFTCAP pets/local-day, each further pet only +1
+    let tapsToday = rows.tapsToday, tapsDay = rows.tapsDay;
+    if (verb === "pet") {
+      if (tapsDay !== localDate) { tapsToday = 0; tapsDay = localDate; }
+      if (tapsToday >= PET_BOND_SOFTCAP) bondGain = 1;
+      tapsToday += 1;
+    }
+
+    // need reward: did this action answer a DUE need? (the big draw)
+    const fulfilledKind = VERB_NEED[verb];
+    const fulfilled = !!fulfilledKind && isDue(dueNeeds, fulfilledKind);
+    const needBonusExp = fulfilled ? NEED_REWARD.exp : 0;
+    const needBonusBond = fulfilled ? NEED_REWARD.bond : 0;
+
+    s.exp += plan.expGain + needBonusExp;
+    s.bond = Math.max(0, Math.min(1000, s.bond + bondGain + needBonusBond));
+
+    await q(`UPDATE pet_state SET satiety=$2, mood=$3, cleanliness=$4, energy=$5, health=$6, bond=$7, exp=$8, last_tick=$9, state_flags=$10, state_since=$11, asleep=$12, sleep_since=$13, pet_taps_today=$14, taps_day=$15, updated_at=NOW() WHERE pet_id=$1`,
+      [rows.pet.id, s.satiety, s.mood, s.cleanliness, s.energy, s.health, s.bond, s.exp, s.last_tick, s.state_flags, s.state_since, s.asleep, s.sleep_since, tapsToday, tapsDay]);
+    rows.tapsToday = tapsToday; rows.tapsDay = tapsDay;
+
+    // stamp the fulfilled need's cooldown anchor
+    if (fulfilled && fulfilledKind) {
+      await q(`UPDATE pet_state SET ${NEED_COL[fulfilledKind]}=$2 WHERE pet_id=$1`, [rows.pet.id, new Date(now).toISOString()]);
+      rows.needTimes[NEED_TKEY[fulfilledKind]] = now;
+    }
+
+    // care history (steers the teen fork). allow-listed column names.
     const col = CARE_COL[verb];
     if (col) { await q(`UPDATE pet_state SET ${col} = ${col} + 1 WHERE pet_id=$1`, [rows.pet.id]); rows.care[verb as "feed" | "clean" | "doctor"] += 1; }
     else if (verb === "play" || verb === "pet") { await q(`UPDATE pet_state SET affection_taps = affection_taps + 1 WHERE pet_id=$1`, [rows.pet.id]); rows.care.affection += 1; }
 
-    // spend a care charge (start the regen timer if we just left full)
-    let newCharges = cs.charges;
-    let newUpdatedAt = cs.chargesUpdatedAt;
-    if (plan.chargeSpent) {
-      newCharges = cs.charges - 1;
-      newUpdatedAt = cs.charges === CARE.maxCharges ? new Date(now).toISOString() : cs.chargesUpdatedAt;
-      await q(`UPDATE pet_cooldown SET care_charges=$2, charges_updated_at=$3 WHERE pet_id=$1`, [rows.pet.id, newCharges, newUpdatedAt]);
-    }
-
-    // completion bonus (careCoveredToday false→true), idempotent once/day
-    let completed = false;
-    if (!coveredBefore && careCoveredToday(s)) {
-      const ci = await q<{ id: number }>(
-        `INSERT INTO action_log (pet_id, user_id, verb, local_date, line_intent) VALUES ($1,$2,'complete',$3,'complete')
-         ON CONFLICT (pet_id, local_date) WHERE verb = 'complete' DO NOTHING RETURNING id`, [rows.pet.id, userId, localDate]);
-      if (ci[0]) {
-        completed = true;
-        s.exp += COMPLETE_BONUS.exp;
-        s.bond = Math.min(1000, s.bond + COMPLETE_BONUS.bond);
-        await q(`UPDATE pet_state SET exp=$2, bond=$3 WHERE pet_id=$1`, [rows.pet.id, s.exp, s.bond]);
-      }
-    }
-
-    // growth re-check (care just added EXP/bond → may cross a stage gate this request)
+    // growth re-check (this action's EXP/bond may cross a stage gate) + teen fork
     let stage: Stage = rows.pet.stage;
     let promoted: Stage | null = null;
     let species = rows.pet.species_id;
@@ -101,7 +97,7 @@ export async function POST(req: NextRequest) {
     let nx = nextStage(stage);
     while (nx && s.exp >= nx.expReq && days >= nx.minDays && s.bond >= nx.bondGate) {
       stage = nx.stage; promoted = nx.stage;
-      if (nx.stage === "teen") species = resolveSpecies(rows.pet.archetype_key, rows.care); // V3 fork
+      if (nx.stage === "teen") species = resolveSpecies(rows.pet.archetype_key, rows.care);
       nx = nextStage(stage);
     }
     if (promoted) await q(`UPDATE pet SET stage=$2 WHERE id=$1`, [rows.pet.id, stage]);
@@ -113,12 +109,16 @@ export async function POST(req: NextRequest) {
     const promoteLine = promoted ? selectCopy(pack, "growth.promote", ctx, `promote.${now}`).text : null;
 
     await q(`INSERT INTO action_log (pet_id, user_id, verb, local_date, line, line_intent, delta) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-      [rows.pet.id, userId, verb, localDate, line, plan.event, JSON.stringify({ exp: plan.expGain, bond: plan.bondGain, charge: plan.chargeSpent })]);
+      [rows.pet.id, userId, verb, localDate, line, plan.event, JSON.stringify({ exp: plan.expGain + needBonusExp, bond: bondGain + needBonusBond, need: fulfilled ? fulfilledKind : null })]);
 
-    const refreshMs = newCharges >= CARE.maxCharges ? 0 : Math.max(0, Date.parse(newUpdatedAt) + CARE.regenMs - now);
-    const view = buildPetView(rows2, { nowMs: now, charges: newCharges, chargesRefreshInMs: refreshMs, dailyResetInMs: cs.dailyResetInMs, theme, voice: null });
-
-    return { http: 200, body: { ok: true, ...view, line, fx: plan.fx, animation: plan.animation, promoted, promoteLine, completed, completeBonus: completed ? COMPLETE_BONUS : null } };
+    const view = buildPetView(rows2, { nowMs: now, theme, voice: null, recap: null });
+    return {
+      http: 200,
+      body: {
+        ok: true, ...view, line, fx: plan.fx, animation: plan.animation, promoted, promoteLine,
+        needReward: fulfilled ? { kind: fulfilledKind, base: plan.expGain, bonus: needBonusExp, bond: needBonusBond } : null,
+      },
+    };
   });
 
   return NextResponse.json(result.body, { status: result.http });

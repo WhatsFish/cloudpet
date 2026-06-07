@@ -24,14 +24,13 @@ export type ActionInput = {
   verb: Verb;
   stage: Stage;
   state: Snapshot; // already tick-recomputed
-  charges: number; // already battery-recomputed
   creature: BestiaryEntry;
   nowMs: number;
 };
 
 export type ActionReject = {
   ok: false;
-  error: "locked" | "no_charge" | "unavailable";
+  error: "locked" | "unavailable";
   reason?: string;
   flavorEvent?: string;
 };
@@ -58,12 +57,11 @@ export function planAction(inp: ActionInput): ActionPlan | ActionReject {
   const s: Snapshot = { ...inp.state };
   const cap = capForStage(stage);
 
-  // --- gates ---
+  // --- gates (V4: care is unlimited; only stage-lock + sick-block remain) ---
   if (stageDef(stage).order < def.unlockOrder) return { ok: false, error: "locked", reason: "still_young" };
   if (def.blockedWhen?.includes("SICK") && s.state_flags & STATE.SICK) {
     return { ok: false, error: "unavailable", reason: "sick", flavorEvent: "state.sick" };
   }
-  if (def.charge && inp.charges <= 0) return { ok: false, error: "no_charge", reason: "recharging" };
 
   // --- apply ---
   let event = def.intent;
@@ -87,8 +85,8 @@ export function planAction(inp: ActionInput): ActionPlan | ActionReject {
     (s[k] as number) = clamp((s[k] as number) + v, 0, cap);
   }
 
-  s.exp += expGain;
-  s.bond = clamp(s.bond + def.bond, 0, 1000);
+  // NOTE: exp/bond are NOT applied here — the route owns them so it can add the
+  // need-reward and the pet-bond soft cap on top of these base gains.
 
   // re-resolve flags: an interaction just happened (clears LONELY/HIDING; play's
   // mood+20 from the floor lifts mood to ≥25 so SULKING is recomputed away; doctor
