@@ -52,6 +52,32 @@ function deco(b, kind, topY, pal) {
   else if (kind === "leaf") { stroke(b, 32, topY + 2, 32, topY - 6, 1, [120, 160, 80]); ell(b, 33, topY - 6, 3, 2, [130, 200, 110]); }
 }
 
+function heart(b, x, y, c) { px(b, x, y, c); px(b, x + 2, y, c); px(b, x - 1, y + 1, c); px(b, x + 3, y + 1, c); for (let i = -1; i <= 3; i++) px(b, x + i, y + 2, c); px(b, x + 1, y + 3, c); }
+function note(b, x, y, c) { for (let i = 0; i < 4; i++) px(b, x + 2, y - i, c); px(b, x, y, c); px(b, x + 1, y, c); px(b, x + 2, y + 1, c); }
+
+// Activity props for the Claude mascot — drawn relative to a body (center 32, vertical cy,
+// half-width hw, half-height hh). Maps to the game's actions (参考用户发的吉祥物活动图).
+function octoAct(b, act, cy, hw, hh, pal) {
+  const dark = [60, 62, 72];
+  if (act === "eat") { // frying pan + food
+    stroke(b, 32 + hw, cy + 3, 32 + hw + 7, cy + 2, 1, [120, 92, 64]);
+    ell(b, 32 + hw + 11, cy + 3, 4, 2, dark); disc(b, 32 + hw + 11, cy + 2, 1, [240, 184, 92]);
+  } else if (act === "play") { // game controller in front
+    rrect(b, 32, cy + hh + 3, 7, 3, 2, [86, 90, 104]); px(b, 32 - 3, cy + hh + 3, [232, 96, 96]); px(b, 32 + 3, cy + hh + 2, [96, 164, 232]);
+  } else if (act === "clean") { // tub + bubbles
+    rrect(b, 32, cy + hh + 1, hw, 3, 2, [156, 120, 80]);
+    for (const [dx, dy] of [[-hw + 2, -hh + 1], [hw - 2, -hh + 4], [-3, -hh - 3], [5, -hh - 1]]) { disc(b, 32 + dx, cy + dy, 2, [232, 244, 252]); px(b, 32 + dx - 1, cy + dy - 1, [255, 255, 255]); }
+  } else if (act === "pet") { // hearts
+    for (const [x, y] of [[32 - hw - 4, cy - 3], [32 + hw + 2, cy - 6], [32 - 1, cy - hh - 5]]) heart(b, x, y, [240, 112, 142]);
+  } else if (act === "music") { // headphones + notes
+    stroke(b, 32 - hw + 1, cy - hh - 1, 32 + hw - 1, cy - hh - 1, 1, dark);
+    rrect(b, 32 - hw, cy - 1, 1, 3, 1, dark); rrect(b, 32 + hw, cy - 1, 1, 3, 1, dark);
+    note(b, 32 + hw + 4, cy - 5, [98, 128, 214]); note(b, 32 + hw + 9, cy - 9, [98, 128, 214]);
+  } else if (act === "code") { // laptop with </>
+    rrect(b, 32, cy + hh + 2, 8, 4, 1, dark); px(b, 32 - 3, cy + hh + 1, [126, 224, 126]); px(b, 32 - 1, cy + hh + 2, [126, 224, 126]); px(b, 32 + 1, cy + hh + 1, [126, 224, 126]); px(b, 32 + 3, cy + hh + 2, [126, 224, 126]);
+  }
+}
+
 // =================== SCHEMES ===================
 // Each draw(b, { stage:1..3, variant, mood, deco }, pal). stage scales size + features.
 const SCHEMES = {
@@ -73,28 +99,35 @@ const SCHEMES = {
       if (s.deco) deco(b, s.deco, cy - r, pal);
     },
   },
-  // B — 八爪宝 (Claude-mascot blob): rounded dome + short tentacle nubs + a top curl.
+  // B — 克劳德 (the actual Claude mascot from the owner's refs): flat coral rounded-rect
+  // body + 4 stubby legs + small wide-set dark eyes. Does ACTIVITY poses (eat/play/clean/
+  // sleep/pet/music/code) that map to the game's actions — what makes it feel alive.
   octo: {
-    name: "八爪宝", tag: "Claude 吉祥物风 · 圆团 + 小触手",
-    pal: { body: hx("#F2A98C"), deco: hx("#7FBE9E"), ink: hx("#7A4536"), cheek: hx("#E98E78") },
-    variants: ["base", "curl", "long"],
+    name: "克劳德", tag: "Claude 吉祥物风 · 方圆身 + 四小脚 · 会做事（贴合你发的图）",
+    pal: { body: hx("#D96A4A"), leg: hx("#BE5536"), ink: hx("#2C2C32"), deco: hx("#7FBE9E"), cheek: hx("#E98C70") },
+    variants: ["base", "curl", "ears"],
     draw(b, s, pal) {
-      const sc = [0, 0.74, 0.88, 1][s.stage], r = Math.round(15 * sc), cy = 33 - Math.round(r * 0.1);
-      const nubs = s.stage === 1 ? 3 : s.stage === 2 ? 4 : 5;
-      const baseY = cy + r - 1;
-      for (let i = 0; i < nubs; i++) {
-        const x = 32 - r + 2 + Math.round((i + 0.5) * (2 * r - 4) / nubs);
-        if (s.variant === "long") { stroke(b, x, baseY, x + (i % 2 ? 3 : -3), baseY + 9, 2, pal.body); }
-        else if (s.variant === "curl") { disc(b, x, baseY + 3, 3, pal.body); disc(b, x + 2, baseY + 5, 2, pal.body); }
-        else disc(b, x, baseY + 2, 3, pal.body);
+      const sc = [0, 0.78, 0.9, 1][s.stage];
+      const hw = Math.round(14 * sc), hh = Math.round(11 * sc), cy = 34;
+      const eyes2 = (ex0, cy0, mood) => { for (const ex of [-ex0, ex0]) { if (mood === "happy") { px(b, 32 + ex - 1, cy0 + 1, pal.ink); px(b, 32 + ex, cy0, pal.ink); px(b, 32 + ex + 1, cy0 + 1, pal.ink); } else for (let yy = 0; yy < 3; yy++) { px(b, 32 + ex, cy0 - 1 + yy, pal.ink); px(b, 32 + ex + 1, cy0 - 1 + yy, pal.ink); } } };
+
+      if (s.act === "sleep") { // lying down + zzz
+        const lw = Math.round(16 * sc), lh = Math.round(7 * sc);
+        rrect(b, 32, cy + 4, lw, lh, 5, pal.body);
+        outline(b, pal.leg, 1);
+        for (const ex of [-5, 5]) { px(b, 32 + ex - 1, cy + 3, pal.ink); px(b, 32 + ex, cy + 4, pal.ink); px(b, 32 + ex + 1, cy + 3, pal.ink); }
+        const Z = (ox, oy, sz) => { for (let i = 0; i < sz; i++) { px(b, ox + i, oy, [150, 168, 208]); px(b, ox + sz - 1 - i, oy + i, [150, 168, 208]); px(b, ox + i, oy + sz - 1, [150, 168, 208]); } };
+        Z(43, cy - 3, 3); Z(48, cy - 8, 2);
+        return;
       }
-      disc(b, 32, cy, r, pal.body); rrect(b, 32, cy + Math.round(r * 0.4), r, Math.round(r * 0.5), 4, pal.body);
-      stroke(b, 32, cy - r + 1, 32 + 4, cy - r - 6, 1, pal.body); disc(b, 32 + 4, cy - r - 6, 2, pal.deco); // top curl
-      outline(b, pal.ink, 1);
-      blush(b, 32, cy + 4, Math.round(r * 0.6), pal.cheek);
-      eyes(b, 32, cy, Math.round(r * 0.4), s.stage === 1 ? 4 : 5, pal.ink, [0, 1], s.mood);
-      ell(b, 32, cy + 6, 2, 1, pal.ink); // small mouth
-      if (s.deco) deco(b, s.deco, cy - r, pal);
+      for (const lx of [-hw + 3, -Math.round(hw * 0.32), Math.round(hw * 0.32), hw - 3]) rrect(b, 32 + lx, cy + hh + 2, 2, 3, 1, pal.leg); // 4 legs
+      rrect(b, 32, cy, hw, hh, 5, pal.body);
+      if (s.variant === "curl") { stroke(b, 32, cy - hh + 1, 32 + 4, cy - hh - 6, 1, pal.body); disc(b, 32 + 4, cy - hh - 6, 2, pal.deco); }
+      if (s.variant === "ears") { disc(b, 32 - hw + 3, cy - hh + 1, 3, pal.body); disc(b, 32 + hw - 3, cy - hh + 1, 3, pal.body); }
+      outline(b, pal.leg, 1);
+      eyes2(6, cy, s.mood);
+      if (s.act) octoAct(b, s.act, cy, hw, hh, pal);
+      if (s.deco) deco(b, s.deco, cy - hh, pal);
     },
   },
   // C — 方头崽 (Tamagotchi 1-bit blocky): chunky, near 2-tone, thick outline, big beak, googly eyes.
@@ -199,5 +232,23 @@ function sheet(scheme) {
   return `${scheme} (${sc.name}) ${bw}x${bh}`;
 }
 
+// activity poses (the mascot DOING each action) — maps to the game's verbs
+function actsSheet(scheme) {
+  const rows = [
+    [{ stage: 3, variant: "base" }, { stage: 3, variant: "base", act: "eat" }, { stage: 3, variant: "base", act: "play" }, { stage: 3, variant: "base", act: "clean" }],
+    [{ stage: 3, variant: "base", act: "sleep" }, { stage: 3, variant: "base", act: "pet" }, { stage: 3, variant: "base", act: "music" }, { stage: 3, variant: "base", act: "code" }],
+  ];
+  const cols = 4, cell = W * S, bw = cols * cell + (cols + 1) * PAD, bh = rows.length * cell + (rows.length + 1) * PAD;
+  const big = new Uint8ClampedArray(bw * bh * 4);
+  for (let i = 0; i < bw * bh; i++) { big[i * 4] = BG[0]; big[i * 4 + 1] = BG[1]; big[i * 4 + 2] = BG[2]; big[i * 4 + 3] = 255; }
+  rows.forEach((row, r) => row.forEach((spec, c) => {
+    const buf = render(scheme, spec), ox = PAD + c * (cell + PAD), oy = PAD + r * (cell + PAD);
+    for (let y = 0; y < cell; y++) for (let x = 0; x < cell; x++) { const sx = (x / S) | 0, sy = (y / S) | 0, si = (sy * W + sx) * 4; if (buf[si + 3] === 0) continue; const di = ((oy + y) * bw + (ox + x)) * 4; big[di] = buf[si]; big[di + 1] = buf[si + 1]; big[di + 2] = buf[si + 2]; big[di + 3] = 255; }
+  }));
+  writeFileSync(join(OUT, `${scheme}-acts.png`), encode(big, bw, bh));
+  return `${scheme}-acts (待机/吃饭/打游戏/洗澡 · 睡觉/抱抱/听歌/写码)`;
+}
+
 for (const k of Object.keys(SCHEMES)) console.log(sheet(k));
+console.log(actsSheet("octo"));
 console.log("rows = 成长(1→3+笑) · 进化(3变体) · 装饰(帽/蝶结/叶)");
