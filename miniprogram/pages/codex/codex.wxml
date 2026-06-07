@@ -1,5 +1,5 @@
 <view class="page">
-  <view class="codex-intro muted">4 条同源进化线。你的本命宠会带「本命」徽。养育决定它长成自己的哪一面——喂食→丰裕，洗澡→敏捷，看医生→守护，均衡→本形（陪玩·摸摸免费，不影响形态）。</view>
+  <view class="codex-intro muted">5 只小宠，每只一条同源进化线。你的本命宠会带「本命」徽。养育决定它长成自己的哪一面——喂食→丰裕，洗澡→敏捷，看医生→守护，均衡→本形（陪玩·摸摸免费，不影响形态）。</view>
   <view wx:for="{{lines}}" wx:for-item="line" wx:key="key" class="linecard {{line.bonded ? 'linecard--bonded' : ''}}">
     <view class="line-head">
       <text class="line-name">{{line.name}}</text>

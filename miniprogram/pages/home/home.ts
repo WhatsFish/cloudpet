@@ -23,10 +23,10 @@ type PetView = {
 type ActionResp = PetView & { ok: boolean; line: string; fx: string; animation: string; woke: boolean; promoted: string | null; promoteLine: string | null; needReward: { kind: string; exp: number; bond: number } | null };
 
 const VERB_META: Record<string, { emoji: string; label: string; stat: string }> = {
-  feed: { emoji: "🍙", label: "喂喂它", stat: "satiety" },
-  clean: { emoji: "🛁", label: "洗个澡", stat: "cleanliness" },
+  feed: { emoji: "🍙", label: "喂食", stat: "satiety" },
+  clean: { emoji: "🛁", label: "洗澡", stat: "cleanliness" },
   doctor: { emoji: "💊", label: "看医生", stat: "health" },
-  play: { emoji: "🎮", label: "陪它玩", stat: "mood" },
+  play: { emoji: "🎮", label: "陪玩", stat: "mood" },
   pet: { emoji: "💛", label: "摸摸", stat: "" },
   sleep: { emoji: "🌙", label: "哄睡", stat: "" },
 };
@@ -39,24 +39,25 @@ const STAT_META = [
   { key: "satiety", label: "饱食", color: "#FFB84D" },
   { key: "mood", label: "心情", color: "#FF9EC4" },
   { key: "cleanliness", label: "清洁", color: "#7FD4F2" },
-  { key: "energy", label: "精力", color: "#9ED47F" },
+  { key: "energy", label: "活力", color: "#9ED47F" },
   { key: "health", label: "健康", color: "#FF7A7A" },
 ];
+const MAIN_KEYS = ["satiety", "mood", "cleanliness", "energy"]; // shown inline; all 5 in the modal
 const CARE_ROW = ["feed", "clean", "doctor"];
 const AFFECTION_ROW = ["play", "pet", "sleep"];
 
 Page({
   data: {
     loading: true, error: "", pet: null as PetView | null,
-    theme: "cream", spriteSrc: "", bgSrc: "/assets/bg/room.png", animClass: "anim-bob", stageLabel: "",
-    asleepNow: false, needCard: "",
+    theme: "cream", spriteSrc: "", bgSrc: "/assets/bg/meadow.png", animClass: "anim-bob", stageLabel: "",
+    asleepNow: false, speechLine: "",
     ctaVerb: "play", ctaEmoji: "🎮", ctaLabel: "陪它玩", ctaReward: "", ctaPrimary: true,
-    freeVerb: "pet", freeEmoji: "💛", freeLabel: "摸摸",
-    roadmapLine: "", levelPct: 0, levelNum: 1, growthPerDay: 0, hearts: [0, 0, 0, 0, 0],
-    showDrawer: false, showRoadmap: false, showStatus: false, showSettings: false,
+    roadmapLine: "", levelPct: 0, levelNum: 1, growthPerDay: 0, hearts: [0, 0, 0, 0, 0], bondLabel: "",
+    showRoadmap: false, showStatus: false, showSettings: false,
     recap: null as Recap | null,
-    careActs: [] as { verb: string; emoji: string; label: string; enabled: boolean }[],
-    funActs: [] as { verb: string; emoji: string; label: string; enabled: boolean }[],
+    careActs: [] as { verb: string; emoji: string; label: string; enabled: boolean; reward: string }[],
+    funActs: [] as { verb: string; emoji: string; label: string; enabled: boolean; reward: string }[],
+    mainBars: [] as { label: string; color: string; value: number; pct: number }[],
     statBars: [] as { label: string; color: string; value: number; pct: number }[],
     particles: [] as { key: number; emoji: string; x: number; rot: number; delay: number }[],
     floatTag: "", fxKey: 0, reacting: false, nameInput: "",
@@ -92,31 +93,33 @@ Page({
     const meta = VERB_META[verb];
     const cap = STAGE_CAP[pet.pet.stage] ?? 90;
     const deficit = Math.max(0, cap - (pet.stats[meta.stat] ?? cap));
-    return `+${Math.round(6 + 8 * (deficit / cap)) + 40} ✨`;
+    return `+${Math.round(6 + 8 * (deficit / cap)) + 40}✨`;
   },
 
   apply(pet: PetView) {
     const avail: Record<string, boolean> = {};
     for (const a of pet.actions) avail[a.verb] = a.enabled;
 
-    let ctaVerb: string, ctaLabel: string, ctaReward: string, ctaPrimary: boolean, needCard: string;
-    let freeVerb = "pet", freeEmoji = "💛", freeLabel = "摸摸";
+    let ctaVerb: string, ctaLabel: string, ctaReward: string, ctaPrimary: boolean, speechLine: string;
     if (pet.asleepNow) {
       ctaVerb = "pet"; ctaLabel = "轻轻摸摸"; ctaReward = ""; ctaPrimary = false;
-      needCard = "💤 它睡着啦…轻轻摸摸别吵醒它";
-      freeVerb = "sleep"; freeEmoji = "🔔"; freeLabel = "叫醒";
+      speechLine = "💤 它睡着啦…轻轻摸摸别吵醒它";
     } else if (pet.topNeed) {
       ctaVerb = pet.topNeed.verb; ctaPrimary = true;
       ctaLabel = VERB_META[pet.topNeed.verb]?.label ?? "照顾它";
       ctaReward = this.rewardFor(pet.topNeed.verb, pet);
-      needCard = pet.topNeed.label;
+      speechLine = pet.topNeed.label;
     } else {
       ctaVerb = "play"; ctaPrimary = false; ctaLabel = "陪它玩"; ctaReward = "";
-      needCard = pet.needHint || "它现在很满足，陪它待一会儿就好～";
+      speechLine = pet.voice?.line || pet.needHint || "它现在很满足，陪它待一会儿就好～";
     }
 
-    const statBars = STAT_META.map((m) => ({ label: m.label, color: m.color, value: pet.stats[m.key] ?? 0, pct: Math.max(2, Math.min(100, pet.stats[m.key] ?? 0)) }));
-    const mkActs = (verbs: string[]) => verbs.map((v) => ({ verb: v, emoji: VERB_META[v].emoji, label: VERB_META[v].label.replace("喂喂它", "喂食").replace("洗个澡", "洗澡").replace("陪它玩", "陪玩"), enabled: avail[v] !== false }));
+    const mkBars = (keys: string[]) => STAT_META.filter((m) => keys.includes(m.key))
+      .map((m) => ({ label: m.label, color: m.color, value: pet.stats[m.key] ?? 0, pct: Math.max(3, Math.min(100, pet.stats[m.key] ?? 0)) }));
+    const mkActs = (verbs: string[]) => verbs.map((v) => ({
+      verb: v, emoji: VERB_META[v].emoji, label: VERB_META[v].label,
+      enabled: avail[v] !== false, reward: avail[v] !== false ? this.rewardFor(v, pet) : "",
+    }));
 
     this.setData({
       pet, theme: pet.theme || "cream", asleepNow: pet.asleepNow,
@@ -124,18 +127,20 @@ Page({
       bgSrc: this.chooseBg(pet),
       animClass: IDLE_ANIM[pet.pet.archetypeKey] || "anim-bob",
       stageLabel: STAGE_CN[pet.pet.stage] || pet.pet.stage,
-      needCard, ctaVerb, ctaEmoji: VERB_META[ctaVerb]?.emoji ?? "🎮", ctaLabel, ctaReward, ctaPrimary,
-      freeVerb, freeEmoji, freeLabel,
+      speechLine, ctaVerb, ctaEmoji: VERB_META[ctaVerb]?.emoji ?? "🎮", ctaLabel, ctaReward, ctaPrimary,
       roadmapLine: pet.roadmap?.line ?? "", levelPct: Math.max(3, pet.evolveProgress), levelNum: pet.level,
-      growthPerDay: pet.growthPerDay, hearts: [0, 1, 2, 3, 4].map((i) => (i < pet.bondHearts ? 1 : 0)),
+      growthPerDay: pet.growthPerDay,
+      hearts: [0, 1, 2, 3, 4].map((i) => (i < pet.bondHearts ? 1 : 0)),
+      bondLabel: `亲密 ${pet.bond}`,
       careActs: mkActs(CARE_ROW), funActs: mkActs(AFFECTION_ROW),
-      statBars, nameInput: pet.pet.name,
+      mainBars: mkBars(MAIN_KEYS), statBars: mkBars(STAT_META.map((m) => m.key)),
+      nameInput: pet.pet.name,
     });
   },
 
   async doAction(verb: string) {
     if (this.data.reacting) return;
-    this.setData({ reacting: true, showDrawer: false });
+    this.setData({ reacting: true });
     try {
       const resp = await request<ActionResp>({ path: "/action", method: "POST", body: { verb } });
       this.burst(PARTICLE[resp.fx] || "✨", verb);
@@ -154,25 +159,16 @@ Page({
     }
   },
 
-  // primary CTA + free button + drawer
   onPrimary() { this.haptic(); this.doAction(this.data.ctaVerb); },
-  onFree() { this.haptic(); this.doAction(this.data.freeVerb); },
-  onDrawerAction(e: WechatMiniprogram.TouchEvent) {
-    // tapping a disabled action still calls the server, which returns the friendly reason
-    this.doAction(e.currentTarget.dataset.verb as string);
-  },
-  toggleDrawer() { this.setData({ showDrawer: !this.data.showDrawer }); },
-
-  // hardware buttons: A=照顾(do the need / gentle pet) · B=摸/叫醒 · C=路线
-  onA() { this.haptic(); this.doAction(this.data.ctaVerb); },
-  onB() { this.haptic(); this.doAction(this.data.asleepNow ? "sleep" : "pet"); },
-  onC() { this.haptic(); this.setData({ showRoadmap: true }); },
+  // tapping a gated action still calls the server, which returns the friendly reason
+  onAction(e: WechatMiniprogram.TouchEvent) { this.haptic(); this.doAction(e.currentTarget.dataset.verb as string); },
   haptic() { try { wx.vibrateShort({ type: "light" }); } catch { /* unsupported */ } },
 
   dismissRecap() { const hug = !!this.data.recap; this.setData({ recap: null }); if (hug) this.doAction("pet"); },
 
-  openStatus() { this.setData({ showStatus: true, showDrawer: false }); },
-  openSettings() { this.setData({ showSettings: true, showDrawer: false }); },
+  openRoadmap() { this.setData({ showRoadmap: true }); },
+  openStatus() { this.setData({ showStatus: true }); },
+  openSettings() { this.setData({ showSettings: true }); },
   goDiary() { wx.navigateTo({ url: "/pages/diary/diary" }); },
   goCodex() { wx.navigateTo({ url: "/pages/codex/codex" }); },
   closeModals() { this.setData({ showStatus: false, showSettings: false, showRoadmap: false }); },

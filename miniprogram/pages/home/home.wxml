@@ -1,132 +1,146 @@
-<view class="screen theme-{{theme}}" wx:if="{{pet}}">
-  <view class="device">
-    <view class="brand">● {{pet.pet.name}} · {{stageLabel}} ●</view>
+<view class="app theme-{{theme}}" wx:if="{{pet}}">
 
-    <view class="lcd">
-      <image class="bg" src="{{bgSrc}}" mode="aspectFill" />
-      <view class="lcd-grid"></view>
+  <!-- top bar -->
+  <view class="topbar">
+    <view class="title">
+      <text class="pname">{{pet.pet.name}}</text>
+      <text class="pstage">{{stageLabel}}</text>
+    </view>
+    <view class="gear" bindtap="openSettings">⚙</view>
+  </view>
 
-      <view class="road" bindtap="onC">
-        <text class="lvchip">Lv{{levelNum}}</text>
-        <view class="lvbar"><view class="lvfill" style="width:{{levelPct}}%"></view></view>
-        <text class="roadtxt">{{roadmapLine}}</text>
-      </view>
+  <!-- hero scene: pet on a soft cream / clouds / grass background -->
+  <view class="scene">
+    <image class="bg" src="{{bgSrc}}" mode="aspectFill" />
 
-      <view class="stage-wrap">
-        <image class="sprite {{animClass}}" src="{{spriteSrc}}" mode="aspectFit" binderror="onSpriteError" />
-        <view wx:for="{{particles}}" wx:key="key" class="particle" style="left:{{item.x}}rpx; --rot:{{item.rot}}deg; animation-delay:{{item.delay}}ms">{{item.emoji}}</view>
-        <view wx:if="{{floatTag}}" class="floattag">{{floatTag}}</view>
-        <view wx:if="{{asleepNow}}" class="zzz">z z Z</view>
-      </view>
-
-      <view class="metarow">
-        <view class="hearts">
-          <text wx:for="{{hearts}}" wx:key="*this" class="heart {{item ? 'on' : ''}}">{{item ? '♥' : '♡'}}</text>
-          <text class="bondlab">亲密</text>
-        </view>
-        <text class="growth">📈 +{{growthPerDay}}/天</text>
-      </view>
-
-      <view class="needcard">{{needCard}}</view>
+    <view class="lv-badge" bindtap="openRoadmap">
+      <text class="lv-txt">Lv{{levelNum}}</text>
+      <view class="lv-bar"><view class="lv-fill" style="width:{{levelPct}}%"></view></view>
     </view>
 
-    <view class="cta-row">
-      <view class="cta {{ctaPrimary ? 'cta--need' : ''}}" bindtap="onPrimary">
-        <text class="cta-emoji">{{ctaEmoji}}</text>
-        <text class="cta-label">{{ctaLabel}}</text>
-        <text wx:if="{{ctaReward}}" class="cta-reward">{{ctaReward}}</text>
-      </view>
-      <view class="free-btn" bindtap="onFree"><text class="free-emoji">{{freeEmoji}}</text><text class="free-lab">{{freeLabel}}</text></view>
+    <view class="bond-badge">
+      <text wx:for="{{hearts}}" wx:key="*this" class="heart {{item ? 'on' : ''}}">{{item ? '♥' : '♡'}}</text>
     </view>
 
-    <view class="handle" bindtap="toggleDrawer">{{showDrawer ? '收起 ▾' : '更多操作 ▸'}}</view>
-    <view class="drawer {{showDrawer ? 'open' : ''}}">
-      <view class="drow-lab">照顾（到饭点 / 该洗澡 / 生病时才需要 · 决定它长成谁）</view>
-      <view class="dacts">
-        <view wx:for="{{careActs}}" wx:key="verb" class="dact {{item.enabled ? '' : 'dact--off'}}" data-verb="{{item.verb}}" bindtap="onDrawerAction">
-          <text class="de">{{item.emoji}}</text><text class="dl">{{item.label}}</text>
-        </view>
-      </view>
-      <view class="drow-lab">陪伴（随时 · 免费 · 涨亲密，不影响形态）</view>
-      <view class="dacts">
-        <view wx:for="{{funActs}}" wx:key="verb" class="dact {{item.enabled ? '' : 'dact--off'}}" data-verb="{{item.verb}}" bindtap="onDrawerAction">
-          <text class="de">{{item.emoji}}</text><text class="dl">{{item.label}}</text>
-        </view>
-      </view>
-      <view class="dchips">
-        <view class="dchip" bindtap="openStatus">📊 状态</view>
-        <view class="dchip" bindtap="goDiary">📓 心声</view>
-        <view class="dchip" bindtap="goCodex">📖 图鉴</view>
-        <view class="dchip" bindtap="openSettings">⚙️ 设置</view>
-      </view>
+    <view class="stage-wrap">
+      <image class="sprite {{animClass}}" src="{{spriteSrc}}" mode="aspectFit" binderror="onSpriteError" />
+      <view wx:for="{{particles}}" wx:key="key" class="particle" style="left:{{item.x}}rpx; --rot:{{item.rot}}deg; animation-delay:{{item.delay}}ms">{{item.emoji}}</view>
+      <view wx:if="{{floatTag}}" class="floattag">{{floatTag}}</view>
+      <view wx:if="{{asleepNow}}" class="zzz">z z Z</view>
     </view>
 
-    <view class="buttons">
-      <view class="abtn" bindtap="onA"><text class="ab">A</text><text class="blabel">{{ctaPrimary ? '照顾' : (asleepNow ? '摸摸' : '玩')}}</text></view>
-      <view class="abtn" bindtap="onB"><text class="ab">B</text><text class="blabel">{{asleepNow ? '叫醒' : '摸摸'}}</text></view>
-      <view class="abtn" bindtap="onC"><text class="ab">C</text><text class="blabel">路线</text></view>
+    <view class="speech">{{speechLine}}</view>
+  </view>
+
+  <!-- status panel -->
+  <view class="card status">
+    <view class="bars">
+      <view wx:for="{{mainBars}}" wx:key="label" class="bar">
+        <text class="bar-lab">{{item.label}}</text>
+        <view class="bar-track"><view class="bar-fill" style="width:{{item.pct}}%;background:{{item.color}}"></view></view>
+      </view>
+    </view>
+    <view class="status-foot">
+      <text class="grow">🌱 每天约 +{{growthPerDay}} 成长</text>
+      <text class="bondlab" bindtap="openStatus">{{bondLabel}} ›</text>
     </view>
   </view>
 
+  <!-- primary action -->
+  <view class="primary {{ctaPrimary ? 'primary--need' : ''}}" bindtap="onPrimary">
+    <text class="p-emoji">{{ctaEmoji}}</text>
+    <text class="p-label">{{ctaLabel}}</text>
+    <text wx:if="{{ctaReward}}" class="p-reward">{{ctaReward}}</text>
+  </view>
+
+  <!-- action grid -->
+  <view class="card acts">
+    <view class="acts-lab">照顾<text class="acts-sub">· 到点才需要，决定它长成谁</text></view>
+    <view class="act-row">
+      <view wx:for="{{careActs}}" wx:key="verb" class="act {{item.enabled ? '' : 'act--off'}}" data-verb="{{item.verb}}" bindtap="onAction">
+        <text class="a-emoji">{{item.emoji}}</text>
+        <text class="a-label">{{item.label}}</text>
+        <text wx:if="{{item.enabled && item.reward}}" class="a-reward">{{item.reward}}</text>
+        <text wx:elif="{{!item.enabled}}" class="a-done">已照顾</text>
+      </view>
+    </view>
+    <view class="acts-lab">陪伴<text class="acts-sub">· 随时 · 免费 · 涨亲密</text></view>
+    <view class="act-row">
+      <view wx:for="{{funActs}}" wx:key="verb" class="act act--fun {{item.enabled ? '' : 'act--off'}}" data-verb="{{item.verb}}" bindtap="onAction">
+        <text class="a-emoji">{{item.emoji}}</text>
+        <text class="a-label">{{item.label}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- bottom nav -->
+  <view class="nav">
+    <view class="nav-item" bindtap="openRoadmap"><text class="n-emoji">📈</text><text class="n-lab">路线</text></view>
+    <view class="nav-item" bindtap="goDiary"><text class="n-emoji">📓</text><text class="n-lab">心声</text></view>
+    <view class="nav-item" bindtap="goCodex"><text class="n-emoji">📖</text><text class="n-lab">图鉴</text></view>
+    <view class="nav-item" bindtap="openStatus"><text class="n-emoji">📊</text><text class="n-lab">状态</text></view>
+  </view>
+
+  <!-- ===== modals ===== -->
   <view wx:if="{{recap}}" class="mask" bindtap="dismissRecap">
-    <view class="recap" catchtap="noop">
+    <view class="modal recap" catchtap="noop">
       <view class="recap-title">我长大啦！</view>
       <image class="recap-sprite" src="{{spriteSrc}}" mode="aspectFit" binderror="onSpriteError" />
       <view class="recap-line">{{recap.line}}</view>
       <view class="recap-meta">Lv{{recap.levelFrom}} → Lv{{recap.levelTo}}<block wx:if="{{recap.evolvedToName}}"> · 长成「{{recap.evolvedToName}}」</block></view>
-      <view class="recap-btn" bindtap="dismissRecap">抱抱它 💛</view>
+      <view class="solid-btn" bindtap="dismissRecap">抱抱它 💛</view>
     </view>
   </view>
 
   <view wx:if="{{showRoadmap}}" class="mask" bindtap="closeModals">
-    <view class="panel" catchtap="noop">
-      <view class="panel-title">成长路线</view>
+    <view class="modal" catchtap="noop">
+      <view class="modal-title">成长路线</view>
       <view class="road-big">{{roadmapLine}}</view>
       <view class="srow2" wx:if="{{pet.roadmap.stage}}">下一阶段「{{pet.roadmap.stage.towardName}}」：经验差 {{pet.roadmap.stage.expRemaining}} · 还要 {{pet.roadmap.stage.daysRemaining}} 天 · 亲密差 {{pet.roadmap.stage.bondRemaining}}</view>
       <view class="srow2">每天自然成长约 +{{growthPerDay}} 经验（养得越好长得越快）</view>
       <view class="srow2">养育倾向：{{pet.nurtureTilt.label}}</view>
       <view class="srow2">亲密度 {{pet.bond}}/1000 · 连续 {{pet.streakDays}} 天</view>
-      <view class="pbtn" bindtap="closeModals">知道啦</view>
+      <view class="ghost-btn" bindtap="closeModals">知道啦</view>
     </view>
   </view>
 
   <view wx:if="{{showStatus}}" class="mask" bindtap="closeModals">
-    <view class="panel" catchtap="noop">
-      <view class="panel-title">状态 · {{pet.pet.name}}</view>
+    <view class="modal" catchtap="noop">
+      <view class="modal-title">状态 · {{pet.pet.name}}</view>
       <view wx:for="{{statBars}}" wx:key="label" class="srow">
         <text class="slabel">{{item.label}}</text>
         <view class="sbar"><view class="sfill" style="width:{{item.pct}}%;background:{{item.color}}"></view></view>
         <text class="sval">{{item.value}}</text>
       </view>
       <view class="srow2">亲密度 {{pet.bond}}/1000 · 认识第 {{pet.pet.daysKnown}} 天</view>
-      <view class="pbtn" bindtap="closeModals">关闭</view>
+      <view class="ghost-btn" bindtap="closeModals">关闭</view>
     </view>
   </view>
 
   <view wx:if="{{showSettings}}" class="mask" bindtap="closeModals">
-    <view class="panel" catchtap="noop">
-      <view class="panel-title">设置</view>
-      <view class="plabel">机身配色</view>
+    <view class="modal" catchtap="noop">
+      <view class="modal-title">设置</view>
+      <view class="plabel">背景配色</view>
       <view class="themes">
         <view wx:for="{{['cream','mint','dusk']}}" wx:key="*this" class="swatch theme-{{item}} {{theme === item ? 'sel' : ''}}" data-theme="{{item}}" bindtap="pickTheme">
-          <view class="swatch-shell"></view>
+          <view class="swatch-chip"></view>
           <text class="swatch-name">{{item === 'cream' ? '奶油' : item === 'mint' ? '薄荷' : '暮光'}}</text>
         </view>
       </view>
       <view class="plabel">给它改名</view>
       <view class="namerow">
         <input class="ninput" value="{{nameInput}}" maxlength="12" bindinput="onNameInput" />
-        <view class="nbtn" bindtap="saveName">保存</view>
+        <view class="solid-btn small" bindtap="saveName">保存</view>
       </view>
-      <view class="pbtn" bindtap="closeModals">关闭</view>
+      <view class="ghost-btn" bindtap="closeModals">关闭</view>
     </view>
   </view>
 </view>
 
-<view class="screen theme-cream center-screen" wx:elif="{{error}}">
+<view class="app theme-cream center-screen" wx:elif="{{error}}">
   <view class="muted">{{error}}</view>
-  <view class="retry" bindtap="load">再试一次</view>
+  <view class="solid-btn" bindtap="load">再试一次</view>
 </view>
-<view class="screen theme-cream center-screen" wx:else>
+<view class="app theme-cream center-screen" wx:else>
   <view class="muted">正在唤醒你的小宠…</view>
 </view>

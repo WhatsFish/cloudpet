@@ -73,8 +73,8 @@ export default function Codex() {
 
       {/* overview */}
       <section className="mb-10 rounded-xl border border-neutral-200 bg-neutral-50 p-4">
-        <div className="text-xs text-neutral-400 mb-3">四条线 · 本形(少年)</div>
-        <div className="grid grid-cols-4 gap-3">
+        <div className="text-xs text-neutral-400 mb-3">五只小宠 · 本形(少年)</div>
+        <div className="grid grid-cols-5 gap-3">
           {ids.map((id) => (
             <a key={id} href={`#${id}`} className="flex flex-col items-center group">
               <div className="rounded-lg bg-white border border-neutral-200 p-1 group-hover:border-neutral-400 transition-colors"><Sprite id={id} file="teen_idle" size={64} alt={LINES[id].name} /></div>
@@ -163,7 +163,7 @@ export default function Codex() {
       </div>
 
       <footer className="mt-12 pt-6 border-t border-neutral-200 text-xs text-neutral-400">
-        程序化美术引擎 v7 · scripts/gen-art.mjs（5 只 × 真形+3变体 = 20 种成年形态 + 活动姿态）。养育→分叉：喂食→丰裕形，洗澡梳理→敏捷形，看医生→守护形，均衡→本形（陪玩·摸摸免费，不影响形态）。
+        程序化美术引擎 v8（对齐设计稿：奶团=Chiikawa / 克劳德=ClaudePet / 方头崽=薄荷果冻原创 / 波波企鹅 / 墩墩熊=Kumamon）· scripts/gen-art.mjs（5 只 × 真形+3变体 = 20 种成年形态 + 活动姿态）。养育→分叉：喂食→丰裕形，洗澡梳理→敏捷形，看医生→守护形，均衡→本形（陪玩·摸摸免费，不影响形态）。
       </footer>
     </main>
   );
