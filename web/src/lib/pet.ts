@@ -3,17 +3,17 @@
 
 import type { Tx } from "@/lib/db";
 import { query } from "@/lib/db";
-import type { ActionAvailability, CareCounts, CopyContext, PetRow, PetView, Recap, Roadmap, Snapshot, Stage, Verb } from "@/lib/types";
+import type { ActionAvailability, CareCounts, CopyContext, NeedKind, PetRow, PetView, Recap, Roadmap, Snapshot, Stage, Verb } from "@/lib/types";
 import { creature } from "@/data/bestiary";
 import { capForStage, expForNextStage, nextStage } from "@/data/stage-table";
-import { ACTIONS, CARE_COVERED_AT } from "@/lib/game/constants";
+import { ACTIONS, CARE_COVERED_AT, NIGHT_FROM, NIGHT_TO, SLEEPY_ENERGY } from "@/lib/game/constants";
 import { recompute } from "@/lib/game/tick";
 import { nurtureTilt, resolveSpecies, speciesName } from "@/lib/game/evolve";
-import { deriveNeeds, passiveRatePerHour, type NeedTimes } from "@/lib/game/needs";
+import { deriveNeeds, passiveRatePerHour, VERB_NEED, type NeedTimes } from "@/lib/game/needs";
 import { expToReach, levelFromExp, levelProgress } from "@/lib/game/levels";
 import { badges, dominant, moodBand } from "@/lib/game/state";
 import { STATE } from "@/lib/types";
-import { daysBetween, localDateStr, timeBand } from "@/lib/game/time";
+import { daysBetween, localDateStr, localHour, timeBand } from "@/lib/game/time";
 import type { CooldownRow } from "@/lib/game/actions";
 
 const STAGE_CN: Record<Stage, string> = { egg: "蛋", baby: "幼年", child: "童年", teen: "少年", adult: "成年" };
@@ -61,7 +61,8 @@ export async function loadRows(q: Tx, userId: string, forUpdate = false): Promis
   const st = states[0];
   const care: CareCounts = { feed: st.care_feed, clean: st.care_clean, doctor: st.care_doctor, affection: st.affection_taps };
   const ms = (v: string | null) => (v ? Date.parse(v) : null);
-  const needTimes: NeedTimes = { fed: ms(st.need_fed_at), clean: ms(st.need_clean_at), bored: ms(st.need_bored_at), unwell: ms(st.need_unwell_at), wants: ms(st.need_wants_at) };
+  // need_wants_at is repurposed in V5 as "last slept at" (sleepy cooldown anchor).
+  const needTimes: NeedTimes = { fed: ms(st.need_fed_at), clean: ms(st.need_clean_at), bored: ms(st.need_bored_at), unwell: ms(st.need_unwell_at), slept: ms(st.need_wants_at) };
   return { pet, state: st, cooldown: cds[0], lastActionMs, care, needTimes, tapsToday: st.pet_taps_today, tapsDay: st.taps_day };
 }
 
@@ -126,7 +127,7 @@ export function buildContext(rows: Rows, nowMs: number, tzOffsetMin: number): Co
     bond: state.bond,
     daysKnown,
     pattern: behaviorPattern(cooldown.streak_days, noInteractionH, band),
-    need: deriveNeeds(state, rows.needTimes, nowMs)[0]?.kind ?? null,
+    need: deriveNeeds(state, rows.needTimes, nowMs, tzOffsetMin, state.asleep)[0]?.kind ?? null,
     seed: seed >>> 0,
   };
 }
@@ -146,15 +147,26 @@ export function needHint(s: Snapshot, covered: boolean): string {
   return low.length ? low[0][1] : "来照顾它一下，今天就长大一点点 🌱";
 }
 
-export function actionAvailability(stage: Stage, s: Snapshot): ActionAvailability[] {
+export function actionAvailability(stage: Stage, s: Snapshot, dueKinds: NeedKind[], hour: number): ActionAvailability[] {
   const order = ({ egg: 0, baby: 1, child: 2, teen: 3, adult: 4 } as Record<Stage, number>)[stage];
+  const asleep = s.asleep;
+  const night = hour >= NIGHT_FROM || hour < NIGHT_TO;
+  const sick = (s.state_flags & STATE.SICK) !== 0;
   const out: ActionAvailability[] = [];
   for (const verb of Object.keys(ACTIONS) as Verb[]) {
     const def = ACTIONS[verb];
     let enabled = true; let reason: string | undefined;
-    // V4: care is unlimited (no battery); only stage-lock and sick-block remain.
     if (order < def.unlockOrder) { enabled = false; reason = "locked"; }
-    else if (def.blockedWhen?.includes("SICK") && s.state_flags & STATE.SICK) { enabled = false; reason = "sick"; }
+    else if (asleep) {
+      // while asleep only a gentle 摸摸 or 叫醒 are available
+      if (verb !== "pet" && verb !== "sleep") { enabled = false; reason = "asleep"; }
+    } else if (verb === "sleep") {
+      if (!night && s.energy >= SLEEPY_ENERGY) { enabled = false; reason = "not_sleepy"; }
+    } else if (def.charge) {
+      // care is gated on its NEED being due (the rhythm limit)
+      const kind = VERB_NEED[verb];
+      if (!kind || !dueKinds.includes(kind)) { enabled = false; reason = "not_needed"; }
+    } else if (verb === "play" && sick) { enabled = false; reason = "sick"; }
     out.push({ verb, enabled, reason });
   }
   return out;
@@ -196,10 +208,11 @@ export function buildRoadmap(rows: Rows, nowMs: number): Roadmap {
 
 export type ViewOpts = {
   nowMs: number;
+  tz: number;
   theme: string;
   voice: { line: string; lineId: string } | null;
   recap: Recap | null;
-  needLine?: (kind: import("@/lib/types").NeedKind) => string; // V4: persona voice for the need card
+  needLine?: (kind: NeedKind) => string; // persona voice for the need card
 };
 
 export function buildPetView(rows: Rows, o: ViewOpts): PetView {
@@ -207,7 +220,8 @@ export function buildPetView(rows: Rows, o: ViewOpts): PetView {
   const dom = dominant(state, state.asleep);
   const daysKnown = Math.max(1, Math.floor(daysBetween(Date.parse(pet.created_at), o.nowMs)) + 1);
   const level = levelFromExp(state.exp);
-  const needs = deriveNeeds(state, rows.needTimes, o.nowMs);
+  const hour = localHour(o.nowMs, o.tz);
+  const needs = deriveNeeds(state, rows.needTimes, o.nowMs, o.tz, state.asleep);
   if (o.needLine) for (const n of needs) n.label = o.needLine(n.kind) || n.label; // persona voice
 
   return {
@@ -226,12 +240,15 @@ export function buildPetView(rows: Rows, o: ViewOpts): PetView {
     sprite: { creatureId: pet.species_id, stage: pet.stage, mood: dom.spriteMood, animation: dom.animation },
     needs,
     topNeed: needs[0] ?? null,
+    asleepNow: state.asleep,
     roadmap: buildRoadmap(rows, o.nowMs),
     recap: o.recap,
+    growthPerDay: Math.round(passiveRatePerHour(state, capForStage(pet.stage)) * 24),
+    bondHearts: Math.min(5, Math.round(state.bond / 200)),
     streakDays: cooldown.streak_days,
     theme: o.theme,
     voice: o.voice,
-    actions: actionAvailability(pet.stage, state),
+    actions: actionAvailability(pet.stage, state, needs.map((n) => n.kind), hour),
     nurtureTilt: nurtureTilt(pet.archetype_key, rows.care),
   };
 }

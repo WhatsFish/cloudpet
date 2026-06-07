@@ -117,5 +117,5 @@ export async function GET(req: NextRequest) {
   }
 
   const needLine = (kind: NeedKind) => selectCopy(pack, NEED_EVENT[kind], ctx, `need.${kind}.${localDate}`).text;
-  return NextResponse.json(buildPetView(rows, { nowMs: now, theme, voice, recap, needLine }));
+  return NextResponse.json(buildPetView(rows, { nowMs: now, tz, theme, voice, recap, needLine }));
 }

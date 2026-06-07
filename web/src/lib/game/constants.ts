@@ -54,13 +54,27 @@ export function careExp(preStat: number, cap: number): number {
   return Math.round(CARE_EXP_MIN + (CARE_EXP_MAX - CARE_EXP_MIN) * (deficit / cap));
 }
 
-// Needs: a need is DUE when its backing stat is low AND its cooldown has elapsed.
-export const NEED_DUE: Record<"hungry" | "dirty" | "bored" | "unwell", number> = { hungry: 45, dirty: 45, bored: 40, unwell: 35 };
-export const NEED_COOLDOWN_MS: Record<NeedKind, number> = { hungry: 3.5 * H, dirty: 5 * H, bored: 4 * H, unwell: 8 * H, wants: 6 * H };
-export const NEED_REWARD = { exp: 40, bond: 10 }; // answering what it ASKED FOR (the big draw)
+// V5 CIRCADIAN needs — care follows a real-pet rhythm (meals / ~daily bath / sick-only),
+// NOT infinite taps. Feeding is only "due" inside a meal window (once per meal); washing
+// ~once a day; doctor only when sick; sleep at night. Affection (play/pet) stays the
+// always-available free outlet so there's an interaction even between needs.
+export const MEALS: { from: number; to: number }[] = [{ from: 7, to: 10 }, { from: 11, to: 14 }, { from: 17, to: 20 }];
+export const NIGHT_FROM = 22, NIGHT_TO = 7; // sleepy window; feeding/play are suppressed here
+export const SLEEPY_ENERGY = 35; // below this (or at night) the pet will accept 哄睡
+export const HUNGER_SAFETY = 25; // very low satiety → hungry even outside a meal window
+
+export const NEED_DUE: Record<"dirty" | "bored" | "unwell", number> = { dirty: 50, bored: 45, unwell: 35 };
+export const NEED_COOLDOWN_MS: Record<NeedKind, number> = { hungry: 3 * H, dirty: 20 * H, bored: 4 * H, unwell: 8 * H, sleepy: 12 * H };
 export const NEED_MAX_ACTIVE = 3;
-export const NEED_PRIORITY: NeedKind[] = ["unwell", "hungry", "dirty", "bored", "wants"];
-export const NEED_VERB: Record<NeedKind, Verb> = { unwell: "doctor", hungry: "feed", dirty: "clean", bored: "play", wants: "pet" };
+export const NEED_PRIORITY: NeedKind[] = ["unwell", "sleepy", "hungry", "dirty", "bored"];
+export const NEED_VERB: Record<NeedKind, Verb> = { unwell: "doctor", sleepy: "sleep", hungry: "feed", dirty: "clean", bored: "play" };
+
+// CARE needs (hungry/dirty/unwell) reward EXP + bond — the growth draw, rhythm-limited.
+// AFFECTION needs (sleepy/bored) reward BOND only — answering them deepens the bond but
+// never grows EXP (keeps play/sleep decoupled from growth).
+export const CARE_NEEDS: NeedKind[] = ["hungry", "dirty", "unwell"];
+export const NEED_REWARD = { exp: 40, bond: 10 };
+export const AFFECTION_NEED_BOND = 8;
 
 // Passive EXP drip over real time — rate scaled by stats + bond (good care → faster growth
 // even while away), bounded per recompute window so a long absence can't fast-forward.

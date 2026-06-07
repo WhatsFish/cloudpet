@@ -1,53 +1,72 @@
-// V4 needs loop. A need is a DERIVED (not stored) token: its backing stat is low AND
-// its cooldown since last satisfied has elapsed. Answering a DUE need is the big EXP
-// draw; ignoring one never punishes — it just sits in the hint list and keeps the stat
-// (and thus the passive-drip multiplier) low. Also the passive-EXP rate helper.
+// V5 circadian needs. A need is DERIVED on read; care now follows a REAL-PET RHYTHM
+// rather than infinite taps: hunger fires only inside meal windows (once per meal),
+// the bath ~once a day, doctor only when sick, sleep at night. While the pet is asleep
+// only "unwell" can surface — feeding/washing/playing wait until it wakes. Answering a
+// DUE need is the draw; ignoring one never punishes. Also the passive-drip rate helper.
 
-import type { Snapshot, Verb } from "@/lib/types";
+import type { NeedKind, Snapshot, Verb } from "@/lib/types";
 import { STATE } from "@/lib/types";
-import type { NeedKind } from "./constants";
 import {
   NEED_DUE, NEED_COOLDOWN_MS, NEED_PRIORITY, NEED_MAX_ACTIVE, NEED_VERB,
+  MEALS, NIGHT_FROM, NIGHT_TO, HUNGER_SAFETY,
   PASSIVE_BASE, PASSIVE_CARE, PASSIVE_BOND,
 } from "./constants";
+import { localHour } from "./time";
 
-export type NeedTimes = { fed: number | null; clean: number | null; bored: number | null; unwell: number | null; wants: number | null };
+// need_wants_at is repurposed in V5 as "last slept at" (sleepy cooldown anchor).
+export type NeedTimes = { fed: number | null; clean: number | null; bored: number | null; unwell: number | null; slept: number | null };
 export type Need = { kind: NeedKind; verb: Verb; label: string };
 
-// fallback persona-neutral copy; M4 routes the words through the creature's copy pack.
+// fallback persona-neutral copy; the routes route the words through the creature's pack.
 export const NEED_LABEL: Record<NeedKind, string> = {
   unwell: "我有点不舒服…看看医生好不好",
-  hungry: "肚子咕咕叫啦，喂我一口嘛",
+  sleepy: "好困呀…哄我睡一会儿嘛",
+  hungry: "肚子咕咕叫啦，到饭点啦",
   dirty: "身上脏脏的，想洗个香香的澡",
   bored: "好无聊呀，陪我玩一会儿嘛",
-  wants: "想要你陪陪我～",
 };
 
-// which need a given action satisfies (for the need-reward check)
-export const VERB_NEED: Partial<Record<Verb, NeedKind>> = { feed: "hungry", clean: "dirty", doctor: "unwell", play: "bored", pet: "wants" };
+// which need a given action satisfies
+export const VERB_NEED: Partial<Record<Verb, NeedKind>> = { feed: "hungry", clean: "dirty", doctor: "unwell", sleep: "sleepy", play: "bored" };
 
-// the copy event that voices each need IN PERSONA (M4). The pet asks in its own voice.
+// the copy event that voices each need IN PERSONA
 export const NEED_EVENT: Record<NeedKind, string> = {
-  hungry: "state.hungry", dirty: "state.dirty", unwell: "state.sick", bored: "state.bored", wants: "beg.want",
+  unwell: "state.sick", sleepy: "state.sleepy", hungry: "state.hungry", dirty: "state.dirty", bored: "state.bored",
 };
 
-// The due needs, ordered by priority, capped. wants-X (persona/time) is deferred to M4.
-export function deriveNeeds(s: Snapshot, t: NeedTimes, nowMs: number): Need[] {
+export function isNightHour(hour: number): boolean { return hour >= NIGHT_FROM || hour < NIGHT_TO; }
+function currentMeal(hour: number) { return MEALS.find((m) => hour >= m.from && hour < m.to); }
+
+export function deriveNeeds(s: Snapshot, t: NeedTimes, nowMs: number, tzOffsetMin: number, asleep: boolean): Need[] {
+  const hour = localHour(nowMs, tzOffsetMin);
+  const night = isNightHour(hour);
   const sick = (s.state_flags & STATE.SICK) !== 0;
-  const ready = (kind: NeedKind, last: number | null) => last == null || nowMs - last >= NEED_COOLDOWN_MS[kind];
-  const due: NeedKind[] = [];
-  if ((sick || s.health < NEED_DUE.unwell) && ready("unwell", t.unwell)) due.push("unwell");
-  if (s.satiety < NEED_DUE.hungry && ready("hungry", t.fed)) due.push("hungry");
-  if (s.cleanliness < NEED_DUE.dirty && ready("dirty", t.clean)) due.push("dirty");
-  if (s.mood < NEED_DUE.bored && ready("bored", t.bored)) due.push("bored");
-  return NEED_PRIORITY.filter((k) => due.includes(k))
+  const ready = (last: number | null, cd: number) => last == null || nowMs - last >= cd;
+  const out: NeedKind[] = [];
+
+  // unwell can surface even while resting
+  if ((sick || s.health < NEED_DUE.unwell) && ready(t.unwell, NEED_COOLDOWN_MS.unwell)) out.push("unwell");
+
+  if (!asleep) {
+    if (night && ready(t.slept, NEED_COOLDOWN_MS.sleepy)) out.push("sleepy");
+    // hunger: only inside a meal window and not yet fed this meal (or critically low)
+    if (!night) {
+      const meal = currentMeal(hour);
+      if (meal) {
+        const windowStart = nowMs - (hour - meal.from) * 3600_000;
+        if (t.fed == null || t.fed < windowStart) out.push("hungry");
+      } else if (s.satiety < HUNGER_SAFETY) out.push("hungry");
+    } else if (s.satiety < HUNGER_SAFETY) out.push("hungry");
+    if (s.cleanliness < NEED_DUE.dirty && ready(t.clean, NEED_COOLDOWN_MS.dirty)) out.push("dirty");
+    if (!night && s.mood < NEED_DUE.bored && ready(t.bored, NEED_COOLDOWN_MS.bored)) out.push("bored");
+  }
+
+  return NEED_PRIORITY.filter((k) => out.includes(k))
     .slice(0, NEED_MAX_ACTIVE)
     .map((kind) => ({ kind, verb: NEED_VERB[kind], label: NEED_LABEL[kind] }));
 }
 
-export function isDue(needs: Need[], kind: NeedKind): boolean {
-  return needs.some((n) => n.kind === kind);
-}
+export function isDue(needs: Need[], kind: NeedKind): boolean { return needs.some((n) => n.kind === kind); }
 
 // Passive EXP per real hour: scaled by how well-cared (avg of the 4 live stats) and how
 // bonded the pet is. A thriving, bonded pet grows ~9x faster passively than a neglected one.

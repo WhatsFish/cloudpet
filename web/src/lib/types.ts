@@ -4,7 +4,7 @@
 
 export type Stage = "egg" | "baby" | "child" | "teen" | "adult";
 export type LiveStat = "satiety" | "mood" | "cleanliness" | "energy" | "health";
-export type NeedKind = "unwell" | "hungry" | "dirty" | "bored" | "wants";
+export type NeedKind = "unwell" | "sleepy" | "hungry" | "dirty" | "bored";
 export type MoodBand = "极好" | "好" | "平" | "低" | "极低";
 export type TimeBand = "清晨" | "白天" | "傍晚" | "深夜";
 export type StateFlagName = "SICK" | "SULKING" | "HIDING" | "LONELY";
@@ -152,10 +152,13 @@ export type PetView = {
   needHint: string; // gentle "what to do" prompt (mirrors dominant precedence)
   asleep: boolean;
   sprite: { creatureId: string; stage: Stage; mood: string; animation: string };
-  needs: NeedView[]; // V4: up to 3 DUE needs, priority-ordered
+  needs: NeedView[]; // up to 3 DUE needs, priority-ordered
   topNeed: NeedView | null; // the single most important thing to do now (the primary CTA)
+  asleepNow: boolean; // V5: sleep gates the other actions; the UI shows a sleep state
   roadmap: Roadmap; // next level / next evolution + what it needs
   recap: Recap | null; // GET only, one-shot: it grew while you were away
+  growthPerDay: number; // V5: quantified growth speed (passive exp/day at current care)
+  bondHearts: number; // V5: 0–5 hearts, visible 亲密度
   streakDays: number;
   theme: string; // device skin
   voice: { line: string; lineId: string } | null; // today's 心声
