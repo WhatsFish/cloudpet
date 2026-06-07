@@ -68,7 +68,7 @@ export default function Styles() {
       </div>
 
       <footer className="mt-10 pt-6 border-t border-neutral-200 text-sm text-neutral-500 leading-relaxed">
-        <p><strong>怎么选</strong>：告诉我喜欢哪套（A 奶团 / B 八爪宝 / C 方头崽 / D 豆豆），或者「A 的脸 + B 的身体」这样揉也行。
+        <p><strong>怎么选</strong>：告诉我喜欢哪套（A 奶团 / B 八爪宝 / C 方头崽 / D 企鹅 / E 熊本熊），或者「A 的脸 + B 的身体」这样揉也行。
         定下方向后，我会用它重画全部进化线（蛋→成年 × 各变体），并接上「可装饰」系统（帽子/围巾等，养出来可换）。</p>
         <p className="mt-2 text-neutral-400">程序化生成 · scripts/gen-styles.mjs · 当前游戏内美术保持不变，等你拍板。</p>
       </footer>
