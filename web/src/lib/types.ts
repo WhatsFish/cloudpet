@@ -17,7 +17,8 @@ export type AxisVector = { attach: number; curio: number; express: number };
 // How you raise the pet (which care you favor) steers which form it grows into at
 // the teen fork. These counts are persisted aggregates on pet_state.
 export type CareCounts = { feed: number; clean: number; doctor: number; affection: number };
-export type NurtureLean = "feed" | "clean" | "doctor" | "play" | "balanced";
+// V4 care branches: feed→丰裕形, engage(洗澡+陪玩)→敏捷形, tend(看医生)→守护形, balanced→本形.
+export type NurtureLean = "feed" | "engage" | "tend" | "balanced";
 export type NurtureTilt = {
   leaning: NurtureLean;
   towardSpeciesId: string; // the form it is currently growing toward

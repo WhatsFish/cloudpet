@@ -18,8 +18,8 @@ export const MATCH_WEIGHTS = { attach: 1.0, curio: 1.0, express: 1.3 } as const;
 export const ARCHETYPES: Archetype[] = [
   { key: "mochi_pudding", nameCN: "抖抖布丁", anchor: { attach: 6, curio: -5, express: 6 },
     vibe: "黏人暖团子，一切照旧就最幸福", coreNeed: "稳定的陪伴与抱抱" },
-  { key: "sproutling", nameCN: "探探芽", anchor: { attach: 4, curio: 6, express: 1 },
-    vibe: "顶着好奇雷达，拉你一起去看看", coreNeed: "和你一起发现新鲜事" },
+  { key: "sproutling", nameCN: "探探芽", anchor: { attach: 4, curio: 8, express: -3 },
+    vibe: "顶着好奇雷达，安安静静拉你去看看", coreNeed: "和你一起发现新鲜事" },
   { key: "ember_imp", nameCN: "炸毛团", anchor: { attach: 6, curio: 3, express: 8 },
     vibe: "一点就炸、一哄就笑的小火球", coreNeed: "被立刻回应的实时存在感" },
   { key: "stone_egg", nameCN: "闷石墩", anchor: { attach: 0, curio: -6, express: -6 },

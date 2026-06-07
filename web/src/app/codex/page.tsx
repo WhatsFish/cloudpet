@@ -23,7 +23,7 @@ const MOODS = ["idle", "happy", "eating", "sad", "sulk", "sleeping", "hide"] as 
 const MOOD_CN: Record<string, string> = { idle: "平常", happy: "开心", eating: "进食", sad: "难过", sulk: "闹脾气", sleeping: "睡觉", hide: "躲起来" };
 const LEAN: { key: "feed" | "engage" | "tend"; label: string }[] = [
   { key: "feed", label: "喂食多" },
-  { key: "engage", label: "洗澡·陪玩多" },
+  { key: "engage", label: "洗澡梳理多" },
   { key: "tend", label: "看医生多" },
 ];
 
@@ -164,7 +164,7 @@ export default function Codex() {
       </div>
 
       <footer className="mt-12 pt-6 border-t border-neutral-200 text-xs text-neutral-400">
-        程序化美术引擎 v3 · scripts/gen-art.mjs（4 线 × 真形+3变体 = 16 种成年剪影）。养育→分叉：喂食→丰裕形，洗澡·陪玩→敏捷形，看医生→守护形，均衡→本形。
+        程序化美术引擎 v3 · scripts/gen-art.mjs（4 线 × 真形+3变体 = 16 种成年剪影）。养育→分叉：喂食→丰裕形，洗澡梳理→敏捷形，看医生→守护形，均衡→本形（陪玩·摸摸免费，不影响形态）。
       </footer>
     </main>
   );

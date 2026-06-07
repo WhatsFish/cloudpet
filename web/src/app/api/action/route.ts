@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
 
     const coveredBefore = careCoveredToday(rows.state);
     const c = creature(rows.pet.species_id);
-    const pack = getPack(rows.pet.species_id);
+    const pack = getPack(rows.pet.archetype_key); // variants speak in their line head's voice
     const plan = planAction({ verb, stage: rows.pet.stage, state: rows.state, charges: cs.charges, creature: c, nowMs: now });
 
     if (!plan.ok) {

@@ -1,82 +1,80 @@
-// V3 / Model C — care-history-driven divergent evolution.
+// V4 / within-lineage divergent evolution.
 //
-// The quiz still bonds you to a NAMED baby (the "seed" archetype) on day 1. But HOW you
-// raise it then steers which form it grows into at the teen fork. For each V1 seed, the
-// care behaviour you favour most grows the pet into a specific, on-theme member of the
-// roster; balanced care → it stays its own true form. The three seeds' branches together
-// span ALL TEN creatures, so the whole bestiary is the payoff for how you raise it.
-// Pure, deterministic, no LLM. This is the mechanic that makes care decisions MATTER.
+// A pet is bonded to a LINE head (= its quiz archetype). How you raise it steers the
+// TEEN fork into a variant OF ITSELF — never a different species. The care kinds collapse
+// to 3 branches: feed → 丰裕形, engage (洗澡 + 陪玩/摸) → 敏捷形, tend (看医生) → 守护形;
+// balanced care → the line's own true form. Reads web/src/data/lines.json (the same
+// source the art engine uses), so the rule always matches the rendered sprites. Pure,
+// deterministic, no LLM.
 
 import type { CareCounts, NurtureLean, NurtureTilt } from "@/lib/types";
-import { archetype } from "@/data/personality";
+import linesData from "@/data/lines.json";
 
-// seed → (dominant care lean → destination creature). balanced is implicit (→ seed).
-// Authored for legibility + guaranteed visible divergence; spans the full roster:
-//   mochi: puff/ember/dream/clay · echo: sprout/spark/wisp/stone · ember: mochi/spark/puff/clay
-const BRANCH: Record<string, Partial<Record<NurtureLean, string>>> = {
-  mochi_pudding: { feed: "puff_seal", play: "ember_imp", clean: "dream_jelly", doctor: "clay_golem" },
-  echo_fox: { feed: "sproutling", play: "spark_sprite", clean: "wisp_moth", doctor: "stone_egg" },
-  ember_imp: { feed: "mochi_pudding", play: "spark_sprite", clean: "puff_seal", doctor: "clay_golem" },
-};
+type Branch = { variant: string; name: string; blurb: string };
+type Line = { name: string; accent: string; trueBlurb: string; branches: { feed: Branch; engage: Branch; tend: Branch } };
+const LINES = linesData.lines as Record<string, Line>;
 
-const KINDS: [Exclude<NurtureLean, "balanced">, keyof CareCounts][] = [
-  ["feed", "feed"], ["clean", "clean"], ["doctor", "doctor"], ["play", "affection"],
-];
+export const LINE_HEADS = Object.keys(LINES);
 
-// Seeds that have an authored branch tree (the V1 quiz-reachable seeds).
-export const SEED_KEYS = Object.keys(BRANCH);
-
-// The branch tree for a seed (for the codex / onboarding preview): which care lean grows
-// it into which form. Balanced (→ the seed's own true form) is implicit.
-export function branchesFor(seedKey: string): { lean: Exclude<NurtureLean, "balanced">; speciesId: string }[] {
-  const b = BRANCH[seedKey] ?? {};
-  return (["feed", "clean", "doctor", "play"] as const)
-    .filter((l) => b[l]).map((l) => ({ lean: l, speciesId: b[l]! }));
+// the display name of any species_id (line head or `<line>__<variant>`)
+export function speciesName(speciesId: string): string {
+  const [line, variant] = speciesId.split("__");
+  const L = LINES[line];
+  if (!L) return speciesId;
+  if (!variant) return L.name;
+  for (const b of Object.values(L.branches)) if (b.variant === variant) return b.name;
+  return L.name;
 }
 
-// Which care leans hardest. Needs a few interactions AND a clear lead, else "balanced".
-export function dominantLean(care: CareCounts): NurtureLean {
-  const total = care.feed + care.clean + care.doctor + care.affection;
-  if (total < 4) return "balanced";
-  const ranked = KINDS.map(([lean, k]) => [lean, care[k]] as [NurtureLean, number]).sort((a, b) => b[1] - a[1]);
+type CareBranch = Exclude<NurtureLean, "balanced">;
+
+// Which care branch dominates. Driven ONLY by the 3 gated CARE actions (feed→丰裕,
+// 洗澡→敏捷, 看医生→守护) — play/pet stay free and decoupled from growth, so they never
+// steer the form. Equal care → balanced (true form). Needs a few care acts AND a clear lead.
+export function careBranch(care: CareCounts): NurtureLean {
+  const g: Record<CareBranch, number> = { feed: care.feed, engage: care.clean, tend: care.doctor };
+  const total = g.feed + g.engage + g.tend;
+  if (total < 6) return "balanced";
+  const ranked = (["feed", "engage", "tend"] as CareBranch[]).map((k) => [k, g[k]] as [CareBranch, number]).sort((a, b) => b[1] - a[1]);
   const [top, second] = ranked;
   return top[1] > 0 && top[1] - second[1] >= 2 ? top[0] : "balanced";
 }
 
-// The form the pet is growing toward given its care so far. Balanced → its true (seed)
-// form; a decisive lean → the authored destination. Used for BOTH the live 养育倾向 meter
-// and the teen-gate resolution, so they always agree.
-export function resolveSpecies(seedKey: string, care: CareCounts): string {
-  const lean = dominantLean(care);
-  if (lean === "balanced") return seedKey;
-  return BRANCH[seedKey]?.[lean] ?? seedKey;
+// The species the pet is growing toward given its care so far. Balanced → the line head
+// (true form); a decisive branch → `<line>__<variant>`. Used for BOTH the teen-gate
+// resolution and the live 养育倾向 meter, so they always agree.
+export function resolveSpecies(line: string, care: CareCounts): string {
+  const b = careBranch(care);
+  if (b === "balanced") return line;
+  const variant = LINES[line]?.branches?.[b]?.variant;
+  return variant ? `${line}__${variant}` : line;
 }
 
-// All forms reachable from a seed (true form + its branch destinations), deduped — for
-// the codex / onboarding preview.
-export function reachableFor(seedKey: string): string[] {
-  return [...new Set<string>([seedKey, ...Object.values(BRANCH[seedKey] ?? {})])];
+// All forms reachable from a line: its true form + the 3 branch variants. For the
+// onboarding reveal / preview.
+export function reachableFor(line: string): string[] {
+  const L = LINES[line];
+  if (!L) return [line];
+  return [line, ...Object.values(L.branches).map((b) => `${line}__${b.variant}`)];
 }
 
-const VERB_CN: Record<Exclude<NurtureLean, "balanced">, string> = {
-  feed: "喂食", clean: "洗澡", doctor: "看医生", play: "陪玩",
-};
+const LEAN_CN: Record<CareBranch, string> = { feed: "喂食", engage: "洗澡梳理", tend: "看医生" };
 
-// The legibility surface: which care leans hardest, and where it is heading — shown on
-// the home screen so the consequence of care is felt from week 1, not deferred to teen.
-export function nurtureTilt(seedKey: string, care: CareCounts): NurtureTilt {
-  const total = care.feed + care.clean + care.doctor + care.affection;
-  const leaning = dominantLean(care);
-  const toward = resolveSpecies(seedKey, care);
-  const towardName = archetype(toward).nameCN;
+// The legibility surface: which care leans hardest + where it is heading. Shown on the
+// home screen so the consequence of care is felt early, not only at the teen fork.
+export function nurtureTilt(line: string, care: CareCounts): NurtureTilt {
+  const total = care.feed + care.clean + care.doctor; // affection is free, doesn't steer the form
+  const leaning = careBranch(care);
+  const toward = resolveSpecies(line, care);
+  const towardName = speciesName(toward);
   const shares: CareCounts = total > 0
     ? { feed: care.feed / total, clean: care.clean / total, doctor: care.doctor / total, affection: care.affection / total }
     : { feed: 0, clean: 0, doctor: 0, affection: 0 };
 
   let label: string;
-  if (total < 4) label = "再多照顾它几次，就能看出它在往哪儿长啦 🌱";
+  if (total < 6) label = "再多照顾它几次，就能看出它在往哪儿长啦 🌱";
   else if (leaning === "balanced") label = `照顾得很均衡 → 正长成本来的样子「${towardName}」`;
-  else label = `你更常${VERB_CN[leaning as Exclude<NurtureLean, "balanced">]} → 正长成「${towardName}」`;
+  else label = `你更常${LEAN_CN[leaning as CareBranch]} → 正长成「${towardName}」`;
 
   return { leaning, towardSpeciesId: toward, towardName, shares, label };
 }

@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-// Guard: enumerate every Q1–Q5 answer combination, score → match among the 3
-// shipped creatures, and assert the distribution is balanced (no creature < 22%
-// or > 45%). Run: `node scripts/quiz-distribution-test.mjs`. Keep the weights in
-// sync with web/src/data/quiz-questions.ts and the anchors with personality.ts.
+// Guard: enumerate every Q1–Q5 answer combination, score → match among the 4 V4
+// LINE HEADS, and assert the distribution is balanced (no line < 12% or > 45%).
+// Run: `node scripts/quiz-distribution-test.mjs`. Keep the weights in sync with
+// web/src/data/quiz-questions.ts and the anchors with personality.ts.
 
 const W = { attach: 1.0, curio: 1.0, express: 1.3 };
 const EPS = 2.0;
@@ -10,6 +10,7 @@ const ANCHORS = {
   mochi_pudding: { attach: 6, curio: -5, express: 6 },
   echo_fox: { attach: -6, curio: 6, express: -5 },
   ember_imp: { attach: 6, curio: 3, express: 8 },
+  sproutling: { attach: 4, curio: 8, express: -3 },
 };
 
 // Q1–Q5 option weights — mirror web/src/data/quiz-questions.ts.
@@ -43,7 +44,7 @@ function match(v) {
   return tied[0].k;
 }
 
-const tally = { mochi_pudding: 0, echo_fox: 0, ember_imp: 0 };
+const tally = { mochi_pudding: 0, echo_fox: 0, ember_imp: 0, sproutling: 0 };
 let n = 0;
 (function rec(i, v) {
   if (i === Q.length) { tally[match(v)]++; n++; return; }
@@ -59,10 +60,10 @@ let n = 0;
 let ok = true;
 for (const [k, c] of Object.entries(tally)) {
   const pct = (100 * c) / n;
-  const bad = pct < 22 || pct > 45;
+  const bad = pct < 12 || pct > 45;
   if (bad) ok = false;
   console.log(`${k.padEnd(14)} ${c.toString().padStart(4)}  ${pct.toFixed(1).padStart(5)}%  ${bad ? "OUT OF BAND" : "ok"}`);
 }
 console.log(`total ${n}`);
-if (!ok) { console.error("FAIL: a creature is outside the 22–45% band"); process.exit(1); }
+if (!ok) { console.error("FAIL: a line is outside the 12–45% band"); process.exit(1); }
 console.log("PASS: distribution balanced");

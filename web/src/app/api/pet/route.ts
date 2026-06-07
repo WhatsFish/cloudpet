@@ -86,7 +86,7 @@ export async function GET(req: NextRequest) {
   const recent = await query<{ line_id: string }>(
     `SELECT line_id FROM voice_log WHERE pet_id=$1 ORDER BY created_at DESC LIMIT 10`, [rows.pet.id],
   );
-  const pack = getPack(rows.pet.species_id);
+  const pack = getPack(rows.pet.archetype_key); // V4: variants ride their line head's voice
   const voice = await ensureDailyVoice(rows, ctx, localDate, () => buildDiary(pack, ctx, recent.map((r) => r.line_id)));
 
   return NextResponse.json(buildPetView(rows, {

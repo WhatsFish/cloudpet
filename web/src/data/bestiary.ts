@@ -67,7 +67,9 @@ export const BESTIARY: BestiaryEntry[] = [...SHIPPED, ...PLACEHOLDERS];
 const BY_ID = new Map(BESTIARY.map((b) => [b.id, b]));
 
 export function creature(id: string): BestiaryEntry {
-  const b = BY_ID.get(id);
+  // V4: a species_id may be a within-lineage variant `<line>__<variant>` — it inherits
+  // the line head's temperament (decay/feed tilts). Strip the suffix to the line head.
+  const b = BY_ID.get(id) ?? BY_ID.get(id.split("__")[0]);
   if (!b) throw new Error(`unknown creature: ${id}`);
   return b;
 }

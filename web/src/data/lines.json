@@ -1,14 +1,26 @@
 {
-  "_doc": "V4 canonical evolution lines. Single source of truth for BOTH the art engine (scripts/gen-art.mjs reads this) and the backend (web/src/data/lines.ts re-exports). A pet is bonded to a LINE head (= one of these keys, also the quiz archetype). Care steers the TEEN fork into a within-lineage variant: feed→nourish branch, clean+play→engage branch, doctor→tend branch, balanced→the line's own true form. species_id is the line key for the true form, or `<line>__<variant>` for a branch.",
+  "_doc": "V4 canonical evolution lines. Single source of truth for BOTH the art engine (scripts/gen-art.mjs reads this) and the backend (web/src/lib/game/evolve.ts reads this). A pet is bonded to a LINE head (= one of these keys, also the quiz archetype). The 3 GATED care actions steer the TEEN fork (play/pet stay free + decoupled from growth): feed→丰裕 branch, 洗澡/梳理(clean)→敏捷 branch, 看医生(doctor)→守护 branch, balanced→the line's own true form. species_id is the line key for the true form, or `<line>__<variant>` for a branch.",
   "lines": {
     "mochi_pudding": {
       "name": "抖抖布丁",
       "accent": "#FF9EC4",
       "trueBlurb": "软乎乎的本心，一切照旧最幸福",
       "branches": {
-        "feed":   { "variant": "brim", "name": "圆奶冻", "blurb": "越喂越圆润，叠起奶油层、揣着樱桃" },
-        "engage": { "variant": "hop",  "name": "跳跳冻", "blurb": "陪玩出弹力，蹬起小短腿、停不下来弹跳" },
-        "tend":   { "variant": "ward", "name": "守心冻", "blurb": "悉心照料出一颗发光的心核与小光环" }
+        "feed": {
+          "variant": "brim",
+          "name": "圆奶冻",
+          "blurb": "越喂越圆润，叠起奶油层、揣着樱桃"
+        },
+        "engage": {
+          "variant": "hop",
+          "name": "跳跳冻",
+          "blurb": "勤梳洗变得清爽弹润，蹬起小短腿、停不下来弹跳"
+        },
+        "tend": {
+          "variant": "ward",
+          "name": "守心冻",
+          "blurb": "悉心照料出一颗发光的心核与小光环"
+        }
       }
     },
     "echo_fox": {
@@ -16,9 +28,21 @@
       "accent": "#5B4B8A",
       "trueBlurb": "清冷的本心，距离感里藏着偏爱",
       "branches": {
-        "feed":   { "variant": "plush", "name": "绒裘狐", "blurb": "喂养出蓬松双绒尾与脸颊绒毛" },
-        "engage": { "variant": "swift", "name": "流影狐", "blurb": "陪玩梳理出流线身形、长鞭尾与月痕" },
-        "tend":   { "variant": "ward",  "name": "守灯狐", "blurb": "照护中尾尖燃起焰火、浮起守护灵点" }
+        "feed": {
+          "variant": "plush",
+          "name": "绒裘狐",
+          "blurb": "喂养出蓬松双绒尾与脸颊绒毛"
+        },
+        "engage": {
+          "variant": "swift",
+          "name": "流影狐",
+          "blurb": "常梳理梳出流线身形、长鞭尾与月痕"
+        },
+        "tend": {
+          "variant": "ward",
+          "name": "守灯狐",
+          "blurb": "照护中尾尖燃起焰火、浮起守护灵点"
+        }
       }
     },
     "ember_imp": {
@@ -26,9 +50,21 @@
       "accent": "#FF6B2C",
       "trueBlurb": "一点就炸的本心，要你随时都在",
       "branches": {
-        "feed":   { "variant": "brimimp", "name": "饱嗝魔", "blurb": "喂成圆滚滚的大肚，火苗也犯起懒" },
-        "engage": { "variant": "crackle", "name": "噼啪魔", "blurb": "越玩越带电，迸出闪电弧与尖刺火焰" },
-        "tend":   { "variant": "forge",   "name": "炉心魔", "blurb": "安抚出胸口炉心与稳重的护甲身板" }
+        "feed": {
+          "variant": "brimimp",
+          "name": "饱嗝魔",
+          "blurb": "喂成圆滚滚的大肚，火苗也犯起懒"
+        },
+        "engage": {
+          "variant": "crackle",
+          "name": "噼啪魔",
+          "blurb": "勤打理越发带电，迸出闪电弧与尖刺火焰"
+        },
+        "tend": {
+          "variant": "forge",
+          "name": "炉心魔",
+          "blurb": "安抚出胸口炉心与稳重的护甲身板"
+        }
       }
     },
     "sproutling": {
@@ -36,9 +72,21 @@
       "accent": "#7FB069",
       "trueBlurb": "好奇的本心，拉着你去看看新鲜",
       "branches": {
-        "feed":   { "variant": "harvest", "name": "饱穗芽", "blurb": "喂养出累累垂穗与一颗红果" },
-        "engage": { "variant": "gust",    "name": "风信芽", "blurb": "陪玩生出叶翼、轻盈追风" },
-        "tend":   { "variant": "dorm",    "name": "眠墩芽", "blurb": "静养成长着青苔的石壳，敦实安稳" }
+        "feed": {
+          "variant": "harvest",
+          "name": "饱穗芽",
+          "blurb": "喂养出累累垂穗与一颗红果"
+        },
+        "engage": {
+          "variant": "gust",
+          "name": "风信芽",
+          "blurb": "常梳洗生出叶翼、轻盈追风"
+        },
+        "tend": {
+          "variant": "dorm",
+          "name": "眠墩芽",
+          "blurb": "静养成长着青苔的石壳，敦实安稳"
+        }
       }
     }
   }

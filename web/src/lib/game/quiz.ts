@@ -6,8 +6,7 @@
 
 import type { AxisVector } from "@/lib/types";
 import { ARCHETYPES, MATCH_WEIGHTS, archetype, weightedDist2 } from "@/data/personality";
-import { SHIPPED_IDS } from "@/data/bestiary";
-import { reachableFor } from "@/lib/game/evolve";
+import { LINE_HEADS, reachableFor, speciesName } from "@/lib/game/evolve";
 import { QUIZ } from "@/data/quiz-questions";
 
 const EPS = 2.0;
@@ -53,7 +52,8 @@ function loudestAxis(v: AxisVector): "attach" | "curio" | "express" {
 }
 
 export function matchShipped(v: AxisVector, answers: Record<string, string>, userId: string): string {
-  const ranked = SHIPPED_IDS
+  // V4: match among the 4 LINE HEADS (each a quiz archetype + an evolution line).
+  const ranked = LINE_HEADS
     .map((key) => ({ key, d: weightedDist2(v, archetype(key).anchor) }))
     .sort((a, b) => a.d - b.d);
 
@@ -94,6 +94,7 @@ const CREATURE_INTRO: Record<string, string> = {
   mochi_pudding: "于是，一只软乎乎、把你当成全世界的「抖抖布丁」宝宝赖进了你手心里。它会长成什么样子，就看你往后怎么疼它了。",
   echo_fox: "于是，一只清冷又好奇的「墨影狐」宝宝悄悄认下了你。它将来是什么模样，藏在你日复一日的喂养里。",
   ember_imp: "于是，一团一点就炸、一哄就笑的「炸毛团」宝宝扑进了你怀里。你怎么养，它就怎么长。",
+  sproutling: "于是，一颗顶着好奇嫩芽的「探探芽」宝宝拱开土认下了你。你带它去经历什么，它就往哪个方向抽枝。",
 };
 
 export function reveal(v: AxisVector, archetypeKey: string): { title: string; lines: string[] } {
@@ -107,7 +108,7 @@ export function reveal(v: AxisVector, archetypeKey: string): { title: string; li
 export function scoreQuiz(answers: Record<string, string>, userId: string): QuizScore {
   const vector = scoreVector(answers);
   const archetypeKey = matchShipped(vector, answers, userId);
-  const reachable = reachableFor(archetypeKey).map((id) => ({ id, name: archetype(id).nameCN }));
+  const reachable = reachableFor(archetypeKey).map((id) => ({ id, name: speciesName(id) }));
   return { vector, archetypeKey, reveal: reveal(vector, archetypeKey), reachable };
 }
 
