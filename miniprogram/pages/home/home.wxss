@@ -39,8 +39,8 @@ page { font-family: "Zpix", "PingFang SC", -apple-system, "Microsoft YaHei", san
 
 .speech { position:absolute; left:24rpx; right:24rpx; bottom:18rpx; z-index:3; background:rgba(255,255,255,0.92); border:2rpx solid rgba(120,90,50,0.10); border-radius:20rpx; padding:14rpx 20rpx; font-size:25rpx; line-height:1.45; color:var(--ink); text-align:center; box-shadow:0 4rpx 14rpx rgba(80,60,40,0.10); }
 
-/* ===== cards ===== */
-.card { background:var(--card); border-radius:28rpx; padding:22rpx 24rpx; box-shadow:0 8rpx 22rpx rgba(120,90,50,0.08); }
+/* ===== cards ===== (margin-bottom:0 overrides the global app.wxss .card so the .app flex gap owns spacing) */
+.card { background:var(--card); border-radius:28rpx; padding:22rpx 24rpx; margin-bottom:0; box-shadow:0 8rpx 22rpx rgba(120,90,50,0.08); }
 
 /* status panel */
 .bars { display:grid; grid-template-columns:1fr 1fr; gap:14rpx 26rpx; }
