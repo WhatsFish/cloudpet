@@ -77,7 +77,28 @@ Page({
     funActs: [] as { verb: string; emoji: string; label: string; enabled: boolean }[],
     statBars: [] as { label: string; color: string; value: number; pct: number }[],
     particles: [] as { key: number; emoji: string; x: number; rot: number; delay: number }[],
-    floatTag: "", fxKey: 0, reacting: false, nameInput: "",
+    floatTag: "", fxKey: 0, reacting: false, nameInput: "", statusFx: "",
+  },
+
+  // When the pet is in a bad state its sprite shows the sad/sick frame — drive a matching idle
+  // MOTION (feverish shiver / hungry slump / dirty fidget) so the distress reads at a glance,
+  // instead of the normal happy bob. Falls back to the per-creature idle when it's fine.
+  idleAnimFor(pet: PetView): string {
+    if (pet.asleepNow) return "";
+    const b = pet.badges || [];
+    if (pet.dominantState === "SICK" || b.indexOf("生病") >= 0) return "anim-sick";
+    if (b.indexOf("饿") >= 0) return "anim-weak";
+    if (b.indexOf("脏") >= 0) return "anim-itch";
+    return IDLE_ANIM[pet.pet.archetypeKey] || "anim-bob";
+  },
+  // a small looping ambient mark near the pet that reinforces a bad state
+  statusFxFor(pet: PetView): string {
+    if (pet.asleepNow) return "";
+    const b = pet.badges || [];
+    if (pet.dominantState === "SICK" || b.indexOf("生病") >= 0) return "💢";
+    if (b.indexOf("饿") >= 0) return "💫";
+    if (b.indexOf("脏") >= 0) return "🪰";
+    return "";
   },
 
   onShow() { this.load(); this.startTick(); },
@@ -214,7 +235,8 @@ Page({
       pet, theme: pet.theme || "cream", asleepNow: asleep,
       spriteSrc: spritePath(pet.sprite.creatureId, pet.sprite.stage, pet.sprite.mood),
       bgSrc: this.chooseBg(pet),
-      animClass: IDLE_ANIM[pet.pet.archetypeKey] || "anim-bob",
+      animClass: this.idleAnimFor(pet),
+      statusFx: this.statusFxFor(pet),
       stageLabel: STAGE_CN[pet.pet.stage] || pet.pet.stage,
       needCard, aVerb, aEmoji, aLabel, aReward, aGlow, bVerb, bEmoji, bLabel,
       roadmapLine: pet.roadmap?.line ?? "", levelPct: Math.max(3, pet.evolveProgress), levelNum: pet.level,
@@ -237,7 +259,7 @@ Page({
 
   async doAction(verb: string) {
     if (this.data.reacting) return;
-    this.setData({ reacting: true, showDrawer: false });
+    this.setData({ reacting: true }); // keep the drawer open so 陪伴/照顾 can be tapped again
     try {
       const resp = await request<ActionResp>({ path: "/action", method: "POST", body: { verb } });
       this.burst(PARTICLE[resp.fx] || "✨", verb);
@@ -316,7 +338,7 @@ Page({
     this.setData({ particles, fxKey: base + 1, animClass: REACT_ANIM[verb] || "anim-bounce" });
     setTimeout(() => {
       const pet = this.data.pet;
-      this.setData({ particles: [], animClass: pet ? (IDLE_ANIM[pet.pet.archetypeKey] || "anim-bob") : "anim-bob" });
+      this.setData({ particles: [], animClass: pet ? this.idleAnimFor(pet) : "anim-bob" });
     }, 1000);
   },
   // show the activity pose (颠锅/泡泡/手柄) for ~1.3s, then settle back to the mood sprite

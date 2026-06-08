@@ -19,6 +19,7 @@
         <view wx:for="{{particles}}" wx:key="key" class="particle" style="left:{{item.x}}rpx; --rot:{{item.rot}}deg; animation-delay:{{item.delay}}ms">{{item.emoji}}</view>
         <view wx:if="{{floatTag}}" class="floattag">{{floatTag}}</view>
         <view wx:if="{{asleepNow}}" class="zzz">z z Z</view>
+        <view wx:if="{{statusFx && !asleepNow}}" class="statusfx">{{statusFx}}</view>
       </view>
 
       <view class="metarow">
@@ -53,11 +54,12 @@
           <text class="de">{{item.emoji}}</text><text class="dl">{{item.label}}</text>
         </view>
       </view>
-      <view class="dchips">
-        <view class="dchip" bindtap="openStatus">📊 状态</view>
-        <view class="dchip" bindtap="goDiary">📓 心声</view>
-        <view class="dchip" bindtap="goCodex">📖 图鉴</view>
-        <view class="dchip" bindtap="openSettings">⚙️ 设置</view>
+      <view class="dnav-lab">— 查看与设置 —</view>
+      <view class="dnav">
+        <view class="dnav-item" bindtap="openStatus"><text class="dnav-i">📊</text><text class="dnav-t">状态</text></view>
+        <view class="dnav-item" bindtap="goDiary"><text class="dnav-i">📓</text><text class="dnav-t">心声</text></view>
+        <view class="dnav-item" bindtap="goCodex"><text class="dnav-i">📖</text><text class="dnav-t">图鉴</text></view>
+        <view class="dnav-item" bindtap="openSettings"><text class="dnav-i">⚙️</text><text class="dnav-t">设置</text></view>
       </view>
     </view>
 
@@ -92,14 +94,54 @@
   </view>
 
   <view wx:if="{{showRoadmap}}" class="mask" bindtap="closeModals">
-    <view class="panel" catchtap="noop">
+    <view class="panel panel--road" catchtap="noop">
       <view class="panel-title">成长路线</view>
-      <view class="road-big">{{roadmapLine}}</view>
-      <view class="srow2" wx:if="{{pet.roadmap.stage}}">下一阶段「{{pet.roadmap.stage.towardName}}」：经验差 {{pet.roadmap.stage.expRemaining}} · 还要 {{pet.roadmap.stage.daysRemaining}} 天 · 亲密差 {{pet.roadmap.stage.bondRemaining}}</view>
-      <view class="srow2">每天自然成长约 +{{growthPerDay}} 经验（养得越好长得越快）</view>
-      <view class="srow2">💞 亲密度越高，进化越快（常来陪它 → 几天就能看到它长大）</view>
-      <view class="srow2">长成少年时，它的样子由你亲手选（本形 / 3 种近缘形态，4 选 1）</view>
-      <view class="srow2">亲密度 {{pet.bond}}/1000 · 连续 {{pet.streakDays}} 天</view>
+
+      <view class="rm-head">
+        <image class="rm-sprite" src="{{spriteSrc}}" mode="aspectFit" binderror="onSpriteError" />
+        <view class="rm-head-r">
+          <view class="rm-lv">Lv{{levelNum}} · {{stageLabel}}</view>
+          <view class="rm-bar"><view class="rm-fill" style="width:{{levelPct}}%"></view></view>
+          <view class="rm-next" wx:if="{{pet.roadmap.stage}}">距「{{pet.roadmap.stage.towardName}}」：还要 {{pet.roadmap.stage.daysRemaining}} 天<block wx:if="{{pet.roadmap.stage.bondRemaining > 0}}"> · 亲密差 {{pet.roadmap.stage.bondRemaining}}</block><block wx:if="{{pet.roadmap.stage.expRemaining > 0}}"> · 经验差 {{pet.roadmap.stage.expRemaining}}</block></view>
+          <view class="rm-next" wx:else>已长成少年啦 · 成年阶段开放中</view>
+        </view>
+      </view>
+
+      <view class="tip">
+        <text class="tip-ico">⚡</text>
+        <view class="tip-r">
+          <view class="tip-h">怎么升级更快</view>
+          <view class="tip-b">· 它「饿 / 脏 / 生病」时去照顾，一次给最多经验（+40）</view>
+          <view class="tip-b">· 接住 ✨灵感，每次 +10 经验</view>
+          <view class="tip-b">· 养得越好，自然成长越快（现约 +{{growthPerDay}}/天）</view>
+        </view>
+      </view>
+      <view class="tip">
+        <text class="tip-ico">💞</text>
+        <view class="tip-r">
+          <view class="tip-h">怎么更亲密</view>
+          <view class="tip-b">· 每天第一次来，自动 +亲密</view>
+          <view class="tip-b">· 满足需求、多摸摸、陪它玩，都会涨</view>
+          <view class="tip-b">· 连续天数越长越亲——而且亲密越高，进化越快</view>
+        </view>
+      </view>
+      <view class="tip">
+        <text class="tip-ico">🌱</text>
+        <view class="tip-r">
+          <view class="tip-h">怎么养得更好</view>
+          <view class="tip-b">· 饿了喂、脏了洗、生病看医生</view>
+          <view class="tip-b">· 别让它长期挨饿 / 脏 / 生病，否则健康会掉</view>
+        </view>
+      </view>
+      <view class="tip tip--spark">
+        <text class="tip-ico">✨</text>
+        <view class="tip-r">
+          <view class="tip-h">灵感是什么</view>
+          <view class="tip-b">灵感会自己慢慢攒（每 12 分钟 +1，最多 6 个）。点一下立刻 +10 经验，帮它更快长大——攒满了记得回来接哦。</view>
+        </view>
+      </view>
+
+      <view class="rm-foot">💞 亲密 {{pet.bond}}/1000 · 🔥连续 {{pet.streakDays}} 天 · 少年形态由你亲手挑（4 选 1）</view>
       <view wx:if="{{pet.fork.pending}}" class="fork-open" bindtap="openFork">✨ 它准备好长大了，选择它的样子 →</view>
       <view class="pbtn" bindtap="closeModals">知道啦</view>
     </view>
