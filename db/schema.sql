@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS pet_state (
   cleanliness INTEGER NOT NULL DEFAULT 80 CHECK (cleanliness BETWEEN 0 AND 100),
   energy      INTEGER NOT NULL DEFAULT 80 CHECK (energy      BETWEEN 0 AND 100),
   health      INTEGER NOT NULL DEFAULT 80 CHECK (health      BETWEEN 0 AND 100),  -- 80 == egg cap
-  bond        INTEGER NOT NULL DEFAULT 150 CHECK (bond BETWEEN 0 AND 1000),  -- INITIAL_BOND: newborn isn't a stranger
+  bond        INTEGER NOT NULL DEFAULT 300 CHECK (bond BETWEEN 0 AND 1000),  -- INITIAL_BOND: newborn hatches at ~2 hearts
   exp         BIGINT  NOT NULL DEFAULT 0  CHECK (exp >= 0),
   last_tick   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   state_flags INTEGER NOT NULL DEFAULT 0,                    -- SICK=1 SULKING=2 HIDING=4 LONELY=8
@@ -177,8 +177,8 @@ ALTER TABLE pet_state ADD COLUMN IF NOT EXISTS taps_day       DATE;
 ALTER TABLE pet_state ADD COLUMN IF NOT EXISTS weight    INTEGER NOT NULL DEFAULT 100;
 ALTER TABLE pet_state ADD COLUMN IF NOT EXISTS sparks    INTEGER NOT NULL DEFAULT 3;
 ALTER TABLE pet_state ADD COLUMN IF NOT EXISTS sparks_at TIMESTAMPTZ;
--- bond: newborns start warm (INITIAL_BOND) — retrofit the default for old DBs.
-ALTER TABLE pet_state ALTER COLUMN bond SET DEFAULT 150;
+-- bond: newborns start warm (INITIAL_BOND ≈ 2 hearts) — retrofit the default for old DBs.
+ALTER TABLE pet_state ALTER COLUMN bond SET DEFAULT 300;
 
 -- pet_cooldown: V2 care battery (dormant) + V8.3 streak-milestone high-water mark.
 ALTER TABLE pet_cooldown ADD COLUMN IF NOT EXISTS care_charges       INTEGER NOT NULL DEFAULT 3;

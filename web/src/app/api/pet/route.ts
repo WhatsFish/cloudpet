@@ -80,6 +80,9 @@ export async function GET(req: NextRequest) {
        ON CONFLICT (pet_id, local_date) WHERE verb = 'checkin' DO NOTHING RETURNING id`,
       [rows.pet.id, userId, localDate],
     );
+    // signalled back so the client can CELEBRATE the return (toast) — otherwise +8 bond and the
+    // day7/day30 milestone EXP happen silently and the comeback feels like nothing happened.
+    let checkin: { firstOpenToday: boolean; bond: number; streakDays: number; milestoneExp: number; greet: string } | null = null;
     if (ins[0]) {
       const cd = rows.cooldown;
       let streak: number;
@@ -110,6 +113,7 @@ export async function GET(req: NextRequest) {
       rows.state.exp += streakExp;
       rows.cooldown.streak_days = streak;
       rows.cooldown.max_streak_reached = newMax;
+      checkin = { firstOpenToday: true, bond: CHECKIN_BOND, streakDays: streak, milestoneExp: streakExp, greet: "" };
     }
 
     // today's 心声
@@ -119,6 +123,13 @@ export async function GET(req: NextRequest) {
     );
     const pack = getPack(rows.pet.archetype_key); // V4: variants ride their line head's voice
     const voice = await ensureDailyVoice(q, rows, ctx, localDate, () => buildDiary(pack, ctx, recent.map((r) => r.line_id)));
+
+    // an in-character "你回来啦" greeting for the check-in toast (surfaces the authored
+    // greet.return / greet.return_long beats that otherwise never fire). FALLBACK → greet.open
+    // for the thinner packs. elapsedMs = time since the last visit (computed pre-tick above).
+    if (checkin) {
+      checkin.greet = selectCopy(pack, elapsedMs > RECAP_MIN_AWAY_MS ? "greet.return_long" : "greet.return", ctx, `greet.${localDate}`).text;
+    }
 
     // one-shot recap: did it grow while you were away?
     let recap: Recap | null = null;
@@ -137,7 +148,7 @@ export async function GET(req: NextRequest) {
     }
 
     const needLine = (kind: NeedKind) => selectCopy(pack, NEED_EVENT[kind], ctx, `need.${kind}.${localDate}`).text;
-    return { http: 200, body: buildPetView(rows, { nowMs: now, tz, theme, voice, recap, needLine }) };
+    return { http: 200, body: { ...buildPetView(rows, { nowMs: now, tz, theme, voice, recap, needLine }), checkin } };
   });
 
   return NextResponse.json(result.body, { status: result.http });

@@ -113,10 +113,14 @@ export const CHECKIN_BOND = 8; // auto check-in on first open
 export const CARE_COVERED_AT = 30; // careCoveredToday = all of satiety/cleanliness/health >= 30
 export const OVERFEED_ABOVE = 80; // feed past this → feed.overfed flavor
 
-// New pets aren't strangers: the quiz + naming + hatch already built a first bond. Starts
-// at ~1 heart (bondHearts = round(bond/200)); clears the child bond gate (60) so early
-// growth is smooth, yet stays under the teen gate (180) so bonding still matters.
-export const INITIAL_BOND = 150;
+// New pets aren't strangers: the quiz + naming + hatch already built a first bond. Starts at a
+// clean 2 hearts (bondHearts = round(bond/200) → round(1.5) = 2) so the newborn reads as warmly
+// bonded the moment it hatches. Clears the child bond gate (60), and a day-1 active player just
+// crosses the teen gate (180) — bonding PAST 300 is what drives the visible heart climb
+// (3♥@500 / 4♥@700 / 5♥@900), the decay-reduction, and the evolution-speed payoff
+// (BOND_SPEED_FULL 550), so bonding still clearly matters. Does not rush/skip any gate: teen is
+// bound by exp 620 + ~9-10 real days, adult by bond 400 + 21 days.
+export const INITIAL_BOND = 300;
 
 // A newborn must have something to DO on first open, or a brand-new user lands on a pet that
 // needs nothing and there's no first experience at all. So it hatches a little HUNGRY and DIRTY

@@ -139,7 +139,9 @@ export function buildDiary(
   ctx: CopyContext,
   recentIds: string[],
 ): SelectedLine {
-  const recent = new Set(recentIds);
+  // recentIds are the stored COMBINED diary ids ("opener+body+memory+signoff"); split them back
+  // into bare PART ids so the per-part anti-repeat (`!recent.has(p.id)` below) actually matches.
+  const recent = new Set(recentIds.flatMap((id) => id.split("+")));
   const rng = mulberry32(ctx.seed ^ hashStr("diary"));
 
   const pickPart = (parts: DiaryPart[], required: boolean): DiaryPart | null => {

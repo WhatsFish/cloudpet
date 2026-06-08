@@ -8,7 +8,7 @@ import type { NeedKind, Snapshot, Verb } from "@/lib/types";
 import { STATE } from "@/lib/types";
 import {
   NEED_THRESH, NEED_COOLDOWN_MS, NEED_PRIORITY, NEED_MAX_ACTIVE, NEED_VERB,
-  NIGHT_FROM, NIGHT_TO,
+  NIGHT_FROM, NIGHT_TO, SLEEPY_ENERGY,
   PASSIVE_BASE, PASSIVE_CARE, PASSIVE_BOND,
 } from "./constants";
 import { localHour } from "./time";
@@ -56,7 +56,9 @@ export function deriveDueKinds(s: Snapshot, t: NeedTimes, nowMs: number, tzOffse
   if (s.cleanliness < NEED_THRESH.dirty) out.push("dirty");
 
   if (!asleep) {
-    if (night && ready(t.slept, NEED_COOLDOWN_MS.sleepy)) out.push("sleepy");
+    // sleepy only when actually tired — else a wide-awake, full-energy pet at night would show
+    // "好困呀…哄我睡" while its sprite stays alert (the card/sprite would contradict).
+    if (night && s.energy < SLEEPY_ENERGY && ready(t.slept, NEED_COOLDOWN_MS.sleepy)) out.push("sleepy");
     if (!night && s.mood < NEED_THRESH.bored) out.push("bored");
   }
 

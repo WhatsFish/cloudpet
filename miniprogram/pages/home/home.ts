@@ -23,6 +23,7 @@ type PetView = {
   careTimers?: { verb: string; due: boolean; etaSec: number | null; label: string }[];
   dominantState?: string; badges?: string[];
   fork?: { pending: boolean; options: ForkOpt[] };
+  checkin?: { firstOpenToday: boolean; bond: number; streakDays: number; milestoneExp: number; greet: string } | null;
 };
 type ActionResp = PetView & { ok: boolean; line: string; fx: string; animation: string; woke: boolean; promoted: string | null; promoteLine: string | null; needReward: { kind: string; exp: number; bond: number } | null };
 
@@ -134,6 +135,13 @@ Page({
       const pet = await request<PetView>({ path: "/pet" });
       this.apply(pet);
       if (pet.recap) this.setData({ recap: pet.recap });
+      else if (pet.checkin && pet.checkin.firstOpenToday) {
+        // celebrate the daily return (otherwise +8 bond / milestone EXP land silently). Gated on
+        // !recap so we don't stack a toast on top of the grew-while-away modal.
+        const c = pet.checkin;
+        if (c.milestoneExp > 0) wx.showToast({ title: `连续 ${c.streakDays} 天！+${c.milestoneExp} ✨`, icon: "none", duration: 2400 });
+        else wx.showToast({ title: c.greet || `今天也来啦 +${c.bond}♥ · 连续 ${c.streakDays} 天`, icon: "none", duration: 1800 });
+      }
       this.setData({ loading: false, error: "" });
     } catch (e) {
       const err = e as ApiError;
@@ -172,7 +180,8 @@ Page({
     let needCard: string;
     if (pet.topNeed) needCard = (asleep ? "💤 睡着了…不过" : "") + pet.topNeed.label;
     else if (asleep) needCard = "💤 它睡着啦…点它轻轻摸摸就好";
-    else needCard = pet.needHint || "它现在很满足，点点它陪它待一会儿就好～";
+    // content state: speak today's authored 心声 (the "soul") instead of a generic engine string
+    else needCard = (pet.voice && pet.voice.line) || pet.needHint || "它现在很满足，点点它陪它待一会儿就好～";
 
     // A = 照顾: the due CARE need (feed/clean/doctor). Works even asleep (it'll gently wake it);
     // otherwise reads "照顾好啦" / "睡着啦" and a tap just reassures (no server call).
