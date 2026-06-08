@@ -159,24 +159,24 @@ Page({
     for (const a of pet.actions) avail[a.verb] = a.enabled;
     const asleep = pet.asleepNow;
     const sick = pet.dominantState === "SICK" || (pet.badges || []).indexOf("生病") >= 0;
+    // care needs (饿/脏/病) now surface even while asleep — caring gently wakes the pet.
+    const careNeed = pet.needs.find((n) => n.kind === "unwell" || n.kind === "hungry" || n.kind === "dirty");
 
-    // need card: voice what it wants (tap the pet or the card to 摸摸)
+    // need card: voice what it wants (tap the pet/card to 摸摸).
     let needCard: string;
-    if (asleep) needCard = "💤 它睡着啦…点它轻轻摸摸，别吵醒它";
-    else if (pet.topNeed) needCard = pet.topNeed.label;
+    if (pet.topNeed) needCard = (asleep ? "💤 睡着了…不过" : "") + pet.topNeed.label;
+    else if (asleep) needCard = "💤 它睡着啦…点它轻轻摸摸就好";
     else needCard = pet.needHint || "它现在很满足，点点它陪它待一会儿就好～";
 
-    // A = 照顾: the due CARE need (feed/clean/doctor). Glows when there's one to do; otherwise
-    // it reads "今天照顾好啦" and a tap just reassures (no server call).
-    const careNeed = asleep ? null : pet.needs.find((n) => n.kind === "unwell" || n.kind === "hungry" || n.kind === "dirty");
+    // A = 照顾: the due CARE need (feed/clean/doctor). Works even asleep (it'll gently wake it);
+    // otherwise reads "照顾好啦" / "睡着啦" and a tap just reassures (no server call).
     let aVerb = "", aEmoji = "✓", aLabel = "照顾好啦", aReward = "", aGlow = false;
-    if (asleep) { aEmoji = "💤"; aLabel = "睡着啦"; }
-    else if (careNeed) {
+    if (careNeed) {
       aVerb = careNeed.verb; aGlow = true;
       aEmoji = VERB_META[aVerb]?.emoji ?? "🍙";
       aLabel = (VERB_META[aVerb]?.label ?? "照顾").replace("喂喂它", "喂食").replace("洗个澡", "洗澡").replace("看医生", "看病");
       aReward = this.rewardFor(aVerb, pet);
-    }
+    } else if (asleep) { aEmoji = "💤"; aLabel = "睡着啦"; }
 
     // B = 陪伴: a context affection that is always valid in the form shown.
     let bVerb = "play", bEmoji = "🎮", bLabel = "陪玩";
@@ -189,7 +189,7 @@ Page({
     const timers: Record<string, { due: boolean; etaSec: number | null; label: string }> = {};
     for (const t of pet.careTimers || []) timers[t.verb] = t;
     const lab = (v: string) => VERB_META[v].label.replace("喂喂它", "喂食").replace("洗个澡", "洗澡").replace("陪它玩", "陪玩");
-    const subFor = (v: string) => { const t = timers[v]; if (!t) return ""; if (t.due) return "现在可做"; if (t.etaSec != null) return fmtEta(t.etaSec) + "后"; return t.label; };
+    const subFor = (v: string) => { const t = timers[v]; return t ? (t.due ? "现在可做" : t.label) : ""; };
     const careActs = CARE_ROW.map((v) => ({ verb: v, emoji: VERB_META[v].emoji, label: lab(v), enabled: avail[v] !== false, due: !!timers[v]?.due, sub: subFor(v) }));
     const funActs = AFFECTION_ROW.map((v) => ({ verb: v, emoji: VERB_META[v].emoji, label: lab(v), enabled: avail[v] !== false, due: false, sub: "" }));
 

@@ -97,6 +97,7 @@
       <view class="road-big">{{roadmapLine}}</view>
       <view class="srow2" wx:if="{{pet.roadmap.stage}}">下一阶段「{{pet.roadmap.stage.towardName}}」：经验差 {{pet.roadmap.stage.expRemaining}} · 还要 {{pet.roadmap.stage.daysRemaining}} 天 · 亲密差 {{pet.roadmap.stage.bondRemaining}}</view>
       <view class="srow2">每天自然成长约 +{{growthPerDay}} 经验（养得越好长得越快）</view>
+      <view class="srow2">💞 亲密度越高，进化越快（常来陪它 → 几天就能看到它长大）</view>
       <view class="srow2">长成少年时，它的样子由你亲手选（本形 / 3 种近缘形态，4 选 1）</view>
       <view class="srow2">亲密度 {{pet.bond}}/1000 · 连续 {{pet.streakDays}} 天</view>
       <view wx:if="{{pet.fork.pending}}" class="fork-open" bindtap="openFork">✨ 它准备好长大了，选择它的样子 →</view>

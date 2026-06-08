@@ -7,8 +7,8 @@
 import type { NeedKind, Snapshot, Verb } from "@/lib/types";
 import { STATE } from "@/lib/types";
 import {
-  NEED_DUE, NEED_COOLDOWN_MS, NEED_PRIORITY, NEED_MAX_ACTIVE, NEED_VERB,
-  MEALS, NIGHT_FROM, NIGHT_TO, HUNGER_SAFETY,
+  NEED_THRESH, NEED_COOLDOWN_MS, NEED_PRIORITY, NEED_MAX_ACTIVE, NEED_VERB,
+  NIGHT_FROM, NIGHT_TO,
   PASSIVE_BASE, PASSIVE_CARE, PASSIVE_BOND,
 } from "./constants";
 import { localHour } from "./time";
@@ -21,7 +21,7 @@ export type Need = { kind: NeedKind; verb: Verb; label: string };
 export const NEED_LABEL: Record<NeedKind, string> = {
   unwell: "我有点不舒服…看看医生好不好",
   sleepy: "好困呀…哄我睡一会儿嘛",
-  hungry: "肚子咕咕叫啦，到饭点啦",
+  hungry: "肚子饿了，喂喂我吧～",
   dirty: "身上脏脏的，想洗个香香的澡",
   bored: "好无聊呀，陪我玩一会儿嘛",
 };
@@ -35,8 +35,11 @@ export const NEED_EVENT: Record<NeedKind, string> = {
 };
 
 export function isNightHour(hour: number): boolean { return hour >= NIGHT_FROM || hour < NIGHT_TO; }
-function currentMeal(hour: number) { return MEALS.find((m) => hour >= m.from && hour < m.to); }
 
+// V8.2 STAT-DRIVEN needs. A CARE need (unwell/hungry/dirty) is simply "its stat fell below
+// threshold" — it arises organically as the stat decays over time, with no meal window or
+// cooldown. Care needs surface EVEN WHILE ASLEEP (so feeding/washing can gently wake the pet —
+// see planAction). sleepy stays a night signal; bored is mood-based and only while awake.
 export function deriveNeeds(s: Snapshot, t: NeedTimes, nowMs: number, tzOffsetMin: number, asleep: boolean): Need[] {
   const hour = localHour(nowMs, tzOffsetMin);
   const night = isNightHour(hour);
@@ -44,21 +47,14 @@ export function deriveNeeds(s: Snapshot, t: NeedTimes, nowMs: number, tzOffsetMi
   const ready = (last: number | null, cd: number) => last == null || nowMs - last >= cd;
   const out: NeedKind[] = [];
 
-  // unwell can surface even while resting
-  if ((sick || s.health < NEED_DUE.unwell) && ready(t.unwell, NEED_COOLDOWN_MS.unwell)) out.push("unwell");
+  // care needs = stat below threshold; valid asleep or awake (care wakes the pet).
+  if (sick || s.health < NEED_THRESH.unwell) out.push("unwell");
+  if (s.satiety < NEED_THRESH.hungry) out.push("hungry");
+  if (s.cleanliness < NEED_THRESH.dirty) out.push("dirty");
 
   if (!asleep) {
     if (night && ready(t.slept, NEED_COOLDOWN_MS.sleepy)) out.push("sleepy");
-    // hunger: only inside a meal window and not yet fed this meal (or critically low)
-    if (!night) {
-      const meal = currentMeal(hour);
-      if (meal) {
-        const windowStart = nowMs - (hour - meal.from) * 3600_000;
-        if (t.fed == null || t.fed < windowStart) out.push("hungry");
-      } else if (s.satiety < HUNGER_SAFETY) out.push("hungry");
-    } else if (s.satiety < HUNGER_SAFETY) out.push("hungry");
-    if (s.cleanliness < NEED_DUE.dirty && ready(t.clean, NEED_COOLDOWN_MS.dirty)) out.push("dirty");
-    if (!night && s.mood < NEED_DUE.bored && ready(t.bored, NEED_COOLDOWN_MS.bored)) out.push("bored");
+    if (!night && s.mood < NEED_THRESH.bored) out.push("bored");
   }
 
   return NEED_PRIORITY.filter((k) => out.includes(k))

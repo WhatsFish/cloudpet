@@ -9,8 +9,9 @@ import {
   DECAY, DH_CAP, ENERGY_REGEN, H, HEALTH, HEALTH_FLOOR, LIVE_FLOOR,
   M_BOND_MAX_REDUCTION, M_SICK, M_SLEEP, M_STAGE, PASSIVE_WINDOW_CAP,
   WEIGHT_CARE, WEIGHT_PER_DAY, WEIGHT_STAGE_MAX,
+  DIP_AMOUNT, DIP_CHANCE_PCT, DIP_STATS, DIP_WINDOW_CAP,
 } from "./constants";
-import { bondFloorForStage, capForStage, nextStage } from "@/data/stage-table";
+import { bondFloorForStage, capForStage, effectiveMinDays, nextStage } from "@/data/stage-table";
 import { resolveStateFlags } from "./state";
 import { passiveRatePerHour } from "./needs";
 import { daysBetween, isNight, nextLocalHour } from "./time";
@@ -131,6 +132,23 @@ export function recompute(inp: RecomputeIn): RecomputeOut {
     const avg01w = (s.satiety + s.cleanliness + s.health + s.mood) / (4 * capForStage(stage));
     const wMult = Math.max(WEIGHT_CARE[0], Math.min(WEIGHT_CARE[1], 0.5 + 0.85 * avg01w));
     s.weight = Math.min(WEIGHT_STAGE_MAX[stage], s.weight + WEIGHT_PER_DAY * (dhTotal / 24) * wMult);
+
+    // occasional random dips on satiety/cleanliness/mood — deterministic per (pet birth,
+    // absolute local-hour) so compute-on-read stays stable. Organic texture ("蹭脏了/漏了口饭")
+    // on top of the steady hourly decay; capped per recompute (decay dominates long absences).
+    const h0 = Math.floor((startMs + tzOffsetMin * 60000) / H);
+    const h1 = Math.floor((nowMs + tzOffsetMin * 60000) / H);
+    const birth = Math.floor(inp.createdAtMs / 1000);
+    let dipped = 0;
+    for (let h = h0 + 1; h <= h1 && dipped < DIP_WINDOW_CAP; h++) {
+      const seed = (Math.imul(h, 2654435761) ^ birth) >>> 0;
+      if (seed % 100 < DIP_CHANCE_PCT) {
+        const stat = DIP_STATS[seed % DIP_STATS.length];
+        const sr = s as unknown as Record<string, number>;
+        sr[stat] = Math.max(LIVE_FLOOR, sr[stat] - DIP_AMOUNT);
+        dipped++;
+      }
+    }
   }
 
   // active-sleep wake-up
@@ -160,7 +178,7 @@ export function recompute(inp: RecomputeIn): RecomputeOut {
   let promoted: Stage | null = null;
   const days = daysBetween(inp.createdAtMs, nowMs);
   let nxt = nextStage(stage);
-  while (nxt && nxt.stage !== "teen" && s.exp >= nxt.expReq && days >= nxt.minDays && s.bond >= nxt.bondGate) {
+  while (nxt && nxt.stage !== "teen" && s.exp >= nxt.expReq && days >= effectiveMinDays(nxt.minDays, s.bond) && s.bond >= nxt.bondGate) {
     stage = nxt.stage;
     promoted = nxt.stage;
     nxt = nextStage(stage);

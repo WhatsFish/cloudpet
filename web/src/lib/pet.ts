@@ -5,10 +5,10 @@ import type { Tx } from "@/lib/db";
 import { query } from "@/lib/db";
 import type { ActionAvailability, CareCounts, CareTimer, CopyContext, NeedKind, PetRow, PetView, Recap, Roadmap, Snapshot, Stage, Verb } from "@/lib/types";
 import { creature } from "@/data/bestiary";
-import { capForStage, expForNextStage, nextStage, pendingTeenFork } from "@/data/stage-table";
+import { capForStage, effectiveMinDays, expForNextStage, nextStage, pendingTeenFork } from "@/data/stage-table";
 import {
   ACTIONS, CARE_COVERED_AT, NIGHT_FROM, NIGHT_TO, SLEEPY_ENERGY,
-  MEALS, NEED_COOLDOWN_MS, SPARK_MAX, SPARK_REGEN_MS,
+  DECAY, M_STAGE, NEED_THRESH, SPARK_MAX, SPARK_REGEN_MS,
   WEIGHT_START, WEIGHT_SIZE_RANGE, WEIGHT_SIZE_SPAN,
 } from "@/lib/game/constants";
 import { recompute } from "@/lib/game/tick";
@@ -175,8 +175,11 @@ export function actionAvailability(stage: Stage, s: Snapshot, dueKinds: NeedKind
     let enabled = true; let reason: string | undefined;
     if (order < def.unlockOrder) { enabled = false; reason = "locked"; }
     else if (asleep) {
-      // while asleep only a gentle 摸摸 or 叫醒 are available
-      if (verb !== "pet" && verb !== "sleep") { enabled = false; reason = "asleep"; }
+      // asleep: gentle 摸摸 / 叫醒 always; a DUE care need can gently wake the pet to be cared
+      // for; everything else waits until it wakes.
+      const kind = def.charge ? VERB_NEED[verb] : undefined;
+      const careDue = !!kind && dueKinds.includes(kind);
+      if (verb !== "pet" && verb !== "sleep" && !careDue) { enabled = false; reason = "asleep"; }
     } else if (verb === "sleep") {
       if (!night && s.energy >= SLEEPY_ENERGY) { enabled = false; reason = "not_sleepy"; }
     } else if (def.charge) {
@@ -202,7 +205,7 @@ export function buildRoadmap(rows: Rows, nowMs: number): Roadmap {
 
   const days = daysBetween(Date.parse(pet.created_at), nowMs);
   const expRemaining = Math.max(0, nxt.expReq - state.exp);
-  const daysRemaining = Math.max(0, Math.ceil(nxt.minDays - days));
+  const daysRemaining = Math.max(0, Math.ceil(effectiveMinDays(nxt.minDays, state.bond) - days));
   const bondRemaining = Math.max(0, nxt.bondGate - state.bond);
   const unmet: ("exp" | "days" | "bond")[] = [];
   if (expRemaining > 0) unmet.push("exp");
@@ -223,34 +226,21 @@ export function buildRoadmap(rows: Rows, nowMs: number): Roadmap {
   return { level, stage, line };
 }
 
-// V8 倒计时: for each care verb, is it due now, and if not, how long until it's next available.
-// feed → next meal window; clean → its ~daily cooldown; doctor → only when sick. Gives the
-// home a "what can I do / when" readout so a visit is never just 陪玩/摸摸.
-export function buildCareTimers(needTimes: NeedTimes, nowMs: number, tz: number, dueKinds: NeedKind[]): CareTimer[] {
-  const localMs = nowMs + tz * 60000;
-  const hourF = (((localMs % 86400000) + 86400000) % 86400000) / 3600000;
+// V8.2 倒计时: needs are stat-driven, so the "countdown" is a real estimate of when the stat
+// will decay below its threshold — feed → when it gets hungry, clean → when it gets dirty,
+// doctor → only when sick. Gives the home a "what & roughly when" readout so a visit is never
+// just 陪玩/摸摸. (Estimate ignores the bond/random-dip jitter — it's an "约X后" hint.)
+export function buildCareTimers(s: Snapshot, stage: Stage, dueKinds: NeedKind[]): CareTimer[] {
+  const mStage = M_STAGE[stage];
+  const fmt = (sec: number) => (sec < 3600 ? Math.max(1, Math.round(sec / 60)) + "分钟" : Math.round(sec / 3600) + "小时");
+  const eta = (stat: number, thresh: number, ratePerHour: number) => Math.max(0, Math.round(((stat - thresh) / Math.max(0.1, ratePerHour)) * 3600));
 
-  const feedDue = dueKinds.includes("hungry");
-  let feedEta: number | null = null, feedLabel = "现在该喂啦";
-  if (!feedDue) {
-    const starts = MEALS.map((m) => m.from);
-    const target = starts.find((h) => h > hourF) ?? starts[0] + 24;
-    feedEta = Math.max(0, Math.round((target - hourF) * 3600));
-    feedLabel = "下一餐";
-  }
-
-  const cleanDue = dueKinds.includes("dirty");
-  let cleanEta: number | null = null, cleanLabel = "该洗澡啦";
-  if (!cleanDue) {
-    const ready = (needTimes.clean ?? 0) + NEED_COOLDOWN_MS.dirty;
-    if (ready > nowMs) { cleanEta = Math.round((ready - nowMs) / 1000); cleanLabel = "刚洗过澡"; }
-    else cleanLabel = "还挺干净";
-  }
-
-  const docDue = dueKinds.includes("unwell");
+  const feedDue = dueKinds.includes("hungry"), cleanDue = dueKinds.includes("dirty"), docDue = dueKinds.includes("unwell");
+  const feedEta = feedDue ? null : eta(s.satiety, NEED_THRESH.hungry, DECAY.satiety * mStage);
+  const cleanEta = cleanDue ? null : eta(s.cleanliness, NEED_THRESH.dirty, DECAY.cleanliness * mStage);
   return [
-    { verb: "feed", due: feedDue, etaSec: feedEta, label: feedLabel },
-    { verb: "clean", due: cleanDue, etaSec: cleanEta, label: cleanLabel },
+    { verb: "feed", due: feedDue, etaSec: feedEta, label: feedDue ? "现在该喂啦" : `约${fmt(feedEta!)}后会饿` },
+    { verb: "clean", due: cleanDue, etaSec: cleanEta, label: cleanDue ? "该洗澡啦" : `约${fmt(cleanEta!)}后会脏` },
     { verb: "doctor", due: docDue, etaSec: null, label: docDue ? "该看医生啦" : "健健康康" },
   ];
 }
@@ -298,7 +288,7 @@ export function buildPetView(rows: Rows, o: ViewOpts): PetView {
     sizeScale: WEIGHT_SIZE_RANGE[0] + (WEIGHT_SIZE_RANGE[1] - WEIGHT_SIZE_RANGE[0]) * Math.max(0, Math.min(1, (state.weight - WEIGHT_START) / WEIGHT_SIZE_SPAN)),
     sparks: rows.sparks,
     sparkEtaSec: rows.sparks >= SPARK_MAX ? 0 : Math.max(0, Math.round((SPARK_REGEN_MS - (o.nowMs - (rows.sparksAt ?? o.nowMs))) / 1000)),
-    careTimers: buildCareTimers(rows.needTimes, o.nowMs, o.tz, needs.map((n) => n.kind)),
+    careTimers: buildCareTimers(state, pet.stage, needs.map((n) => n.kind)),
     bondHearts: Math.min(5, Math.round(state.bond / 200)),
     streakDays: cooldown.streak_days,
     theme: o.theme,

@@ -3,6 +3,7 @@
 // promotion is capped at MAX_STAGE_V1 even though teen/adult are in the table.
 
 import type { Stage } from "@/lib/types";
+import { BOND_SPEED_FULL, STAGE_SPEED_MIN } from "@/lib/game/constants";
 
 export type StageDef = {
   stage: Stage;
@@ -58,11 +59,22 @@ export function expForNextStage(stage: Stage): number | null {
 }
 
 /**
- * True when a child pet has met ALL teen gates (exp + real days + bond) and is therefore
- * waiting at the child→teen fork. The fork is NOT crossed automatically — the player picks
- * the teen form in a modal (POST /api/pet/evolve). Returns false for any non-child stage.
+ * V8.2 进化提速: high 亲密度 (an active player) compresses the stage day-gate. Returns the
+ * effective minDays for a pet at the given bond — full `minDays` at low bond, down to
+ * `minDays × STAGE_SPEED_MIN` at/above BOND_SPEED_FULL. So frequent visitors (whose bond
+ * climbs fast via checkin/care/play) see promotions/evolution sooner (child 5d → ~3d).
+ */
+export function effectiveMinDays(minDays: number, bond: number): number {
+  const speed = Math.max(STAGE_SPEED_MIN, 1 - (1 - STAGE_SPEED_MIN) * Math.min(1, bond / BOND_SPEED_FULL));
+  return Math.ceil(minDays * speed);
+}
+
+/**
+ * True when a child pet has met ALL teen gates (exp + bond-accelerated days + bond) and is
+ * therefore waiting at the child→teen fork. The fork is NOT crossed automatically — the player
+ * picks the teen form in a modal (POST /api/pet/evolve). Returns false for any non-child stage.
  */
 export function pendingTeenFork(stage: Stage, exp: number, bond: number, days: number): boolean {
   const nxt = nextStage(stage);
-  return !!nxt && nxt.stage === "teen" && exp >= nxt.expReq && days >= nxt.minDays && bond >= nxt.bondGate;
+  return !!nxt && nxt.stage === "teen" && exp >= nxt.expReq && days >= effectiveMinDays(nxt.minDays, bond) && bond >= nxt.bondGate;
 }

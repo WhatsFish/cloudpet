@@ -6,7 +6,7 @@ import { planAction } from "@/lib/game/actions";
 import { ACTIONS, AFFECTION_NEED_BOND, CARE_NEEDS, NEED_REWARD, PET_BOND_SOFTCAP, WEIGHT_FEED, WEIGHT_STAGE_MAX } from "@/lib/game/constants";
 import { deriveNeeds, NEED_EVENT, VERB_NEED } from "@/lib/game/needs";
 import { creature } from "@/data/bestiary";
-import { nextStage } from "@/data/stage-table";
+import { effectiveMinDays, nextStage } from "@/data/stage-table";
 import { daysBetween, localDateStr, localHour } from "@/lib/game/time";
 import { getPack } from "@/data/copybank";
 import { selectCopy } from "@/lib/game/copy";
@@ -23,8 +23,8 @@ const CARE_COL: Partial<Record<Verb, "care_feed" | "care_clean" | "care_doctor">
 const REASON_LINE: Record<string, string> = {
   asleep: "嘘…它睡着啦，轻轻摸摸就好，别吵醒它",
   not_sleepy: "它现在精神着呢，还不困～",
-  not_needed_feed: "它还饱着呢，到饭点再喂吧",
-  not_needed_clean: "它挺干净的，今天不用洗啦",
+  not_needed_feed: "它还饱着呢，等它饿了再喂吧",
+  not_needed_clean: "它挺干净的，等脏了再洗哦",
   not_needed_doctor: "它没生病，健健康康的哦",
   sick: "它不太舒服，先看看医生吧",
   still_young: "它还太小，长大点才能这样玩哦",
@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
     let promoted: Stage | null = null;
     const days = daysBetween(Date.parse(rows.pet.created_at), now);
     let nx = nextStage(stage);
-    while (nx && nx.stage !== "teen" && s.exp >= nx.expReq && days >= nx.minDays && s.bond >= nx.bondGate) {
+    while (nx && nx.stage !== "teen" && s.exp >= nx.expReq && days >= effectiveMinDays(nx.minDays, s.bond) && s.bond >= nx.bondGate) {
       stage = nx.stage; promoted = nx.stage;
       nx = nextStage(stage);
     }

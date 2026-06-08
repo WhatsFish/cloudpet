@@ -73,14 +73,22 @@ export function planAction(inp: ActionInput): ActionPlan | ActionReject {
     return { ok: true, state: s, expGain, bondGain, woke, event, fx, animation };
   };
 
-  // ---- ASLEEP: only a gentle 摸摸 or 叫醒 ----
+  // ---- ASLEEP ----
+  let wokeForCare = false;
   if (asleep) {
     if (verb === "sleep") { s.asleep = false; s.sleep_since = null; return finish("sleep.wake", 0, 1, "sparkle", "react_happy", true); }
     if (verb === "pet") return finish("pet.sleeping", 0, 1, "zzz", "sleep"); // gentle, no stat change, doesn't wake
-    return { ok: false, error: "unavailable", reason: "asleep" };
+    if (def.charge) {
+      // a DUE care need (feed/clean/doctor) gently WAKES the pet, then we care for it below.
+      const kind = VERB_NEED[verb];
+      if (!kind || !dueKinds.includes(kind)) return { ok: false, error: "unavailable", reason: `not_needed_${verb}` };
+      s.asleep = false; s.sleep_since = null; wokeForCare = true; // wake to be cared for, then fall through
+    } else {
+      return { ok: false, error: "unavailable", reason: "asleep" }; // e.g. play — don't wake it just to play
+    }
   }
 
-  // ---- AWAKE ----
+  // ---- AWAKE (or just woken for care) ----
   if (verb === "sleep") {
     if (!night && s.energy >= SLEEPY_ENERGY) return { ok: false, error: "unavailable", reason: "not_sleepy" };
     s.asleep = true; s.sleep_since = new Date(nowMs).toISOString();
@@ -95,7 +103,7 @@ export function planAction(inp: ActionInput): ActionPlan | ActionReject {
     const statKey = Object.keys(def.effects)[0] as keyof Snapshot;
     const expGain = careExp(inp.state[statKey] as number, cap);
     apply(def.effects);
-    return finish(event, expGain, def.bond, def.fx, verb === "feed" ? "eat_happy" : "react_happy");
+    return finish(event, expGain, def.bond, def.fx, verb === "feed" ? "eat_happy" : "react_happy", wokeForCare);
   }
 
   if (verb === "play") {

@@ -3,7 +3,7 @@ import { withTx, query } from "@/lib/db";
 import { getUserId } from "@/lib/auth";
 import { buildContext, buildPetView, loadRows, tickAndPersistTz } from "@/lib/pet";
 import { SPARK_EXP, SPARK_BOND } from "@/lib/game/constants";
-import { nextStage } from "@/data/stage-table";
+import { effectiveMinDays, nextStage } from "@/data/stage-table";
 import { daysBetween } from "@/lib/game/time";
 import { getPack } from "@/data/copybank";
 import { selectCopy } from "@/lib/game/copy";
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     let stage: Stage = rows.pet.stage, promoted: Stage | null = null;
     const days = daysBetween(Date.parse(rows.pet.created_at), now);
     let nx = nextStage(stage);
-    while (nx && nx.stage !== "teen" && s.exp >= nx.expReq && days >= nx.minDays && s.bond >= nx.bondGate) { stage = nx.stage; promoted = nx.stage; nx = nextStage(stage); }
+    while (nx && nx.stage !== "teen" && s.exp >= nx.expReq && days >= effectiveMinDays(nx.minDays, s.bond) && s.bond >= nx.bondGate) { stage = nx.stage; promoted = nx.stage; nx = nextStage(stage); }
     if (promoted) await q(`UPDATE pet SET stage=$2 WHERE id=$1`, [rows.pet.id, stage]);
 
     const rows2 = { ...rows, pet: { ...rows.pet, stage } };

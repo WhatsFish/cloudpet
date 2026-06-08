@@ -16,7 +16,7 @@ export const ENERGY_REGEN = { activeSleep: 9, passiveNap: 5 };
 
 // --- multiplicative decay modifiers ---
 export const M_STAGE: Record<Stage, number> = { egg: 1.15, baby: 1.15, child: 1.0, teen: 0.9, adult: 0.9 };
-export const M_SLEEP: Partial<Record<LiveStat, number>> = { satiety: 0.5, mood: 0.25, cleanliness: 0.5 };
+export const M_SLEEP: Partial<Record<LiveStat, number>> = { satiety: 0.35, mood: 0.25, cleanliness: 0.5 }; // 睡着掉得更慢，尤其饱食
 export const M_SICK: Partial<Record<LiveStat, number>> = { satiety: 1.4, cleanliness: 1.2 };
 export const M_BOND_MAX_REDUCTION = 0.3;
 
@@ -65,6 +65,24 @@ export const HUNGER_SAFETY = 25; // very low satiety → hungry even outside a m
 
 export const NEED_DUE: Record<"dirty" | "bored" | "unwell", number> = { dirty: 50, bored: 45, unwell: 35 };
 export const NEED_COOLDOWN_MS: Record<NeedKind, number> = { hungry: 3 * H, dirty: 20 * H, bored: 4 * H, unwell: 8 * H, sleepy: 12 * H };
+
+// V8.2 STAT-DRIVEN needs (replaces meal-windows / care cooldowns): a care need fires purely
+// when its stat falls below threshold. Stats decay over time (≈每小时一点) + occasional random
+// dips, so hunger/dirty/sick arise organically from time, not a clock — "吃了过一阵才饿".
+// The care action lifts the stat back above threshold, so it won't re-fire until it decays again.
+export const NEED_THRESH: Record<"hungry" | "dirty" | "unwell" | "bored", number> = { hungry: 45, dirty: 42, unwell: 35, bored: 40 };
+
+// occasional random dips so needs feel organic ("蹭脏了 / 漏了一口饭 / 打了个喷嚏"), not clockwork.
+// Deterministic per (pet, absolute-hour) so compute-on-read stays stable across reads.
+export const DIP_CHANCE_PCT = 14; // ~14% of whole hours get an extra dip on one stat
+export const DIP_AMOUNT = 8;
+export const DIP_STATS: LiveStat[] = ["satiety", "cleanliness", "mood"];
+export const DIP_WINDOW_CAP = 6;  // max dips applied per single recompute (decay dominates long absences)
+
+// 进化提速: high 亲密度 (= an active player — checkin streak / care / play all feed bond) compresses
+// the stage day-gate, so frequent visitors see evolution sooner (child 5d → ~3d at full bond).
+export const BOND_SPEED_FULL = 550; // bond at/above which the gate is at its fastest
+export const STAGE_SPEED_MIN = 0.45; // min day-gate multiplier (×minDays) at full bond
 export const NEED_MAX_ACTIVE = 3;
 export const NEED_PRIORITY: NeedKind[] = ["unwell", "sleepy", "hungry", "dirty", "bored"];
 export const NEED_VERB: Record<NeedKind, Verb> = { unwell: "doctor", sleepy: "sleep", hungry: "feed", dirty: "clean", bored: "play" };
