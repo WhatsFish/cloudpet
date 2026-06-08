@@ -1,7 +1,12 @@
 import { ensureUserId } from "./utils/auth";
+import { CLOUD_ENV } from "./utils/api";
 
 App({
   onLaunch() {
+    // 微信云托管: init the cloud SDK once so utils/api can callContainer (免备案 entry).
+    if (wx.cloud) {
+      try { wx.cloud.init({ env: CLOUD_ENV }); } catch (e) { console.log("cloud.init failed", e); }
+    }
     ensureUserId().catch((e) => {
       console.error("login failed:", e);
     });
