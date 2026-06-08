@@ -2,9 +2,9 @@
   "miniprogramRoot": "./",
   "projectname": "cloudpet",
   "description": "本命小宠 — 测性格领养一只像素本命宠，养成陪伴小游戏",
-  "appid": "touristappid",
+  "appid": "wxcfeb6a365a0ad14b",
   "setting": {
-    "urlCheck": true,
+    "urlCheck": false,
     "es6": true,
     "enhance": true,
     "postcss": true,
