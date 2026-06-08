@@ -21,7 +21,10 @@ Page({
 
   onLoad() {
     const r = wx.getStorageSync("hatch_result") as Result | "";
-    if (!r || !r.archetypeKey) { wx.reLaunch({ url: "/pages/quiz/quiz" }); return; }
+    // No pending hatch result means this pet already hatched (result is cleared on confirm) — a
+    // re-entry to hatch should NOT flash through the quiz. Go home; home self-routes to the quiz
+    // only if there's genuinely no pet (its /pet read 404s).
+    if (!r || !r.archetypeKey) { wx.reLaunch({ url: "/pages/home/home" }); return; }
     this.setData({
       result: r,
       spriteSrc: spritePath(r.archetypeKey, "egg", ""),

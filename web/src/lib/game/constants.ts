@@ -81,8 +81,13 @@ export const DIP_WINDOW_CAP = 6;  // max dips applied per single recompute (deca
 
 // 进化提速: high 亲密度 (= an active player — checkin streak / care / play all feed bond) compresses
 // the stage day-gate, so frequent visitors see evolution sooner (child 5d → ~3d at full bond).
-export const BOND_SPEED_FULL = 550; // bond at/above which the gate is at its fastest
-export const STAGE_SPEED_MIN = 0.45; // min day-gate multiplier (×minDays) at full bond
+// 进化提速 tuning. BOND_SPEED_FULL lowered 550→500 so the full day-compression is reachable
+// within the teen/adult windows (a daily player who bonds steadily actually gets there), and
+// STAGE_SPEED_MIN 0.45→0.40 widens the payoff (child 5d→2d, teen 12d→5d, adult 21d→9d at full
+// bond) — so "多陪它能更快进化" is a real, felt swing, not a rounding nudge. The roadmap now
+// shows the realized + remaining day-savings (see buildRoadmap) so the link is visible.
+export const BOND_SPEED_FULL = 500; // bond at/above which the gate is at its fastest
+export const STAGE_SPEED_MIN = 0.40; // min day-gate multiplier (×minDays) at full bond
 export const NEED_MAX_ACTIVE = 3;
 export const NEED_PRIORITY: NeedKind[] = ["unwell", "sleepy", "hungry", "dirty", "bored"];
 export const NEED_VERB: Record<NeedKind, Verb> = { unwell: "doctor", sleepy: "sleep", hungry: "feed", dirty: "clean", bored: "play" };
@@ -108,6 +113,12 @@ export const PET_BOND_SOFTCAP = 6; // taps/day at full PET_BOND, then +1
 
 export const WANTS_PERIOD_MS = 6 * H;
 export const RECAP_MIN_AWAY_MS = 8 * H;
+// A daily overnight returner rarely gains a whole level in one night (early levels need ~80
+// exp; an 8-10h sleep drips ~25-45), so the "我长大啦" recap almost never fired for them — the
+// comeback felt like nothing happened. SOFT_RECAP_EXP lets a meaningful overnight EXP gain (no
+// full level needed) fire a gentle "睡了一觉又长大一点" recap, so returning ALWAYS shows a
+// because-you-care-for-me payoff. Gated to once per local day (see GET /api/pet).
+export const SOFT_RECAP_EXP = 22;
 export const COMPLETE_BONUS = { exp: 30, bond: 10 }; // 「照顾够了」完成奖 (once/day)
 export const CHECKIN_BOND = 8; // auto check-in on first open
 export const CARE_COVERED_AT = 30; // careCoveredToday = all of satiety/cleanliness/health >= 30

@@ -15,7 +15,7 @@ import { localHour } from "./time";
 
 // need_wants_at is repurposed in V5 as "last slept at" (sleepy cooldown anchor).
 export type NeedTimes = { fed: number | null; clean: number | null; bored: number | null; unwell: number | null; slept: number | null };
-export type Need = { kind: NeedKind; verb: Verb; label: string };
+export type Need = { kind: NeedKind; verb: Verb; label: string; rewardExp?: number; rewardBond?: number };
 
 // fallback persona-neutral copy; the routes route the words through the creature's pack.
 export const NEED_LABEL: Record<NeedKind, string> = {

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { withTx } from "@/lib/db";
 import { getUserId } from "@/lib/auth";
 import { buildContext, buildPetView, ensureDailyVoice, loadRows, tickAndPersistTz } from "@/lib/pet";
-import { CHECKIN_BOND, RECAP_MIN_AWAY_MS, STREAK_EXP } from "@/lib/game/constants";
+import { CHECKIN_BOND, RECAP_MIN_AWAY_MS, SOFT_RECAP_EXP, STREAK_EXP } from "@/lib/game/constants";
 import { levelFromExp } from "@/lib/game/levels";
 import { speciesName } from "@/lib/game/evolve";
 import { localDateStr } from "@/lib/game/time";
@@ -18,10 +18,12 @@ function daysDiff(a: string, b: string): number {
   return Math.round((Date.parse(b + "T00:00:00Z") - Date.parse(a + "T00:00:00Z")) / 86400000);
 }
 
-function recapLine(kind: string, evolvedToName: string | null): string {
+function recapLine(kind: string, evolvedToName: string | null, expGained: number): string {
   if (kind === "evolve" && evolvedToName) return `你不在的这阵子，我自己长大、还长成了「${evolvedToName}」！快看看我～`;
-  if (kind === "stage") return "你不在的这阵子，我自己又长大了一点点，快回来看看我～";
-  return "你不在的时候，我也在努力长大哦，等你好久啦～";
+  if (kind === "stage") return "你不在的这阵子，我自己又长大了一阶段，快回来看看我～";
+  if (kind === "level") return "你不在的时候我也在努力长大，又升了一级哦～";
+  // "rest": gentle overnight growth, no level-up — still a "because you care for me, I grew" beat.
+  return `睡了一觉，我又悄悄长大了一点点${expGained > 0 ? `（+${expGained} 经验）` : ""}，想你啦～`;
 }
 
 export async function GET(req: NextRequest) {
@@ -60,17 +62,32 @@ export async function GET(req: NextRequest) {
     let promoted: Stage | null;
     ({ rows, promoted } = await tickAndPersistTz(q, rows, now, tz));
 
-    // record an offline growth event (recap source) when a long absence produced real growth
+    // record an offline growth event (recap source) when a long absence produced growth. The
+    // bar is deliberately LOW (a single overnight level, or even just SOFT_RECAP_EXP worth of
+    // passive growth) so a daily overnight returner reliably gets a "I grew while you slept"
+    // payoff — the comeback used to feel like nothing happened. Promotions/evolutions always
+    // record; the softer "rest"/"level" events are gated to once per local day so opening twice
+    // 8h+ apart in one day doesn't stack two modals.
     const levelFrom = levelFromExp(prevExp), levelTo = levelFromExp(rows.state.exp);
-    if (elapsedMs > RECAP_MIN_AWAY_MS && (promoted || levelTo - levelFrom >= 2)) {
-      const evolved = rows.pet.species_id !== prevSpecies;
-      const kind = promoted ? (evolved ? "evolve" : "stage") : "level";
-      await q(
-        `INSERT INTO growth_event (pet_id, kind, level_from, level_to, stage_from, stage_to, evolved_to, days_away, exp_gained, local_date)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
-        [rows.pet.id, kind, levelFrom, levelTo, prevStage, rows.pet.stage, evolved ? rows.pet.species_id : null,
-         Number((elapsedMs / 86400000).toFixed(1)), rows.state.exp - prevExp, localDate],
-      );
+    const expGained = rows.state.exp - prevExp;
+    const grewLevel = levelTo > levelFrom;
+    if (elapsedMs > RECAP_MIN_AWAY_MS && (promoted || grewLevel || expGained >= SOFT_RECAP_EXP)) {
+      let record = true;
+      if (!promoted) {
+        const already = await q<{ one: number }>(
+          `SELECT 1 AS one FROM growth_event WHERE pet_id=$1 AND local_date=$2 LIMIT 1`, [rows.pet.id, localDate]);
+        record = already.length === 0;
+      }
+      if (record) {
+        const evolved = rows.pet.species_id !== prevSpecies;
+        const kind = promoted ? (evolved ? "evolve" : "stage") : grewLevel ? "level" : "rest";
+        await q(
+          `INSERT INTO growth_event (pet_id, kind, level_from, level_to, stage_from, stage_to, evolved_to, days_away, exp_gained, local_date)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+          [rows.pet.id, kind, levelFrom, levelTo, prevStage, rows.pet.stage, evolved ? rows.pet.species_id : null,
+           Number((elapsedMs / 86400000).toFixed(1)), expGained, localDate],
+        );
+      }
     }
 
     // auto check-in (first open per local day; idempotent via uq_checkin_per_day)
@@ -142,7 +159,7 @@ export async function GET(req: NextRequest) {
       const evolvedToName = g.evolved_to ? speciesName(g.evolved_to) : null;
       recap = {
         kind: g.kind as Recap["kind"], daysAway: Number(g.days_away), levelFrom: g.level_from, levelTo: g.level_to,
-        stageFrom: g.stage_from, stageTo: g.stage_to, evolvedToName, expGained: g.exp_gained, line: recapLine(g.kind, evolvedToName),
+        stageFrom: g.stage_from, stageTo: g.stage_to, evolvedToName, expGained: g.exp_gained, line: recapLine(g.kind, evolvedToName, g.exp_gained),
       };
       await q(`UPDATE growth_event SET seen=true WHERE pet_id=$1 AND seen=false`, [rows.pet.id]);
     }

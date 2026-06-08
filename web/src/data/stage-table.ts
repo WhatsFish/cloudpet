@@ -1,6 +1,8 @@
 // Growth / life stages. Gated on EXP AND real days AND bond (PLAN §5.7) so you
-// can't rush stages by grinding in one sitting. V1 ships egg→baby→child art, so
-// promotion is capped at MAX_STAGE_V1 even though teen/adult are in the table.
+// can't rush stages by grinding in one sitting. Art for ALL stages (egg→adult,
+// true forms + branch variants) is shipped, so promotion runs the full table up
+// to MAX_STAGE — adult is the terminal stage, reached ≈week 2-3 (a real post-teen
+// goal so the game doesn't go flat after the少年 fork).
 
 import type { Stage } from "@/lib/types";
 import { BOND_SPEED_FULL, STAGE_SPEED_MIN } from "@/lib/game/constants";
@@ -27,9 +29,10 @@ export const STAGES: StageDef[] = [
   { stage: "adult", order: 4, expReq: 1100, minDays: 21, cap: 100, bondGate: 400 },
 ];
 
-// V3: the divergent fork lands AT teen (already-rendered sprites), so teen is the
-// visible payoff. adult stays Phase 2. Was 'child' in V1/V2.
-export const MAX_STAGE_V1: Stage = "teen";
+// The terminal stage. The auto-tick promotes up to here (teen→adult is automatic — no fork);
+// the only player-chosen transition is the child→teen fork (POST /api/pet/evolve). Named
+// MAX_STAGE_V1 for back-compat; adult is now included.
+export const MAX_STAGE_V1: Stage = "adult";
 
 const BY_STAGE = new Map(STAGES.map((s) => [s.stage, s]));
 

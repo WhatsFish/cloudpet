@@ -133,6 +133,9 @@ export async function POST(req: NextRequest) {
       body: {
         ok: true, ...view, line, fx: plan.fx, animation: plan.animation, woke: plan.woke, promoted, promoteLine,
         needReward: fulfilled ? { kind: fulfilledKind, exp: needBonusExp, bond: needBonusBond } : null,
+        // TOTAL granted by this tap (raw careExp + any need bonus), so the float popup matches the
+        // A-button chip's predicted value instead of showing only the need-bonus component.
+        gainExp: plan.expGain + needBonusExp, gainBond: bondGain + needBonusBond,
       },
     };
   });

@@ -2,11 +2,11 @@ import { request, type ApiError } from "../../utils/api";
 import { ensureUserId } from "../../utils/auth";
 import { spritePath, FALLBACK_SPRITE } from "../../utils/format";
 
-type NeedView = { kind: string; verb: string; label: string };
+type NeedView = { kind: string; verb: string; label: string; rewardExp?: number; rewardBond?: number };
 type ActionAvail = { verb: string; enabled: boolean; reason?: string };
 type Roadmap = {
   level: { level: number; expInto: number; expSpan: number; expRemaining: number };
-  stage: { stage: string | null; towardName: string; expRemaining: number; daysRemaining: number; bondRemaining: number; etaDays: number } | null;
+  stage: { stage: string | null; towardName: string; expRemaining: number; daysRemaining: number; bondRemaining: number; etaDays: number; daysSavedByBond: number; daysCouldSaveMore: number } | null;
   line: string;
 };
 type Recap = { kind: string; daysAway: number; levelFrom: number; levelTo: number; stageFrom: string; stageTo: string; evolvedToName: string | null; expGained: number; line: string };
@@ -17,7 +17,7 @@ type PetView = {
   bond: number; exp: number; level: number; evolveProgress: number; moodBand: string; needHint: string; asleep: boolean;
   sprite: { creatureId: string; stage: string; mood: string; animation: string };
   needs: NeedView[]; topNeed: NeedView | null; asleepNow: boolean; roadmap: Roadmap; recap: Recap | null;
-  growthPerDay: number; bondHearts: number; streakDays: number; theme: string; voice: { line: string } | null;
+  growthPerDay: number; bondHearts: number; bondNextPct?: number; bondNextRemaining?: number; streakDays: number; theme: string; voice: { line: string } | null;
   actions: ActionAvail[];
   weight?: number; sizeScale?: number; sparks?: number; sparkEtaSec?: number;
   careTimers?: { verb: string; due: boolean; etaSec: number | null; label: string }[];
@@ -25,7 +25,7 @@ type PetView = {
   fork?: { pending: boolean; options: ForkOpt[] };
   checkin?: { firstOpenToday: boolean; bond: number; streakDays: number; milestoneExp: number; greet: string } | null;
 };
-type ActionResp = PetView & { ok: boolean; line: string; fx: string; animation: string; woke: boolean; promoted: string | null; promoteLine: string | null; needReward: { kind: string; exp: number; bond: number } | null };
+type ActionResp = PetView & { ok: boolean; line: string; fx: string; animation: string; woke: boolean; promoted: string | null; promoteLine: string | null; needReward: { kind: string; exp: number; bond: number } | null; gainExp?: number; gainBond?: number };
 
 const VERB_META: Record<string, { emoji: string; label: string; stat: string }> = {
   feed: { emoji: "🍙", label: "喂喂它", stat: "satiety" },
@@ -68,6 +68,7 @@ Page({
     aVerb: "", aEmoji: "✓", aLabel: "照顾好啦", aReward: "", aGlow: false,
     bVerb: "play", bEmoji: "🎮", bLabel: "陪玩",
     roadmapLine: "", levelPct: 0, levelNum: 1, growthPerDay: 0, hearts: [0, 0, 0, 0, 0],
+    bondNextPct: 0, bondNextRemaining: 0,
     spriteScale: 1, weightKg: "1.0", sparkN: 0, sparkEta: 0, sparkText: "",
     showDrawer: false, showRoadmap: false, showStatus: false, showSettings: false,
     showFork: false, forkDismissed: false,
@@ -181,8 +182,12 @@ Page({
     return "/assets/bg/room.png";
   },
 
+  // The A-button reward chip. Prefer the server-computed reward carried on the due need
+  // (exact value the tap will grant); fall back to the local estimate only if it's absent.
   rewardFor(verb: string, pet: PetView): string {
     if (verb !== "feed" && verb !== "clean" && verb !== "doctor") return ""; // affection needs give bond, no exp chip
+    const need = pet.needs.find((n) => n.verb === verb);
+    if (need && typeof need.rewardExp === "number") return `+${need.rewardExp} ✨`;
     const meta = VERB_META[verb];
     const cap = STAGE_CAP[pet.pet.stage] ?? 90;
     const deficit = Math.max(0, cap - (pet.stats[meta.stat] ?? cap));
@@ -241,6 +246,7 @@ Page({
       needCard, aVerb, aEmoji, aLabel, aReward, aGlow, bVerb, bEmoji, bLabel,
       roadmapLine: pet.roadmap?.line ?? "", levelPct: Math.max(3, pet.evolveProgress), levelNum: pet.level,
       growthPerDay: pet.growthPerDay, hearts: [0, 1, 2, 3, 4].map((i) => (i < pet.bondHearts ? 1 : 0)),
+      bondNextPct: pet.bondNextPct ?? 0, bondNextRemaining: pet.bondNextRemaining ?? 0,
       spriteScale: pet.sizeScale ?? 1, weightKg: ((pet.weight ?? 100) / 100).toFixed(1),
       sparkN, sparkEta, sparkText: this.sparkTextFor(sparkN, sparkEta),
       careActs, funActs,
@@ -265,7 +271,9 @@ Page({
       this.burst(PARTICLE[resp.fx] || "✨", verb);
       this.apply(resp);
       this.activityPose(verb, resp); // briefly show it DOING the action (颠锅/泡泡/手柄)
-      const tag = resp.needReward ? (resp.needReward.exp ? `+${resp.needReward.exp} 正好需要!` : `+${resp.needReward.bond}♥ 懂它!`) : "";
+      // exp case → show the TOTAL gained (gainExp = careExp + need bonus) so it matches the chip;
+      // bond-only needs (sleepy/bored) → show the bond gained.
+      const tag = resp.needReward ? (resp.needReward.exp ? `+${resp.gainExp ?? resp.needReward.exp} 正好需要!` : `+${resp.needReward.bond}♥ 懂它!`) : "";
       if (tag) { this.setData({ floatTag: tag }); setTimeout(() => this.setData({ floatTag: "" }), 1100); }
       if (resp.line) wx.showToast({ title: resp.line, icon: "none", duration: 1800 });
       if (resp.promoted) setTimeout(() => wx.showToast({ title: resp.promoteLine || "它长大啦！", icon: "none", duration: 2200 }), 900);

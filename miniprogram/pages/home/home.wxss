@@ -49,10 +49,14 @@ page { font-family: "Zpix", "PingFang SC", -apple-system, "Microsoft YaHei", san
 
 /* bond hearts + growth */
 .metarow { position:relative; z-index:2; display:flex; align-items:center; justify-content:space-between; margin-top:4rpx; }
-.hearts { display:flex; align-items:center; gap:2rpx; }
+.hearts { display:flex; flex-direction:column; align-items:flex-start; gap:3rpx; }
+.hearts-row { display:flex; align-items:center; gap:2rpx; }
 .heart { font-size:26rpx; color:rgba(90,70,50,0.28); }
 .heart.on { color:#E8607A; }
 .bondlab { font-size:18rpx; color:var(--lcd-ink); margin-left:8rpx; opacity:0.8; }
+/* thin progress to the NEXT heart so bond visibly moves within a session (hearts only tick at a boundary). */
+.bondnext { width:108rpx; height:5rpx; border-radius:3rpx; background:rgba(232,96,122,0.18); overflow:hidden; }
+.bondnext-fill { height:100%; border-radius:3rpx; background:#E8607A; transition:width 0.4s ease; }
 .growth { font-size:20rpx; color:var(--lcd-ink); opacity:0.85; }
 
 /* the pet's voice / need card */
@@ -165,6 +169,7 @@ page { font-family: "Zpix", "PingFang SC", -apple-system, "Microsoft YaHei", san
 .rm-bar { height:14rpx; background:#EBDFC8; border-radius:999rpx; overflow:hidden; margin:8rpx 0; }
 .rm-fill { height:100%; background:#E8845B; border-radius:999rpx; transition:width 0.4s ease; }
 .rm-next { font-size:22rpx; color:#8A7D6E; line-height:1.45; }
+.rm-speed { margin-top:5rpx; font-size:21rpx; color:#C2557A; background:#FFF1F5; border-radius:10rpx; padding:4rpx 10rpx; line-height:1.4; display:inline-block; }
 .tip { display:flex; gap:12rpx; padding:12rpx 2rpx; border-top:2rpx solid #F1E8D8; }
 .tip:first-of-type { border-top:none; }
 .tip-ico { font-size:34rpx; line-height:1.2; flex-shrink:0; width:46rpx; text-align:center; }

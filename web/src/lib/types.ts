@@ -130,7 +130,10 @@ export type CopyContext = {
 };
 
 // --- V4 needs / roadmap / recap view models ---
-export type NeedView = { kind: NeedKind; verb: Verb; label: string };
+// rewardExp/rewardBond: the server-computed reward for answering this DUE need right now, so
+// the A-button chip shows the exact value the action will grant (no client guess that can drift
+// from server truth). Present only for due CARE needs (feed/clean/doctor → exp+bond).
+export type NeedView = { kind: NeedKind; verb: Verb; label: string; rewardExp?: number; rewardBond?: number };
 // V8: a care action's availability timer — due now, or how long until it's next available.
 export type CareTimer = { verb: "feed" | "clean" | "doctor"; due: boolean; etaSec: number | null; label: string };
 export type Roadmap = {
@@ -140,11 +143,15 @@ export type Roadmap = {
     expReq: number; minDays: number; bondGate: number;
     expRemaining: number; daysRemaining: number; bondRemaining: number;
     unmet: ("exp" | "days" | "bond")[]; etaDays: number;
+    // 进化提速 legibility: how many calendar days the pet's current bond has already shaved off
+    // the day-gate vs a zero-bond pet, and how many MORE it could shave by bonding to full speed.
+    daysSavedByBond: number; daysCouldSaveMore: number;
   } | null;
   line: string; // one-glance summary, e.g. "再 2 天 + 多陪它一点 → 进化成「提灯蛾」"
 };
 export type Recap = {
-  kind: "level" | "stage" | "evolve";
+  kind: "level" | "stage" | "evolve" | "rest"; // "rest": gentle overnight EXP growth, no level-up
+
   daysAway: number; levelFrom: number; levelTo: number;
   stageFrom: Stage; stageTo: Stage; evolvedToName: string | null;
   expGained: number; line: string;
@@ -177,6 +184,8 @@ export type PetView = {
   sparkEtaSec: number; // V8: seconds until the next spark regens (0 when already at max)
   careTimers: CareTimer[]; // V8: per care verb — due now / next-due countdown
   bondHearts: number; // V5: 0–5 hearts, visible 亲密度
+  bondNextPct: number; // 0–100 progress toward the NEXT heart (so bond visibly moves within a session)
+  bondNextRemaining: number; // bond points still needed for the next heart (0 once at 5♥)
   streakDays: number;
   theme: string; // device skin
   voice: { line: string; lineId: string } | null; // today's 心声

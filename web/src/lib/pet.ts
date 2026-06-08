@@ -9,6 +9,7 @@ import {
   ACTIONS, CARE_COVERED_AT, NIGHT_FROM, NIGHT_TO, SLEEPY_ENERGY,
   DECAY, M_STAGE, NEED_THRESH, SPARK_MAX, SPARK_REGEN_MS,
   WEIGHT_START, WEIGHT_SIZE_RANGE, WEIGHT_SIZE_SPAN,
+  BOND_SPEED_FULL, CARE_NEEDS, NEED_REWARD, careExp,
 } from "@/lib/game/constants";
 import { recompute } from "@/lib/game/tick";
 import { forkOptions, speciesName } from "@/lib/game/evolve";
@@ -201,11 +202,17 @@ export function buildRoadmap(rows: Rows, nowMs: number): Roadmap {
   const level = { level: lvl, expInto: state.exp - lo, expSpan: Math.max(1, hi - lo), expRemaining: Math.max(0, hi - state.exp) };
 
   const nxt = nextStage(pet.stage);
-  if (!nxt) return { level, stage: null, line: "已经长成少年啦，还在一天天和你变熟（成年形态待开放）" };
+  if (!nxt) return { level, stage: null, line: "已经长成大成宠啦 🌟 和你的羁绊还在一天天加深" };
 
   const days = daysBetween(Date.parse(pet.created_at), nowMs);
   const expRemaining = Math.max(0, nxt.expReq - state.exp);
-  const daysRemaining = Math.max(0, Math.ceil(effectiveMinDays(nxt.minDays, state.bond) - days));
+  // bond-accelerated day gate, plus how much of that acceleration is already realized vs.
+  // still attainable — so the roadmap can say "亲密已让它提前X天 · 再亲密些还能提前Y天".
+  const effNow = effectiveMinDays(nxt.minDays, state.bond);
+  const effFull = effectiveMinDays(nxt.minDays, BOND_SPEED_FULL);
+  const daysRemaining = Math.max(0, Math.ceil(effNow - days));
+  const daysSavedByBond = Math.max(0, nxt.minDays - effNow);
+  const daysCouldSaveMore = Math.max(0, effNow - effFull);
   const bondRemaining = Math.max(0, nxt.bondGate - state.bond);
   const unmet: ("exp" | "days" | "bond")[] = [];
   if (expRemaining > 0) unmet.push("exp");
@@ -214,8 +221,9 @@ export function buildRoadmap(rows: Rows, nowMs: number): Roadmap {
   const dailyEst = passiveRatePerHour(state, capForStage(pet.stage)) * 24 + 120; // passive + nominal active
   const etaDays = Math.max(daysRemaining, Math.ceil(expRemaining / Math.max(1, dailyEst)));
   const toTeen = nxt.stage === "teen";
-  const towardName = toTeen ? "由你选择的样子" : speciesName(pet.archetype_key);
-  const stage = { stage: nxt.stage, towardName, expReq: nxt.expReq, minDays: nxt.minDays, bondGate: nxt.bondGate, expRemaining, daysRemaining, bondRemaining, unmet, etaDays };
+  // teen is the player-chosen fork; teen→adult keeps the chosen form (use the live species name).
+  const towardName = toTeen ? "由你选择的样子" : speciesName(pet.species_id);
+  const stage = { stage: nxt.stage, towardName, expReq: nxt.expReq, minDays: nxt.minDays, bondGate: nxt.bondGate, expRemaining, daysRemaining, bondRemaining, unmet, etaDays, daysSavedByBond, daysCouldSaveMore };
 
   const parts: string[] = [];
   if (daysRemaining > 0) parts.push(`再 ${daysRemaining} 天`);
@@ -266,6 +274,28 @@ export function buildPetView(rows: Rows, o: ViewOpts): PetView {
   // care gating uses the UNCAPPED due set so a real need is never crowded out of being actionable
   const dueKinds = deriveDueKinds(state, rows.needTimes, o.nowMs, o.tz, state.asleep);
 
+  // server-truth reward for answering each due CARE need NOW: careExp(preStat) + NEED_REWARD —
+  // exactly what POST /api/action will grant. The client A-button chip reads this instead of
+  // re-deriving the formula, so the chip can never drift from the value the tap actually pays.
+  const cap = capForStage(pet.stage);
+  const REWARD_STAT: Record<string, keyof typeof state> = { hungry: "satiety", dirty: "cleanliness", unwell: "health" };
+  for (const n of needs) {
+    if (CARE_NEEDS.includes(n.kind)) {
+      const stat = REWARD_STAT[n.kind];
+      n.rewardExp = careExp(state[stat] as number, cap) + NEED_REWARD.exp;
+      n.rewardBond = ACTIONS[n.verb].bond + NEED_REWARD.bond;
+    }
+  }
+
+  // next-heart progress (bondHearts = round(bond/200), thresholds at 100/300/500/700/900). The
+  // heart count only ticks at a boundary, so within a session bond looks frozen — this thin bar
+  // shows movement toward the next heart every visit. First band is 0→100, then 200 wide.
+  const hearts = Math.min(5, Math.round(state.bond / 200));
+  const nextAt = hearts >= 5 ? null : hearts * 200 + 100;
+  const prevAt = hearts === 0 ? 0 : hearts * 200 - 100;
+  const bondNextPct = nextAt == null ? 100 : Math.max(0, Math.min(100, Math.round(((state.bond - prevAt) / (nextAt - prevAt)) * 100)));
+  const bondNextRemaining = nextAt == null ? 0 : Math.max(0, nextAt - state.bond);
+
   return {
     pet: { id: pet.id, name: pet.name, archetypeKey: pet.archetype_key, stage: pet.stage, daysKnown, level },
     stats: { satiety: state.satiety, mood: state.mood, cleanliness: state.cleanliness, energy: state.energy, health: state.health },
@@ -292,7 +322,9 @@ export function buildPetView(rows: Rows, o: ViewOpts): PetView {
     // min 1s below cap so the client never sees eta 0 with sparks<6 (would trip the ticker's refresh loop)
     sparkEtaSec: rows.sparks >= SPARK_MAX ? 0 : Math.max(1, Math.round((SPARK_REGEN_MS - (o.nowMs - (rows.sparksAt ?? o.nowMs))) / 1000)),
     careTimers: buildCareTimers(state, pet.stage, dueKinds),
-    bondHearts: Math.min(5, Math.round(state.bond / 200)),
+    bondHearts: hearts,
+    bondNextPct,
+    bondNextRemaining,
     streakDays: cooldown.streak_days,
     theme: o.theme,
     voice: o.voice,

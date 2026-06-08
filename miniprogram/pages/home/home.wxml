@@ -24,8 +24,11 @@
 
       <view class="metarow">
         <view class="hearts">
-          <text wx:for="{{hearts}}" wx:key="*this" class="heart {{item ? 'on' : ''}}">{{item ? '♥' : '♡'}}</text>
-          <text class="bondlab">亲密</text>
+          <view class="hearts-row">
+            <text wx:for="{{hearts}}" wx:key="*this" class="heart {{item ? 'on' : ''}}">{{item ? '♥' : '♡'}}</text>
+            <text class="bondlab">亲密</text>
+          </view>
+          <view wx:if="{{bondNextRemaining > 0}}" class="bondnext"><view class="bondnext-fill" style="width:{{bondNextPct}}%"></view></view>
         </view>
         <text class="growth">📈+{{growthPerDay}}/天 · ⚖️{{weightKg}}kg</text>
       </view>
@@ -103,7 +106,8 @@
           <view class="rm-lv">Lv{{levelNum}} · {{stageLabel}}</view>
           <view class="rm-bar"><view class="rm-fill" style="width:{{levelPct}}%"></view></view>
           <view class="rm-next" wx:if="{{pet.roadmap.stage}}">距「{{pet.roadmap.stage.towardName}}」：还要 {{pet.roadmap.stage.daysRemaining}} 天<block wx:if="{{pet.roadmap.stage.bondRemaining > 0}}"> · 亲密差 {{pet.roadmap.stage.bondRemaining}}</block><block wx:if="{{pet.roadmap.stage.expRemaining > 0}}"> · 经验差 {{pet.roadmap.stage.expRemaining}}</block></view>
-          <view class="rm-next" wx:else>已长成少年啦 · 成年阶段开放中</view>
+          <view class="rm-next" wx:else>已长成大成宠啦 🌟 羁绊还在加深</view>
+          <view class="rm-speed" wx:if="{{pet.roadmap.stage && (pet.roadmap.stage.daysSavedByBond > 0 || pet.roadmap.stage.daysCouldSaveMore > 0)}}"><block wx:if="{{pet.roadmap.stage.daysSavedByBond > 0}}">💞 亲密已帮它提前 {{pet.roadmap.stage.daysSavedByBond}} 天</block><block wx:if="{{pet.roadmap.stage.daysCouldSaveMore > 0}}">{{pet.roadmap.stage.daysSavedByBond > 0 ? ' · ' : '💞 '}}多陪它还能再提前 {{pet.roadmap.stage.daysCouldSaveMore}} 天</block></view>
         </view>
       </view>
 

@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS pet_state (
 CREATE TABLE IF NOT EXISTS growth_event (
   id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   pet_id      BIGINT NOT NULL REFERENCES pet(id) ON DELETE CASCADE,
-  kind        TEXT NOT NULL,                -- 'level' | 'stage' | 'evolve'
+  kind        TEXT NOT NULL,                -- 'rest' | 'level' | 'stage' | 'evolve'
   level_from  INTEGER, level_to INTEGER,
   stage_from  TEXT, stage_to TEXT,
   evolved_to  TEXT,                         -- species_id, if it changed
