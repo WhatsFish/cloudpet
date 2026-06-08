@@ -11,6 +11,7 @@ type Roadmap = {
 };
 type Recap = { kind: string; daysAway: number; levelFrom: number; levelTo: number; stageFrom: string; stageTo: string; evolvedToName: string | null; expGained: number; line: string };
 type NurtureTilt = { leaning: string; towardName: string; label: string };
+type ForkOpt = { branch: string; speciesId: string; name: string; blurb: string };
 type PetView = {
   pet: { id: number; name: string; archetypeKey: string; stage: string; daysKnown: number; level: number };
   stats: Record<string, number>;
@@ -19,6 +20,8 @@ type PetView = {
   needs: NeedView[]; topNeed: NeedView | null; asleepNow: boolean; roadmap: Roadmap; recap: Recap | null;
   growthPerDay: number; bondHearts: number; streakDays: number; theme: string; voice: { line: string } | null;
   actions: ActionAvail[]; nurtureTilt: NurtureTilt;
+  dominantState?: string; badges?: string[];
+  fork?: { pending: boolean; recommended: string; options: ForkOpt[] };
 };
 type ActionResp = PetView & { ok: boolean; line: string; fx: string; animation: string; woke: boolean; promoted: string | null; promoteLine: string | null; needReward: { kind: string; exp: number; bond: number } | null };
 
@@ -50,10 +53,12 @@ Page({
     loading: true, error: "", pet: null as PetView | null,
     theme: "cream", spriteSrc: "", bgSrc: "/assets/bg/room.png", animClass: "anim-bob", stageLabel: "",
     asleepNow: false, needCard: "",
-    ctaVerb: "play", ctaEmoji: "🎮", ctaLabel: "陪它玩", ctaReward: "", ctaPrimary: true,
-    freeVerb: "pet", freeEmoji: "💛", freeLabel: "摸摸",
+    aVerb: "", aEmoji: "✓", aLabel: "照顾好啦", aReward: "", aGlow: false,
+    bVerb: "play", bEmoji: "🎮", bLabel: "陪玩",
     roadmapLine: "", levelPct: 0, levelNum: 1, growthPerDay: 0, hearts: [0, 0, 0, 0, 0],
     showDrawer: false, showRoadmap: false, showStatus: false, showSettings: false,
+    showFork: false, forkDismissed: false,
+    forkOptions: [] as (ForkOpt & { sprite: string; recommended: boolean })[],
     recap: null as Recap | null,
     careActs: [] as { verb: string; emoji: string; label: string; enabled: boolean }[],
     funActs: [] as { verb: string; emoji: string; label: string; enabled: boolean }[],
@@ -68,6 +73,7 @@ Page({
   async load() {
     try {
       await ensureUserId();
+      this.setData({ forkDismissed: false }); // a fresh load may re-surface the teen fork
       const pet = await request<PetView>({ path: "/pet" });
       this.apply(pet);
       if (pet.recap) this.setData({ recap: pet.recap });
@@ -98,39 +104,57 @@ Page({
   apply(pet: PetView) {
     const avail: Record<string, boolean> = {};
     for (const a of pet.actions) avail[a.verb] = a.enabled;
+    const asleep = pet.asleepNow;
+    const sick = pet.dominantState === "SICK" || (pet.badges || []).indexOf("生病") >= 0;
 
-    let ctaVerb: string, ctaLabel: string, ctaReward: string, ctaPrimary: boolean, needCard: string;
-    let freeVerb = "pet", freeEmoji = "💛", freeLabel = "摸摸";
-    if (pet.asleepNow) {
-      ctaVerb = "pet"; ctaLabel = "轻轻摸摸"; ctaReward = ""; ctaPrimary = false;
-      needCard = "💤 它睡着啦…轻轻摸摸别吵醒它";
-      freeVerb = "sleep"; freeEmoji = "🔔"; freeLabel = "叫醒";
-    } else if (pet.topNeed) {
-      ctaVerb = pet.topNeed.verb; ctaPrimary = true;
-      ctaLabel = VERB_META[pet.topNeed.verb]?.label ?? "照顾它";
-      ctaReward = this.rewardFor(pet.topNeed.verb, pet);
-      needCard = pet.topNeed.label;
-    } else {
-      ctaVerb = "play"; ctaPrimary = false; ctaLabel = "陪它玩"; ctaReward = "";
-      needCard = pet.needHint || "它现在很满足，陪它待一会儿就好～";
+    // need card: voice what it wants (tap the pet or the card to 摸摸)
+    let needCard: string;
+    if (asleep) needCard = "💤 它睡着啦…点它轻轻摸摸，别吵醒它";
+    else if (pet.topNeed) needCard = pet.topNeed.label;
+    else needCard = pet.needHint || "它现在很满足，点点它陪它待一会儿就好～";
+
+    // A = 照顾: the due CARE need (feed/clean/doctor). Glows when there's one to do; otherwise
+    // it reads "今天照顾好啦" and a tap just reassures (no server call).
+    const careNeed = asleep ? null : pet.needs.find((n) => n.kind === "unwell" || n.kind === "hungry" || n.kind === "dirty");
+    let aVerb = "", aEmoji = "✓", aLabel = "照顾好啦", aReward = "", aGlow = false;
+    if (asleep) { aEmoji = "💤"; aLabel = "睡着啦"; }
+    else if (careNeed) {
+      aVerb = careNeed.verb; aGlow = true;
+      aEmoji = VERB_META[aVerb]?.emoji ?? "🍙";
+      aLabel = (VERB_META[aVerb]?.label ?? "照顾").replace("喂喂它", "喂食").replace("洗个澡", "洗澡").replace("看医生", "看病");
+      aReward = this.rewardFor(aVerb, pet);
     }
+
+    // B = 陪伴: a context affection that is always valid in the form shown.
+    let bVerb = "play", bEmoji = "🎮", bLabel = "陪玩";
+    if (asleep) { bVerb = "sleep"; bEmoji = "🔔"; bLabel = "叫醒"; }
+    else if (sick) { bVerb = "pet"; bEmoji = "💛"; bLabel = "摸摸"; }
+    else if (avail["sleep"]) { bVerb = "sleep"; bEmoji = "🌙"; bLabel = "哄睡"; }
 
     const statBars = STAT_META.map((m) => ({ label: m.label, color: m.color, value: pet.stats[m.key] ?? 0, pct: Math.max(2, Math.min(100, pet.stats[m.key] ?? 0)) }));
     const mkActs = (verbs: string[]) => verbs.map((v) => ({ verb: v, emoji: VERB_META[v].emoji, label: VERB_META[v].label.replace("喂喂它", "喂食").replace("洗个澡", "洗澡").replace("陪它玩", "陪玩"), enabled: avail[v] !== false }));
 
     this.setData({
-      pet, theme: pet.theme || "cream", asleepNow: pet.asleepNow,
+      pet, theme: pet.theme || "cream", asleepNow: asleep,
       spriteSrc: spritePath(pet.sprite.creatureId, pet.sprite.stage, pet.sprite.mood),
       bgSrc: this.chooseBg(pet),
       animClass: IDLE_ANIM[pet.pet.archetypeKey] || "anim-bob",
       stageLabel: STAGE_CN[pet.pet.stage] || pet.pet.stage,
-      needCard, ctaVerb, ctaEmoji: VERB_META[ctaVerb]?.emoji ?? "🎮", ctaLabel, ctaReward, ctaPrimary,
-      freeVerb, freeEmoji, freeLabel,
+      needCard, aVerb, aEmoji, aLabel, aReward, aGlow, bVerb, bEmoji, bLabel,
       roadmapLine: pet.roadmap?.line ?? "", levelPct: Math.max(3, pet.evolveProgress), levelNum: pet.level,
       growthPerDay: pet.growthPerDay, hearts: [0, 1, 2, 3, 4].map((i) => (i < pet.bondHearts ? 1 : 0)),
       careActs: mkActs(CARE_ROW), funActs: mkActs(AFFECTION_ROW),
       statBars, nameInput: pet.pet.name,
     });
+
+    // teen fork: build the 4 choosable forms (preview sprites + 推荐 marker), and auto-open the
+    // chooser when the pet is waiting at the fork (unless dismissed for this load).
+    const fk = pet.fork;
+    if (fk) {
+      const opts = fk.options.map((o) => ({ ...o, sprite: spritePath(o.speciesId, "teen", "happy"), recommended: o.branch === fk.recommended }));
+      this.setData({ forkOptions: opts });
+      if (fk.pending && !this.data.showFork && !this.data.forkDismissed) this.setData({ showFork: true });
+    }
   },
 
   async doAction(verb: string) {
@@ -154,20 +178,45 @@ Page({
     }
   },
 
-  // primary CTA + free button + drawer
-  onPrimary() { this.haptic(); this.doAction(this.data.ctaVerb); },
-  onFree() { this.haptic(); this.doAction(this.data.freeVerb); },
   onDrawerAction(e: WechatMiniprogram.TouchEvent) {
     // tapping a disabled action still calls the server, which returns the friendly reason
     this.doAction(e.currentTarget.dataset.verb as string);
   },
   toggleDrawer() { this.setData({ showDrawer: !this.data.showDrawer }); },
 
-  // hardware buttons: A=照顾(do the need / gentle pet) · B=摸/叫醒 · C=路线
-  onA() { this.haptic(); this.doAction(this.data.ctaVerb); },
-  onB() { this.haptic(); this.doAction(this.data.asleepNow ? "sleep" : "pet"); },
+  // hardware buttons, each a distinct job — A=照顾(due care) · B=陪伴(陪玩/哄睡/叫醒/摸摸) · C=路线/进化.
+  onA() {
+    this.haptic();
+    if (this.data.aVerb) this.doAction(this.data.aVerb);
+    else wx.showToast({ title: this.data.asleepNow ? "它睡着啦～" : "今天照顾好啦 ✓", icon: "none" });
+  },
+  onB() { this.haptic(); this.doAction(this.data.bVerb); },
   onC() { this.haptic(); this.setData({ showRoadmap: true }); },
+  onPet() { this.haptic(); this.doAction("pet"); }, // tapping the creature itself = 摸摸
   haptic() { try { wx.vibrateShort({ type: "light" }); } catch { /* unsupported */ } },
+
+  // teen fork chooser
+  openFork() { this.setData({ showRoadmap: false, showFork: true, forkDismissed: false }); },
+  closeFork() { this.setData({ showFork: false, forkDismissed: true }); },
+  async chooseFork(e: WechatMiniprogram.TouchEvent) {
+    if (this.data.reacting) return;
+    const branch = e.currentTarget.dataset.branch as string;
+    this.setData({ reacting: true });
+    try {
+      const resp = await request<ActionResp & { evolved?: { name: string } }>({ path: "/pet/evolve", method: "POST", body: { branch } });
+      this.apply(resp);
+      this.setData({
+        showFork: false, forkDismissed: true,
+        recap: { kind: "evolve", daysAway: 0, levelFrom: resp.level, levelTo: resp.level, stageFrom: "child", stageTo: "teen", evolvedToName: resp.evolved?.name || "", expGained: 0, line: resp.line },
+      });
+    } catch (err) {
+      const e2 = err as ApiError;
+      const d = (e2.data ?? {}) as { line?: string };
+      wx.showToast({ title: d.line || "它还没准备好长大", icon: "none" });
+    } finally {
+      this.setData({ reacting: false });
+    }
+  },
 
   dismissRecap() { const hug = !!this.data.recap; this.setData({ recap: null }); if (hug) this.doAction("pet"); },
 

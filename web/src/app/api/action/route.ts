@@ -5,7 +5,6 @@ import { buildContext, buildPetView, loadRows, tickAndPersistTz } from "@/lib/pe
 import { planAction } from "@/lib/game/actions";
 import { ACTIONS, AFFECTION_NEED_BOND, CARE_NEEDS, NEED_REWARD, PET_BOND_SOFTCAP } from "@/lib/game/constants";
 import { deriveNeeds, NEED_EVENT, VERB_NEED } from "@/lib/game/needs";
-import { resolveSpecies } from "@/lib/game/evolve";
 import { creature } from "@/data/bestiary";
 import { nextStage } from "@/data/stage-table";
 import { daysBetween, localDateStr, localHour } from "@/lib/game/time";
@@ -105,21 +104,19 @@ export async function POST(req: NextRequest) {
     if (col) { await q(`UPDATE pet_state SET ${col} = ${col} + 1 WHERE pet_id=$1`, [rows.pet.id]); rows.care[verb as "feed" | "clean" | "doctor"] += 1; }
     else if (verb === "play" || verb === "pet") { await q(`UPDATE pet_state SET affection_taps = affection_taps + 1 WHERE pet_id=$1`, [rows.pet.id]); rows.care.affection += 1; }
 
-    // growth re-check + teen fork
+    // growth re-check. Promotes up to child only — the child→teen fork is a deliberate player
+    // choice handled by POST /api/pet/evolve, never auto-resolved from care here.
     let stage: Stage = rows.pet.stage;
     let promoted: Stage | null = null;
-    let species = rows.pet.species_id;
     const days = daysBetween(Date.parse(rows.pet.created_at), now);
     let nx = nextStage(stage);
-    while (nx && s.exp >= nx.expReq && days >= nx.minDays && s.bond >= nx.bondGate) {
+    while (nx && nx.stage !== "teen" && s.exp >= nx.expReq && days >= nx.minDays && s.bond >= nx.bondGate) {
       stage = nx.stage; promoted = nx.stage;
-      if (nx.stage === "teen") species = resolveSpecies(rows.pet.archetype_key, rows.care);
       nx = nextStage(stage);
     }
     if (promoted) await q(`UPDATE pet SET stage=$2 WHERE id=$1`, [rows.pet.id, stage]);
-    if (species !== rows.pet.species_id) await q(`UPDATE pet SET species_id=$2 WHERE id=$1`, [rows.pet.id, species]);
 
-    const rows2 = { ...rows, pet: { ...rows.pet, stage, species_id: species }, state: s };
+    const rows2 = { ...rows, pet: { ...rows.pet, stage }, state: s };
     const ctx = buildContext(rows2, now, tz);
     const line = plan.event === "pet.sleeping"
       ? "（它在梦里蹭了蹭你的手，小声哼唧了一下～）"

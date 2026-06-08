@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS pet_state (
   cleanliness INTEGER NOT NULL DEFAULT 80 CHECK (cleanliness BETWEEN 0 AND 100),
   energy      INTEGER NOT NULL DEFAULT 80 CHECK (energy      BETWEEN 0 AND 100),
   health      INTEGER NOT NULL DEFAULT 80 CHECK (health      BETWEEN 0 AND 100),  -- 80 == egg cap
-  bond        INTEGER NOT NULL DEFAULT 0  CHECK (bond BETWEEN 0 AND 1000),
+  bond        INTEGER NOT NULL DEFAULT 150 CHECK (bond BETWEEN 0 AND 1000),  -- INITIAL_BOND: newborn isn't a stranger
   exp         BIGINT  NOT NULL DEFAULT 0  CHECK (exp >= 0),
   last_tick   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   state_flags INTEGER NOT NULL DEFAULT 0,                    -- SICK=1 SULKING=2 HIDING=4 LONELY=8

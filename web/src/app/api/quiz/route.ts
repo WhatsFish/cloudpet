@@ -3,6 +3,7 @@ import { withTx } from "@/lib/db";
 import { getUserId } from "@/lib/auth";
 import { scoreQuiz } from "@/lib/game/quiz";
 import { creature } from "@/data/bestiary";
+import { INITIAL_BOND } from "@/lib/game/constants";
 import { QUIZ, SCORED_QUESTION_IDS } from "@/data/quiz-questions";
 
 export const dynamic = "force-dynamic";
@@ -71,7 +72,9 @@ export async function POST(req: NextRequest) {
       const id = pet[0].id;
 
       // pet_state / pet_cooldown use schema defaults = egg start values + 3 care charges.
-      await q(`INSERT INTO pet_state (pet_id) VALUES ($1)`, [id]);
+      // bond is seeded to INITIAL_BOND so a newborn already shows ~1 heart (the quiz + naming
+      // + hatch built a first bond), not a cold 0.
+      await q(`INSERT INTO pet_state (pet_id, bond) VALUES ($1, $2)`, [id, INITIAL_BOND]);
       await q(`INSERT INTO pet_cooldown (pet_id) VALUES ($1)`, [id]);
       return id;
     });

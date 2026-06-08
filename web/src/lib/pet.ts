@@ -5,10 +5,10 @@ import type { Tx } from "@/lib/db";
 import { query } from "@/lib/db";
 import type { ActionAvailability, CareCounts, CopyContext, NeedKind, PetRow, PetView, Recap, Roadmap, Snapshot, Stage, Verb } from "@/lib/types";
 import { creature } from "@/data/bestiary";
-import { capForStage, expForNextStage, nextStage } from "@/data/stage-table";
+import { capForStage, expForNextStage, nextStage, pendingTeenFork } from "@/data/stage-table";
 import { ACTIONS, CARE_COVERED_AT, NIGHT_FROM, NIGHT_TO, SLEEPY_ENERGY } from "@/lib/game/constants";
 import { recompute } from "@/lib/game/tick";
-import { nurtureTilt, resolveSpecies, speciesName } from "@/lib/game/evolve";
+import { careBranch, forkOptions, nurtureTilt, speciesName } from "@/lib/game/evolve";
 import { deriveNeeds, passiveRatePerHour, VERB_NEED, type NeedTimes } from "@/lib/game/needs";
 import { expToReach, levelFromExp, levelProgress } from "@/lib/game/levels";
 import { badges, dominant, moodBand } from "@/lib/game/state";
@@ -92,12 +92,9 @@ export async function tickAndPersistTz(
      out.s.bond, out.s.exp, out.s.last_tick, out.s.state_flags, out.s.state_since, out.s.asleep, out.s.sleep_since],
   );
   if (out.promoted) await q(`UPDATE pet SET stage=$2 WHERE id=$1`, [rows.pet.id, out.stage]);
-  // V3: the teen fork may diverge the species — persist the resolved form.
-  const species = out.resolvedSpecies ?? rows.pet.species_id;
-  if (out.resolvedSpecies && out.resolvedSpecies !== rows.pet.species_id) {
-    await q(`UPDATE pet SET species_id=$2 WHERE id=$1`, [rows.pet.id, out.resolvedSpecies]);
-  }
-  return { rows: { ...rows, pet: { ...rows.pet, stage: out.stage, species_id: species }, state: out.s }, promoted: out.promoted };
+  // The child→teen fork (which diverges species_id) is a deliberate player choice handled by
+  // POST /api/pet/evolve, never the passive tick — so species_id is untouched here.
+  return { rows: { ...rows, pet: { ...rows.pet, stage: out.stage }, state: out.s }, promoted: out.promoted };
 }
 
 export function behaviorPattern(streakDays: number, noInteractionH: number, band: string): string[] {
@@ -194,7 +191,7 @@ export function buildRoadmap(rows: Rows, nowMs: number): Roadmap {
   const dailyEst = passiveRatePerHour(state, capForStage(pet.stage)) * 24 + 120; // passive + nominal active
   const etaDays = Math.max(daysRemaining, Math.ceil(expRemaining / Math.max(1, dailyEst)));
   const toTeen = nxt.stage === "teen";
-  const towardName = toTeen ? speciesName(resolveSpecies(pet.archetype_key, rows.care)) : speciesName(pet.archetype_key);
+  const towardName = toTeen ? "由你选择的样子" : speciesName(pet.archetype_key);
   const stage = { stage: nxt.stage, towardName, expReq: nxt.expReq, minDays: nxt.minDays, bondGate: nxt.bondGate, expRemaining, daysRemaining, bondRemaining, unmet, etaDays };
 
   const parts: string[] = [];
@@ -202,7 +199,7 @@ export function buildRoadmap(rows: Rows, nowMs: number): Roadmap {
   if (bondRemaining > 0) parts.push(`亲密度还差 ${bondRemaining}`);
   if (expRemaining > 0 && daysRemaining === 0) parts.push(`经验还差 ${expRemaining}`);
   const cond = parts.length ? parts.join("、") : "马上就";
-  const line = `${cond} → ${toTeen ? `长成「${towardName}」` : `长大到${STAGE_CN[nxt.stage]}`}`;
+  const line = `${cond} → ${toTeen ? "长大成少年，样子由你来选" : `长大到${STAGE_CN[nxt.stage]}`}`;
   return { level, stage, line };
 }
 
@@ -219,6 +216,7 @@ export function buildPetView(rows: Rows, o: ViewOpts): PetView {
   const { pet, state, cooldown } = rows;
   const dom = dominant(state, state.asleep);
   const daysKnown = Math.max(1, Math.floor(daysBetween(Date.parse(pet.created_at), o.nowMs)) + 1);
+  const days = daysBetween(Date.parse(pet.created_at), o.nowMs);
   const level = levelFromExp(state.exp);
   const hour = localHour(o.nowMs, o.tz);
   const needs = deriveNeeds(state, rows.needTimes, o.nowMs, o.tz, state.asleep);
@@ -250,6 +248,11 @@ export function buildPetView(rows: Rows, o: ViewOpts): PetView {
     voice: o.voice,
     actions: actionAvailability(pet.stage, state, needs.map((n) => n.kind), hour),
     nurtureTilt: nurtureTilt(pet.archetype_key, rows.care),
+    fork: {
+      pending: pendingTeenFork(pet.stage, state.exp, state.bond, days),
+      recommended: careBranch(rows.care),
+      options: forkOptions(pet.archetype_key),
+    },
   };
 }
 

@@ -73,17 +73,10 @@ page { font-family: "Zpix", "PingFang SC", -apple-system, "Microsoft YaHei", san
 @keyframes eat { 0%,100%{transform:scale(1);} 22%{transform:scale(1.08,0.92) translateY(4rpx);} 48%{transform:scale(0.95,1.06);} 72%{transform:scale(1.03,0.98);} }
 .anim-squish{animation:squish 0.55s ease;} .anim-hop{animation:hop 0.62s ease;} .anim-eat{animation:eat 0.5s ease;}
 
-/* ===== primary CTA + free affection ===== */
-.cta-row { display:flex; gap:16rpx; margin-top:18rpx; }
-.cta { flex:1; display:flex; align-items:center; justify-content:center; gap:10rpx; height:92rpx; border-radius:20rpx; background:var(--hi); border:2rpx solid var(--rim); }
-.cta--need { background:#fff; border:3rpx solid var(--accent); box-shadow:0 0 0 4rpx rgba(232,132,91,0.18), 0 6rpx 0 var(--rim); }
-.cta:active { transform:translateY(3rpx); }
-.cta-emoji { font-size:40rpx; }
-.cta-label { font-size:32rpx; font-weight:700; color:var(--shell-ink); }
-.cta-reward { font-size:22rpx; font-weight:700; color:var(--accent); background:rgba(232,132,91,0.14); border-radius:8rpx; padding:2rpx 8rpx; }
-.free-btn { width:150rpx; height:92rpx; border-radius:20rpx; background:var(--btn); border:2rpx solid var(--rim); display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:0 6rpx 0 var(--rim); }
-.free-btn:active { transform:translateY(3rpx); box-shadow:0 3rpx 0 var(--rim); }
-.free-emoji { font-size:34rpx; } .free-lab { font-size:20rpx; color:#fff; margin-top:2rpx; }
+/* tapping the creature itself (or the need card) = 摸摸 */
+.stage-wrap { transition:transform 0.12s ease; }
+.stage-wrap:active { transform:scale(0.97); }
+.needcard:active { background:rgba(255,255,255,0.82); }
 
 /* ===== more drawer ===== */
 .handle { text-align:center; font-size:23rpx; color:var(--shell-ink); margin:16rpx 0 0; padding:8rpx; opacity:0.85; }
@@ -99,11 +92,18 @@ page { font-family: "Zpix", "PingFang SC", -apple-system, "Microsoft YaHei", san
 .dchip { flex:1; min-width:140rpx; text-align:center; font-size:22rpx; color:var(--shell-ink); background:rgba(255,255,255,0.4); border-radius:12rpx; padding:12rpx 0; }
 .dchip:active { background:#fff; }
 
-/* ===== A/B/C buttons ===== */
-.buttons { display:flex; justify-content:center; gap:56rpx; margin-top:22rpx; }
-.abtn { width:96rpx; height:96rpx; border-radius:999rpx; background:var(--btn); border:5rpx solid var(--rim); display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:0 6rpx 0 var(--rim), inset 0 4rpx 0 rgba(255,255,255,0.4); }
+/* ===== A/B/C buttons — each a distinct job (A 照顾 · B 陪伴 · C 路线/进化) ===== */
+.buttons { display:flex; justify-content:center; gap:22rpx; margin-top:22rpx; }
+.abtn { position:relative; flex:1; max-width:200rpx; min-height:128rpx; border-radius:28rpx; background:var(--btn); border:4rpx solid var(--rim); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2rpx; box-shadow:0 6rpx 0 var(--rim), inset 0 4rpx 0 rgba(255,255,255,0.35); }
 .abtn:active { transform:translateY(4rpx); box-shadow:0 2rpx 0 var(--rim); }
-.ab { color:#fff; font-weight:800; font-size:34rpx; } .blabel { color:#fff; font-size:18rpx; opacity:0.9; }
+.abtn--need { background:#fff; border:4rpx solid var(--accent); box-shadow:0 0 0 4rpx rgba(232,132,91,0.16), 0 6rpx 0 var(--rim); }
+.abtn--off { opacity:0.55; }
+.abk { font-size:20rpx; font-weight:800; color:rgba(255,255,255,0.7); letter-spacing:1rpx; }
+.abtn--need .abk { color:var(--accent); }
+.abe { font-size:46rpx; line-height:1; }
+.abl { font-size:21rpx; color:#fff; opacity:0.95; }
+.abtn--need .abl { color:var(--shell-ink); font-weight:700; opacity:1; }
+.abr { position:absolute; top:-12rpx; right:-6rpx; font-size:19rpx; font-weight:700; color:#fff; background:var(--accent); border-radius:999rpx; padding:2rpx 10rpx; box-shadow:0 2rpx 6rpx rgba(0,0,0,0.15); }
 
 /* ===== modals ===== */
 .mask { position:fixed; left:0; top:0; right:0; bottom:0; background:rgba(40,30,20,0.45); display:flex; align-items:center; justify-content:center; z-index:50; }
@@ -134,3 +134,18 @@ page { font-family: "Zpix", "PingFang SC", -apple-system, "Microsoft YaHei", san
 .recap-line { font-size:27rpx; color:#5A4E42; text-align:center; line-height:1.5; }
 .recap-meta { font-size:23rpx; color:#A89B8C; margin-top:10rpx; }
 .recap-btn { margin-top:24rpx; background:#E8845B; color:#fff; border-radius:999rpx; padding:18rpx 56rpx; font-size:28rpx; }
+
+/* ===== teen fork chooser ===== */
+.forkpanel { width:640rpx; background:#FFFDF7; border-radius:28rpx; padding:30rpx 26rpx; }
+.fork-title { font-size:34rpx; font-weight:800; color:var(--accent,#E8845B); text-align:center; }
+.fork-sub { font-size:23rpx; color:#8A7D6E; text-align:center; margin:8rpx 0 20rpx; line-height:1.5; }
+.fork-grid { display:flex; flex-wrap:wrap; gap:18rpx; justify-content:center; }
+.fork-card { width:280rpx; box-sizing:border-box; background:#FBF4E8; border:3rpx solid transparent; border-radius:20rpx; padding:14rpx 12rpx 16rpx; display:flex; flex-direction:column; align-items:center; }
+.fork-card:active { background:#fff; transform:translateY(2rpx); }
+.fork-card--rec { border-color:var(--accent,#E8845B); box-shadow:0 0 0 3rpx rgba(232,132,91,0.14); }
+.fork-img { width:148rpx; height:148rpx; image-rendering:pixelated; }
+.fork-name { font-size:26rpx; font-weight:700; color:#5A4E42; margin-top:6rpx; display:flex; align-items:center; gap:8rpx; }
+.fork-rec { font-size:18rpx; font-weight:700; color:#fff; background:var(--accent,#E8845B); border-radius:999rpx; padding:1rpx 10rpx; }
+.fork-blurb { font-size:21rpx; color:#8A7D6E; text-align:center; line-height:1.4; margin-top:4rpx; }
+.fork-cancel { margin-top:22rpx; text-align:center; background:#EFE6D8; color:#6A5E50; border-radius:999rpx; padding:16rpx; font-size:25rpx; }
+.fork-open { margin-top:16rpx; text-align:center; background:var(--accent,#E8845B); color:#fff; border-radius:999rpx; padding:18rpx; font-size:26rpx; font-weight:700; }

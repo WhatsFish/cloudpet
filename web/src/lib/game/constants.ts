@@ -95,6 +95,11 @@ export const CHECKIN_BOND = 8; // auto check-in on first open
 export const CARE_COVERED_AT = 30; // careCoveredToday = all of satiety/cleanliness/health >= 30
 export const OVERFEED_ABOVE = 80; // feed past this → feed.overfed flavor
 
+// New pets aren't strangers: the quiz + naming + hatch already built a first bond. Starts
+// at ~1 heart (bondHearts = round(bond/200)); clears the child bond gate (60) so early
+// growth is smooth, yet stays under the teen gate (180) so bonding still matters.
+export const INITIAL_BOND = 150;
+
 // --- actions: 3 buttons. care = battery-gated growth; play/pet/sleep = free ---
 export type ActionDef = {
   verb: Verb;

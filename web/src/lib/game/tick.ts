@@ -5,7 +5,6 @@
 import type { CareCounts, Snapshot, Stage } from "@/lib/types";
 import { STATE } from "@/lib/types";
 import type { BestiaryEntry } from "@/data/bestiary";
-import { resolveSpecies } from "./evolve";
 import {
   DECAY, DH_CAP, ENERGY_REGEN, H, HEALTH, HEALTH_FLOOR, LIVE_FLOOR,
   M_BOND_MAX_REDUCTION, M_SICK, M_SLEEP, M_STAGE, PASSIVE_WINDOW_CAP,
@@ -34,7 +33,6 @@ export type RecomputeOut = {
   stage: Stage;
   promoted: Stage | null;
   sick: boolean;
-  resolvedSpecies: string | null; // V3: set when promoting into teen (the divergent form)
 };
 
 export function recompute(inp: RecomputeIn): RecomputeOut {
@@ -149,16 +147,15 @@ export function recompute(inp: RecomputeIn): RecomputeOut {
     s.state_flags = flags;
   }
 
-  // growth promotion (may chain), capped at MAX_STAGE_V1 via nextStage(). When the pet
-  // crosses into teen, resolve the divergent form from its care history (V3 fork).
+  // growth promotion (may chain). Auto-promotes only up to child — the child→teen fork is a
+  // deliberate player choice made in a modal (POST /api/pet/evolve), so the passive tick
+  // never crosses into teen. A child that meets the teen gates waits at the fork.
   let promoted: Stage | null = null;
-  let resolvedSpecies: string | null = null;
   const days = daysBetween(inp.createdAtMs, nowMs);
   let nxt = nextStage(stage);
-  while (nxt && s.exp >= nxt.expReq && days >= nxt.minDays && s.bond >= nxt.bondGate) {
+  while (nxt && nxt.stage !== "teen" && s.exp >= nxt.expReq && days >= nxt.minDays && s.bond >= nxt.bondGate) {
     stage = nxt.stage;
     promoted = nxt.stage;
-    if (nxt.stage === "teen") resolvedSpecies = resolveSpecies(inp.seedArchetype, inp.care);
     nxt = nextStage(stage);
   }
 
@@ -171,5 +168,5 @@ export function recompute(inp: RecomputeIn): RecomputeOut {
   s.bond = Math.round(s.bond);
   s.last_tick = new Date(nowMs).toISOString();
 
-  return { s, stage, promoted, sick: (s.state_flags & STATE.SICK) !== 0, resolvedSpecies };
+  return { s, stage, promoted, sick: (s.state_flags & STATE.SICK) !== 0 };
 }

@@ -56,3 +56,13 @@ export function nextStage(stage: Stage): StageDef | null {
 export function expForNextStage(stage: Stage): number | null {
   return nextStage(stage)?.expReq ?? null;
 }
+
+/**
+ * True when a child pet has met ALL teen gates (exp + real days + bond) and is therefore
+ * waiting at the child→teen fork. The fork is NOT crossed automatically — the player picks
+ * the teen form in a modal (POST /api/pet/evolve). Returns false for any non-child stage.
+ */
+export function pendingTeenFork(stage: Stage, exp: number, bond: number, days: number): boolean {
+  const nxt = nextStage(stage);
+  return !!nxt && nxt.stage === "teen" && exp >= nxt.expReq && days >= nxt.minDays && bond >= nxt.bondGate;
+}

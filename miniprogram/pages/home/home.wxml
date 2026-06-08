@@ -12,7 +12,7 @@
         <text class="roadtxt">{{roadmapLine}}</text>
       </view>
 
-      <view class="stage-wrap">
+      <view class="stage-wrap" bindtap="onPet">
         <image class="sprite {{animClass}}" src="{{spriteSrc}}" mode="aspectFit" binderror="onSpriteError" />
         <view wx:for="{{particles}}" wx:key="key" class="particle" style="left:{{item.x}}rpx; --rot:{{item.rot}}deg; animation-delay:{{item.delay}}ms">{{item.emoji}}</view>
         <view wx:if="{{floatTag}}" class="floattag">{{floatTag}}</view>
@@ -27,16 +27,7 @@
         <text class="growth">📈 +{{growthPerDay}}/天</text>
       </view>
 
-      <view class="needcard">{{needCard}}</view>
-    </view>
-
-    <view class="cta-row">
-      <view class="cta {{ctaPrimary ? 'cta--need' : ''}}" bindtap="onPrimary">
-        <text class="cta-emoji">{{ctaEmoji}}</text>
-        <text class="cta-label">{{ctaLabel}}</text>
-        <text wx:if="{{ctaReward}}" class="cta-reward">{{ctaReward}}</text>
-      </view>
-      <view class="free-btn" bindtap="onFree"><text class="free-emoji">{{freeEmoji}}</text><text class="free-lab">{{freeLabel}}</text></view>
+      <view class="needcard" bindtap="onPet">{{needCard}}</view>
     </view>
 
     <view class="handle" bindtap="toggleDrawer">{{showDrawer ? '收起 ▾' : '更多操作 ▸'}}</view>
@@ -62,9 +53,22 @@
     </view>
 
     <view class="buttons">
-      <view class="abtn" bindtap="onA"><text class="ab">A</text><text class="blabel">{{ctaPrimary ? '照顾' : (asleepNow ? '摸摸' : '玩')}}</text></view>
-      <view class="abtn" bindtap="onB"><text class="ab">B</text><text class="blabel">{{asleepNow ? '叫醒' : '摸摸'}}</text></view>
-      <view class="abtn" bindtap="onC"><text class="ab">C</text><text class="blabel">路线</text></view>
+      <view class="abtn {{aGlow ? 'abtn--need' : ''}} {{aVerb ? '' : 'abtn--off'}}" bindtap="onA">
+        <text class="abk">A</text>
+        <text class="abe">{{aEmoji}}</text>
+        <text class="abl">{{aLabel}}</text>
+        <text wx:if="{{aReward}}" class="abr">{{aReward}}</text>
+      </view>
+      <view class="abtn" bindtap="onB">
+        <text class="abk">B</text>
+        <text class="abe">{{bEmoji}}</text>
+        <text class="abl">{{bLabel}}</text>
+      </view>
+      <view class="abtn {{pet.fork.pending ? 'abtn--need' : ''}}" bindtap="onC">
+        <text class="abk">C</text>
+        <text class="abe">🧬</text>
+        <text class="abl">{{pet.fork.pending ? '可进化' : '路线'}}</text>
+      </view>
     </view>
   </view>
 
@@ -73,7 +77,7 @@
       <view class="recap-title">我长大啦！</view>
       <image class="recap-sprite" src="{{spriteSrc}}" mode="aspectFit" binderror="onSpriteError" />
       <view class="recap-line">{{recap.line}}</view>
-      <view class="recap-meta">Lv{{recap.levelFrom}} → Lv{{recap.levelTo}}<block wx:if="{{recap.evolvedToName}}"> · 长成「{{recap.evolvedToName}}」</block></view>
+      <view class="recap-meta"><block wx:if="{{recap.levelTo > recap.levelFrom}}">Lv{{recap.levelFrom}} → Lv{{recap.levelTo}} </block><block wx:if="{{recap.evolvedToName}}">长成「{{recap.evolvedToName}}」</block></view>
       <view class="recap-btn" bindtap="dismissRecap">抱抱它 💛</view>
     </view>
   </view>
@@ -86,7 +90,23 @@
       <view class="srow2">每天自然成长约 +{{growthPerDay}} 经验（养得越好长得越快）</view>
       <view class="srow2">养育倾向：{{pet.nurtureTilt.label}}</view>
       <view class="srow2">亲密度 {{pet.bond}}/1000 · 连续 {{pet.streakDays}} 天</view>
+      <view wx:if="{{pet.fork.pending}}" class="fork-open" bindtap="openFork">✨ 它准备好长大了，选择它的样子 →</view>
       <view class="pbtn" bindtap="closeModals">知道啦</view>
+    </view>
+  </view>
+
+  <view wx:if="{{showFork}}" class="mask" bindtap="closeFork">
+    <view class="forkpanel" catchtap="noop">
+      <view class="fork-title">它准备好长大啦！</view>
+      <view class="fork-sub">你希望它长成哪一种？选定后就不能再改咯～</view>
+      <view class="fork-grid">
+        <view wx:for="{{forkOptions}}" wx:key="branch" class="fork-card {{item.recommended ? 'fork-card--rec' : ''}}" data-branch="{{item.branch}}" bindtap="chooseFork">
+          <image class="fork-img" src="{{item.sprite}}" mode="aspectFit" binderror="onSpriteError" />
+          <view class="fork-name">{{item.name}}<text wx:if="{{item.recommended}}" class="fork-rec">推荐</text></view>
+          <view class="fork-blurb">{{item.blurb}}</view>
+        </view>
+      </view>
+      <view class="fork-cancel" bindtap="closeFork">我再想想</view>
     </view>
   </view>
 

@@ -58,6 +58,31 @@ export function reachableFor(line: string): string[] {
   return [line, ...Object.values(L.branches).map((b) => `${line}__${b.variant}`)];
 }
 
+// --- explicit fork (V8): the child→teen form is the player's deliberate choice, made in a
+// modal at the fork (POST /api/pet/evolve), not auto-derived from care ratios. careBranch
+// still computes the care lean — used only as a "推荐" hint on the chooser. ---
+
+// species_id for a chosen branch. balanced → the line's own true form.
+export function speciesForBranch(line: string, branch: NurtureLean): string {
+  if (branch === "balanced") return line;
+  const variant = LINES[line]?.branches?.[branch]?.variant;
+  return variant ? `${line}__${variant}` : line;
+}
+
+export type ForkOption = { branch: NurtureLean; speciesId: string; name: string; blurb: string };
+
+// The 4 forms a line can fork into: its true form + the 3 branch variants. Drives the
+// fork-choice modal (and a read-only preview in the roadmap panel).
+export function forkOptions(line: string): ForkOption[] {
+  const L = LINES[line];
+  if (!L) return [{ branch: "balanced", speciesId: line, name: speciesName(line), blurb: "" }];
+  const branches: CareBranch[] = ["feed", "engage", "tend"];
+  return [
+    { branch: "balanced", speciesId: line, name: L.name, blurb: L.trueBlurb },
+    ...branches.map((b) => ({ branch: b as NurtureLean, speciesId: `${line}__${L.branches[b].variant}`, name: L.branches[b].name, blurb: L.branches[b].blurb })),
+  ];
+}
+
 const LEAN_CN: Record<CareBranch, string> = { feed: "喂食", engage: "洗澡梳理", tend: "看医生" };
 
 // The legibility surface: which care leans hardest + where it is heading. Shown on the
@@ -72,9 +97,9 @@ export function nurtureTilt(line: string, care: CareCounts): NurtureTilt {
     : { feed: 0, clean: 0, doctor: 0, affection: 0 };
 
   let label: string;
-  if (total < 6) label = "再多照顾它几次，就能看出它在往哪儿长啦 🌱";
-  else if (leaning === "balanced") label = `照顾得很均衡 → 正长成本来的样子「${towardName}」`;
-  else label = `你更常${LEAN_CN[leaning as CareBranch]} → 正长成「${towardName}」`;
+  if (total < 6) label = "长大成少年时，你可以亲手选它的样子 🌱";
+  else if (leaning === "balanced") label = `照顾得很均衡 → 长大时推荐本来的样子「${towardName}」（最终由你选）`;
+  else label = `你更常${LEAN_CN[leaning as CareBranch]} → 长大时推荐「${towardName}」（最终由你选）`;
 
   return { leaning, towardSpeciesId: toward, towardName, shares, label };
 }
