@@ -118,6 +118,14 @@ export const OVERFEED_ABOVE = 80; // feed past this → feed.overfed flavor
 // growth is smooth, yet stays under the teen gate (180) so bonding still matters.
 export const INITIAL_BOND = 150;
 
+// A newborn must have something to DO on first open, or a brand-new user lands on a pet that
+// needs nothing and there's no first experience at all. So it hatches a little HUNGRY and DIRTY
+// (the two friendly, obvious needs) — but healthy, rested and content (no scary sick/sleepy/
+// sulky newborn). Hunger is tuned to take TWO feeds to clear: satiety 15 → +25 → 40 (still
+// < NEED_THRESH.hungry 45, so still hungry) → +25 → 65 (satisfied). Each satisfied need pays the
+// full NEED_REWARD, so the first session is three juicy reward bursts (feed, feed, wash).
+export const NEWBORN_STATS = { satiety: 15, cleanliness: 28, mood: 62, energy: 82, health: 82 };
+
 // --- 体重 / 体型 (V8): grows a little every day (faster when well-cared) + a bit per feed,
 // up to a per-stage soft cap. Drives the displayed body size, so the pet visibly gets
 // bigger over real days — a steady, legible sense of "它在我手里一天天长大". ---

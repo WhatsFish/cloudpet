@@ -3,7 +3,7 @@ import { withTx } from "@/lib/db";
 import { getUserId } from "@/lib/auth";
 import { scoreQuiz } from "@/lib/game/quiz";
 import { creature } from "@/data/bestiary";
-import { INITIAL_BOND } from "@/lib/game/constants";
+import { INITIAL_BOND, NEWBORN_STATS } from "@/lib/game/constants";
 import { QUIZ, SCORED_QUESTION_IDS } from "@/data/quiz-questions";
 
 export const dynamic = "force-dynamic";
@@ -71,10 +71,18 @@ export async function POST(req: NextRequest) {
       );
       const id = pet[0].id;
 
-      // pet_state / pet_cooldown use schema defaults = egg start values + 3 care charges.
       // bond is seeded to INITIAL_BOND so a newborn already shows ~1 heart (the quiz + naming
-      // + hatch built a first bond), not a cold 0.
-      await q(`INSERT INTO pet_state (pet_id, bond) VALUES ($1, $2)`, [id, INITIAL_BOND]);
+      // + hatch built a first bond), not a cold 0. The live stats are seeded LOW-ish from
+      // NEWBORN_STATS so the pet hatches hungry + a little dirty — a real first-session loop
+      // (feed twice + wash) instead of a pet that needs nothing. pet_cooldown uses defaults.
+      // need_wants_at = NOW() so a JUST-hatched pet isn't already "sleepy" if onboarding happens
+      // at night (sleepy has a 12h cooldown off this anchor) — the first session stays focused on
+      // the two friendly needs, feed + wash, regardless of the hour.
+      await q(
+        `INSERT INTO pet_state (pet_id, bond, satiety, cleanliness, mood, energy, health, need_wants_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())`,
+        [id, INITIAL_BOND, NEWBORN_STATS.satiety, NEWBORN_STATS.cleanliness, NEWBORN_STATS.mood, NEWBORN_STATS.energy, NEWBORN_STATS.health],
+      );
       await q(`INSERT INTO pet_cooldown (pet_id) VALUES ($1)`, [id]);
       return id;
     });
