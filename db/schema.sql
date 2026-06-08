@@ -151,3 +151,40 @@ CREATE TABLE IF NOT EXISTS sub_grant (
   consumed_at TIMESTAMPTZ
 );
 CREATE INDEX IF NOT EXISTS idx_sub_unconsumed ON sub_grant (user_id) WHERE consumed = FALSE;
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Forward migrations. CREATE TABLE IF NOT EXISTS above is a no-op on a DB that
+-- predates a column, so every column added after a table first shipped must ALSO
+-- be an idempotent ALTER here, or a fresh `bootstrap.sh` against an old DB drifts
+-- from the code (loadRows would SELECT a column that doesn't exist → 500 on every
+-- read). All ADD COLUMN IF NOT EXISTS / SET DEFAULT are no-ops on an up-to-date DB.
+-- ─────────────────────────────────────────────────────────────────────────────
+
+-- pet_state: V3 care history
+ALTER TABLE pet_state ADD COLUMN IF NOT EXISTS care_feed      INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE pet_state ADD COLUMN IF NOT EXISTS care_clean     INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE pet_state ADD COLUMN IF NOT EXISTS care_doctor    INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE pet_state ADD COLUMN IF NOT EXISTS affection_taps INTEGER NOT NULL DEFAULT 0;
+-- pet_state: V4 needs loop
+ALTER TABLE pet_state ADD COLUMN IF NOT EXISTS need_fed_at    TIMESTAMPTZ;
+ALTER TABLE pet_state ADD COLUMN IF NOT EXISTS need_clean_at  TIMESTAMPTZ;
+ALTER TABLE pet_state ADD COLUMN IF NOT EXISTS need_bored_at  TIMESTAMPTZ;
+ALTER TABLE pet_state ADD COLUMN IF NOT EXISTS need_unwell_at TIMESTAMPTZ;
+ALTER TABLE pet_state ADD COLUMN IF NOT EXISTS need_wants_at  TIMESTAMPTZ;
+ALTER TABLE pet_state ADD COLUMN IF NOT EXISTS pet_taps_today INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE pet_state ADD COLUMN IF NOT EXISTS taps_day       DATE;
+-- pet_state: V8 体型 + 灵感火花
+ALTER TABLE pet_state ADD COLUMN IF NOT EXISTS weight    INTEGER NOT NULL DEFAULT 100;
+ALTER TABLE pet_state ADD COLUMN IF NOT EXISTS sparks    INTEGER NOT NULL DEFAULT 3;
+ALTER TABLE pet_state ADD COLUMN IF NOT EXISTS sparks_at TIMESTAMPTZ;
+-- bond: newborns start warm (INITIAL_BOND) — retrofit the default for old DBs.
+ALTER TABLE pet_state ALTER COLUMN bond SET DEFAULT 150;
+
+-- pet_cooldown: V2 care battery (dormant) + V8.3 streak-milestone high-water mark.
+ALTER TABLE pet_cooldown ADD COLUMN IF NOT EXISTS care_charges       INTEGER NOT NULL DEFAULT 3;
+ALTER TABLE pet_cooldown ADD COLUMN IF NOT EXISTS charges_updated_at TIMESTAMPTZ;
+-- max_streak_reached gates the day7/day30 EXP bonus to once-ever, so a halve-and-reclimb past
+-- an already-passed milestone never re-grants. Backfill to the current streak so existing pets
+-- that already passed a milestone don't get paid again on their next reclimb.
+ALTER TABLE pet_cooldown ADD COLUMN IF NOT EXISTS max_streak_reached INTEGER NOT NULL DEFAULT 0;
+UPDATE pet_cooldown SET max_streak_reached = streak_days WHERE max_streak_reached < streak_days;

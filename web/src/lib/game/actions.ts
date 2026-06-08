@@ -24,6 +24,7 @@ export type CooldownRow = {
   last_active_date: string | null;
   care_charges: number;
   charges_updated_at: string | null;
+  max_streak_reached: number;
 };
 
 export type ActionInput = {

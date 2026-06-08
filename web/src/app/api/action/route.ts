@@ -4,7 +4,7 @@ import { getUserId } from "@/lib/auth";
 import { buildContext, buildPetView, loadRows, tickAndPersistTz } from "@/lib/pet";
 import { planAction } from "@/lib/game/actions";
 import { ACTIONS, AFFECTION_NEED_BOND, CARE_NEEDS, NEED_REWARD, PET_BOND_SOFTCAP, WEIGHT_FEED, WEIGHT_STAGE_MAX } from "@/lib/game/constants";
-import { deriveNeeds, NEED_EVENT, VERB_NEED } from "@/lib/game/needs";
+import { deriveDueKinds, NEED_EVENT, VERB_NEED } from "@/lib/game/needs";
 import { creature } from "@/data/bestiary";
 import { effectiveMinDays, nextStage } from "@/data/stage-table";
 import { daysBetween, localDateStr, localHour } from "@/lib/game/time";
@@ -56,8 +56,7 @@ export async function POST(req: NextRequest) {
     const c = creature(rows.pet.species_id);
     const pack = getPack(rows.pet.archetype_key);
 
-    const dueNeeds = deriveNeeds(rows.state, rows.needTimes, now, tz, rows.state.asleep);
-    const dueKinds = dueNeeds.map((n) => n.kind);
+    const dueKinds = deriveDueKinds(rows.state, rows.needTimes, now, tz, rows.state.asleep);
     const wasAsleep = rows.state.asleep;
     const plan = planAction({ verb, stage: rows.pet.stage, state: rows.state, creature: c, nowMs: now, localHour: hour, dueKinds });
     if (!plan.ok) {

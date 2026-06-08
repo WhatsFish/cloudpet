@@ -40,7 +40,10 @@ export function isNightHour(hour: number): boolean { return hour >= NIGHT_FROM |
 // threshold" — it arises organically as the stat decays over time, with no meal window or
 // cooldown. Care needs surface EVEN WHILE ASLEEP (so feeding/washing can gently wake the pet —
 // see planAction). sleepy stays a night signal; bored is mood-based and only while awake.
-export function deriveNeeds(s: Snapshot, t: NeedTimes, nowMs: number, tzOffsetMin: number, asleep: boolean): Need[] {
+// The FULL, priority-ordered set of due needs — NOT capped. This is the authoritative input
+// for CARE GATING (which actions are allowed, the care countdowns): a genuinely-due need must
+// never be dropped, or the user couldn't e.g. wash a dirty pet when 病/饿/困 also coincide.
+export function deriveDueKinds(s: Snapshot, t: NeedTimes, nowMs: number, tzOffsetMin: number, asleep: boolean): NeedKind[] {
   const hour = localHour(nowMs, tzOffsetMin);
   const night = isNightHour(hour);
   const sick = (s.state_flags & STATE.SICK) !== 0;
@@ -57,7 +60,14 @@ export function deriveNeeds(s: Snapshot, t: NeedTimes, nowMs: number, tzOffsetMi
     if (!night && s.mood < NEED_THRESH.bored) out.push("bored");
   }
 
-  return NEED_PRIORITY.filter((k) => out.includes(k))
+  return NEED_PRIORITY.filter((k) => out.includes(k)); // ordered, uncapped
+}
+
+// The DISPLAY needs — capped at NEED_MAX_ACTIVE for the home card / topNeed. The cap is purely
+// cosmetic (don't show a wall of needs); it must NOT gate which care actions are reachable —
+// for that, callers use deriveDueKinds above.
+export function deriveNeeds(s: Snapshot, t: NeedTimes, nowMs: number, tzOffsetMin: number, asleep: boolean): Need[] {
+  return deriveDueKinds(s, t, nowMs, tzOffsetMin, asleep)
     .slice(0, NEED_MAX_ACTIVE)
     .map((kind) => ({ kind, verb: NEED_VERB[kind], label: NEED_LABEL[kind] }));
 }

@@ -2,7 +2,6 @@
 // the view models + copy context. Shared by GET /api/pet and POST /api/action.
 
 import type { Tx } from "@/lib/db";
-import { query } from "@/lib/db";
 import type { ActionAvailability, CareCounts, CareTimer, CopyContext, NeedKind, PetRow, PetView, Recap, Roadmap, Snapshot, Stage, Verb } from "@/lib/types";
 import { creature } from "@/data/bestiary";
 import { capForStage, effectiveMinDays, expForNextStage, nextStage, pendingTeenFork } from "@/data/stage-table";
@@ -13,7 +12,7 @@ import {
 } from "@/lib/game/constants";
 import { recompute } from "@/lib/game/tick";
 import { forkOptions, speciesName } from "@/lib/game/evolve";
-import { deriveNeeds, passiveRatePerHour, VERB_NEED, type NeedTimes } from "@/lib/game/needs";
+import { deriveDueKinds, deriveNeeds, passiveRatePerHour, VERB_NEED, type NeedTimes } from "@/lib/game/needs";
 import { expToReach, levelFromExp, levelProgress } from "@/lib/game/levels";
 import { badges, dominant, moodBand } from "@/lib/game/state";
 import { STATE } from "@/lib/types";
@@ -45,7 +44,8 @@ const STATE_COLS =
   "pet_taps_today, taps_day::text, sparks, sparks_at::text";
 const CD_COLS =
   "daily_reset_on::text AS daily_reset_on, streak_days, streak_state, " +
-  "last_active_date::text AS last_active_date, care_charges, charges_updated_at::text AS charges_updated_at";
+  "last_active_date::text AS last_active_date, care_charges, charges_updated_at::text AS charges_updated_at, " +
+  "max_streak_reached";
 
 export async function loadRows(q: Tx, userId: string, forUpdate = false): Promise<Rows | null> {
   const lock = forUpdate ? " FOR UPDATE" : "";
@@ -263,6 +263,8 @@ export function buildPetView(rows: Rows, o: ViewOpts): PetView {
   const hour = localHour(o.nowMs, o.tz);
   const needs = deriveNeeds(state, rows.needTimes, o.nowMs, o.tz, state.asleep);
   if (o.needLine) for (const n of needs) n.label = o.needLine(n.kind) || n.label; // persona voice
+  // care gating uses the UNCAPPED due set so a real need is never crowded out of being actionable
+  const dueKinds = deriveDueKinds(state, rows.needTimes, o.nowMs, o.tz, state.asleep);
 
   return {
     pet: { id: pet.id, name: pet.name, archetypeKey: pet.archetype_key, stage: pet.stage, daysKnown, level },
@@ -287,13 +289,14 @@ export function buildPetView(rows: Rows, o: ViewOpts): PetView {
     weight: state.weight,
     sizeScale: WEIGHT_SIZE_RANGE[0] + (WEIGHT_SIZE_RANGE[1] - WEIGHT_SIZE_RANGE[0]) * Math.max(0, Math.min(1, (state.weight - WEIGHT_START) / WEIGHT_SIZE_SPAN)),
     sparks: rows.sparks,
-    sparkEtaSec: rows.sparks >= SPARK_MAX ? 0 : Math.max(0, Math.round((SPARK_REGEN_MS - (o.nowMs - (rows.sparksAt ?? o.nowMs))) / 1000)),
-    careTimers: buildCareTimers(state, pet.stage, needs.map((n) => n.kind)),
+    // min 1s below cap so the client never sees eta 0 with sparks<6 (would trip the ticker's refresh loop)
+    sparkEtaSec: rows.sparks >= SPARK_MAX ? 0 : Math.max(1, Math.round((SPARK_REGEN_MS - (o.nowMs - (rows.sparksAt ?? o.nowMs))) / 1000)),
+    careTimers: buildCareTimers(state, pet.stage, dueKinds),
     bondHearts: Math.min(5, Math.round(state.bond / 200)),
     streakDays: cooldown.streak_days,
     theme: o.theme,
     voice: o.voice,
-    actions: actionAvailability(pet.stage, state, needs.map((n) => n.kind), hour),
+    actions: actionAvailability(pet.stage, state, dueKinds, hour),
     fork: {
       pending: pendingTeenFork(pet.stage, state.exp, state.bond, days),
       options: forkOptions(pet.archetype_key),
@@ -302,20 +305,20 @@ export function buildPetView(rows: Rows, o: ViewOpts): PetView {
 }
 
 export async function ensureDailyVoice(
-  rows: Rows, ctx: CopyContext, localDate: string,
+  q: Tx, rows: Rows, ctx: CopyContext, localDate: string,
   build: () => { text: string; lineId: string },
 ): Promise<{ line: string; lineId: string }> {
-  const existing = await query<{ line: string; line_id: string }>(
+  const existing = await q<{ line: string; line_id: string }>(
     `SELECT line, line_id FROM voice_log WHERE pet_id=$1 AND local_date=$2`, [rows.pet.id, localDate],
   );
   if (existing[0]) return { line: existing[0].line, lineId: existing[0].line_id };
   const built = build();
-  await query(
+  await q(
     `INSERT INTO voice_log (pet_id, local_date, line, line_id, context)
      VALUES ($1,$2,$3,$4,$5) ON CONFLICT (pet_id, local_date) DO NOTHING`,
     [rows.pet.id, localDate, built.text, built.lineId, JSON.stringify({ streak: ctx.streakDays })],
   );
-  const again = await query<{ line: string; line_id: string }>(
+  const again = await q<{ line: string; line_id: string }>(
     `SELECT line, line_id FROM voice_log WHERE pet_id=$1 AND local_date=$2`, [rows.pet.id, localDate],
   );
   return again[0] ? { line: again[0].line, lineId: again[0].line_id } : { line: built.text, lineId: built.lineId };

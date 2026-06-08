@@ -21,20 +21,23 @@ export async function POST(req: NextRequest) {
   let userId: string;
   let isAnonymous = false;
 
-  if (body.code) {
+  // Authoritative identity: 微信云托管 injects X-WX-OPENID after authenticating the caller. When
+  // present we adopt it directly (no jscode2session needed) — it is the same openid that auth.ts
+  // trusts on every later request, so the client never has to be believed about who it is.
+  const gwOpenid = req.headers.get("x-wx-openid");
+  if (gwOpenid && /^[A-Za-z0-9_-]{6,128}$/.test(gwOpenid)) {
+    userId = gwOpenid;
+  } else if (body.code) {
     try {
       const openid = await exchangeCodeForOpenid(body.code);
-      if (openid) {
-        userId = openid;
-      } else {
-        userId = `anon-${randomUUID()}`;
-        isAnonymous = true;
-      }
+      userId = openid ?? `anon-${randomUUID()}`;
+      isAnonymous = !openid;
     } catch (e) {
-      return NextResponse.json(
-        { error: e instanceof Error ? e.message : "wx login failed" },
-        { status: 502 },
-      );
+      // A reused/expired js_code (errcode 40163/40029) must NOT brick onboarding — fall back to
+      // an anonymous id so the user still gets a pet. (Best-effort log; not surfaced.)
+      console.error("jscode2session failed, falling back to anon:", e instanceof Error ? e.message : e);
+      userId = `anon-${randomUUID()}`;
+      isAnonymous = true;
     }
   } else {
     userId = `anon-${randomUUID()}`;

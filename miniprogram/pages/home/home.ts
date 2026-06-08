@@ -92,8 +92,10 @@ Page({
       const sparkN = this.data.sparkN;
       if (sparkN >= 6) return;
       const sparkEta = Math.max(0, this.data.sparkEta - 1);
-      if (sparkEta <= 0) { this.load(); return; }
       this.setData({ sparkEta, sparkText: this.sparkTextFor(sparkN, sparkEta) });
+      // refresh ONCE when the countdown elapses; the _loading guard in load() prevents this
+      // from stacking a /pet read every second if the server keeps returning eta 0.
+      if (sparkEta <= 0 && !(this as unknown as { _loading?: boolean })._loading) this.load();
     }, 1000) as unknown as number;
   },
   stopTick() {
@@ -124,9 +126,11 @@ Page({
   },
 
   async load() {
+    const self = this as unknown as { _loading?: boolean };
+    if (self._loading) return; // non-reentrant: the 1s spark ticker / rapid onShow must not stack /pet reads
+    self._loading = true;
     try {
       await ensureUserId();
-      this.setData({ forkDismissed: false }); // a fresh load may re-surface the teen fork
       const pet = await request<PetView>({ path: "/pet" });
       this.apply(pet);
       if (pet.recap) this.setData({ recap: pet.recap });
@@ -135,6 +139,8 @@ Page({
       const err = e as ApiError;
       if (err.statusCode === 404) { wx.reLaunch({ url: "/pages/quiz/quiz" }); return; }
       this.setData({ loading: false, error: "和它的连接断了一下" });
+    } finally {
+      self._loading = false;
     }
   },
 
