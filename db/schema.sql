@@ -65,6 +65,11 @@ CREATE TABLE IF NOT EXISTS pet_state (
   need_wants_at  TIMESTAMPTZ,
   pet_taps_today INTEGER NOT NULL DEFAULT 0,  -- pet-bond soft cap per local day
   taps_day       DATE,
+  -- V8 体型: grows over real days + per feed up to a per-stage cap; drives display size.
+  weight      INTEGER NOT NULL DEFAULT 100,
+  -- V8 灵感火花: banked tap-for-EXP sparks (regen over time, compute-on-read off sparks_at).
+  sparks      INTEGER NOT NULL DEFAULT 3,
+  sparks_at   TIMESTAMPTZ,
   -- care_charges/charges_updated_at remain (dormant) — battery removed from read path in V4.
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

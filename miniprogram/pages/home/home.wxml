@@ -13,7 +13,9 @@
       </view>
 
       <view class="stage-wrap" bindtap="onPet">
-        <image class="sprite {{animClass}}" src="{{spriteSrc}}" mode="aspectFit" binderror="onSpriteError" />
+        <view class="sprite-scale" style="transform:scale({{spriteScale}})">
+          <image class="sprite {{animClass}}" src="{{spriteSrc}}" mode="aspectFit" binderror="onSpriteError" />
+        </view>
         <view wx:for="{{particles}}" wx:key="key" class="particle" style="left:{{item.x}}rpx; --rot:{{item.rot}}deg; animation-delay:{{item.delay}}ms">{{item.emoji}}</view>
         <view wx:if="{{floatTag}}" class="floattag">{{floatTag}}</view>
         <view wx:if="{{asleepNow}}" class="zzz">z z Z</view>
@@ -24,18 +26,25 @@
           <text wx:for="{{hearts}}" wx:key="*this" class="heart {{item ? 'on' : ''}}">{{item ? '♥' : '♡'}}</text>
           <text class="bondlab">亲密</text>
         </view>
-        <text class="growth">📈 +{{growthPerDay}}/天</text>
+        <text class="growth">📈+{{growthPerDay}}/天 · ⚖️{{weightKg}}kg</text>
       </view>
 
       <view class="needcard" bindtap="onPet">{{needCard}}</view>
     </view>
 
+    <view class="sparkbar {{sparkN > 0 ? 'sparkbar--on' : ''}}" bindtap="onSpark">
+      <text class="spark-emoji">✨</text>
+      <text class="spark-text">{{sparkText}}</text>
+      <text wx:if="{{sparkN > 0}}" class="spark-n">×{{sparkN}}</text>
+    </view>
+
     <view class="handle" bindtap="toggleDrawer">{{showDrawer ? '收起 ▾' : '更多操作 ▸'}}</view>
     <view class="drawer {{showDrawer ? 'open' : ''}}">
-      <view class="drow-lab">照顾（到饭点 / 该洗澡 / 生病时才需要 · 决定它长成谁）</view>
+      <view class="drow-lab">照顾（按它的需求来 · 满足需求才长得快）</view>
       <view class="dacts">
-        <view wx:for="{{careActs}}" wx:key="verb" class="dact {{item.enabled ? '' : 'dact--off'}}" data-verb="{{item.verb}}" bindtap="onDrawerAction">
+        <view wx:for="{{careActs}}" wx:key="verb" class="dact {{item.due ? 'dact--due' : ''}} {{item.enabled ? '' : 'dact--off'}}" data-verb="{{item.verb}}" bindtap="onDrawerAction">
           <text class="de">{{item.emoji}}</text><text class="dl">{{item.label}}</text>
+          <text class="dsub">{{item.sub}}</text>
         </view>
       </view>
       <view class="drow-lab">陪伴（随时 · 免费 · 涨亲密，不影响形态）</view>
@@ -118,7 +127,8 @@
         <view class="sbar"><view class="sfill" style="width:{{item.pct}}%;background:{{item.color}}"></view></view>
         <text class="sval">{{item.value}}</text>
       </view>
-      <view class="srow2">亲密度 {{pet.bond}}/1000 · 认识第 {{pet.pet.daysKnown}} 天</view>
+      <view class="srow2">体重 {{weightKg}} kg（每天一点点长大）· 认识第 {{pet.pet.daysKnown}} 天</view>
+      <view class="srow2">亲密度 {{pet.bond}}/1000 · 连续 {{pet.streakDays}} 天</view>
       <view class="pbtn" bindtap="closeModals">关闭</view>
     </view>
   </view>

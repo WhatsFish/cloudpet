@@ -8,6 +8,7 @@ import type { BestiaryEntry } from "@/data/bestiary";
 import {
   DECAY, DH_CAP, ENERGY_REGEN, H, HEALTH, HEALTH_FLOOR, LIVE_FLOOR,
   M_BOND_MAX_REDUCTION, M_SICK, M_SLEEP, M_STAGE, PASSIVE_WINDOW_CAP,
+  WEIGHT_CARE, WEIGHT_PER_DAY, WEIGHT_STAGE_MAX,
 } from "./constants";
 import { bondFloorForStage, capForStage, nextStage } from "@/data/stage-table";
 import { resolveStateFlags } from "./state";
@@ -124,6 +125,12 @@ export function recompute(inp: RecomputeIn): RecomputeOut {
 
     s.bond = Math.max(bondFloorForStage(stage), Math.min(1000, s.bond - 0.05 * dhTotal));
     s.exp += Math.min(PASSIVE_WINDOW_CAP, Math.round(passiveExp)); // bounded so a long absence can't fast-forward
+
+    // 体型: grow weight ~per real day (faster when well-cared), capped per stage. dhTotal is
+    // already clamped to DH_CAP so a long absence can't balloon it past the cap.
+    const avg01w = (s.satiety + s.cleanliness + s.health + s.mood) / (4 * capForStage(stage));
+    const wMult = Math.max(WEIGHT_CARE[0], Math.min(WEIGHT_CARE[1], 0.5 + 0.85 * avg01w));
+    s.weight = Math.min(WEIGHT_STAGE_MAX[stage], s.weight + WEIGHT_PER_DAY * (dhTotal / 24) * wMult);
   }
 
   // active-sleep wake-up
@@ -166,6 +173,7 @@ export function recompute(inp: RecomputeIn): RecomputeOut {
   s.energy = Math.round(s.energy);
   s.health = Math.round(s.health);
   s.bond = Math.round(s.bond);
+  s.weight = Math.round(s.weight);
   s.last_tick = new Date(nowMs).toISOString();
 
   return { s, stage, promoted, sick: (s.state_flags & STATE.SICK) !== 0 };

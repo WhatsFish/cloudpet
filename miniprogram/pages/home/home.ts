@@ -19,6 +19,8 @@ type PetView = {
   needs: NeedView[]; topNeed: NeedView | null; asleepNow: boolean; roadmap: Roadmap; recap: Recap | null;
   growthPerDay: number; bondHearts: number; streakDays: number; theme: string; voice: { line: string } | null;
   actions: ActionAvail[];
+  weight?: number; sizeScale?: number; sparks?: number; sparkEtaSec?: number;
+  careTimers?: { verb: string; due: boolean; etaSec: number | null; label: string }[];
   dominantState?: string; badges?: string[];
   fork?: { pending: boolean; options: ForkOpt[] };
 };
@@ -47,6 +49,16 @@ const STAT_META = [
 const CARE_ROW = ["feed", "clean", "doctor"];
 const AFFECTION_ROW = ["play", "pet", "sleep"];
 
+function fmtEta(sec: number): string {
+  if (sec <= 0) return "马上";
+  if (sec < 3600) return Math.max(1, Math.round(sec / 60)) + "分钟";
+  return Math.round(sec / 3600) + "小时";
+}
+function fmtClock(sec: number): string {
+  sec = Math.max(0, Math.round(sec));
+  return Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0");
+}
+
 Page({
   data: {
     loading: true, error: "", pet: null as PetView | null,
@@ -55,6 +67,7 @@ Page({
     aVerb: "", aEmoji: "✓", aLabel: "照顾好啦", aReward: "", aGlow: false,
     bVerb: "play", bEmoji: "🎮", bLabel: "陪玩",
     roadmapLine: "", levelPct: 0, levelNum: 1, growthPerDay: 0, hearts: [0, 0, 0, 0, 0],
+    spriteScale: 1, weightKg: "1.0", sparkN: 0, sparkEta: 0, sparkText: "",
     showDrawer: false, showRoadmap: false, showStatus: false, showSettings: false,
     showFork: false, forkDismissed: false,
     forkOptions: [] as (ForkOpt & { sprite: string })[],
@@ -66,8 +79,49 @@ Page({
     floatTag: "", fxKey: 0, reacting: false, nameInput: "",
   },
 
-  onShow() { this.load(); },
+  onShow() { this.load(); this.startTick(); },
+  onHide() { this.stopTick(); },
+  onUnload() { this.stopTick(); },
   async onPullDownRefresh() { await this.load(); wx.stopPullDownRefresh(); },
+
+  // a 1s ticker drives the spark countdown so the user SEES it refilling; when it reaches 0
+  // (and not already at max) it pulls a fresh /pet so the newly-regenerated spark shows up.
+  startTick() {
+    this.stopTick();
+    (this as unknown as { _tick: number })._tick = setInterval(() => {
+      const sparkN = this.data.sparkN;
+      if (sparkN >= 6) return;
+      const sparkEta = Math.max(0, this.data.sparkEta - 1);
+      if (sparkEta <= 0) { this.load(); return; }
+      this.setData({ sparkEta, sparkText: this.sparkTextFor(sparkN, sparkEta) });
+    }, 1000) as unknown as number;
+  },
+  stopTick() {
+    const self = this as unknown as { _tick?: number };
+    if (self._tick) { clearInterval(self._tick); self._tick = undefined; }
+  },
+  sparkTextFor(n: number, eta: number): string {
+    return n > 0 ? "接住灵感 +10 经验" : "灵感攒取中 " + fmtClock(eta);
+  },
+  async onSpark() {
+    if ((this.data.sparkN ?? 0) <= 0) { wx.showToast({ title: "火花还在攒，过会儿来～", icon: "none" }); return; }
+    if (this.data.reacting) return;
+    this.haptic();
+    this.setData({ reacting: true });
+    try {
+      const resp = await request<ActionResp & { sparkGain?: { exp: number }; promoteLine?: string }>({ path: "/pet/spark", method: "POST" });
+      this.burst("✨", "pet");
+      this.apply(resp);
+      this.setData({ floatTag: `+${resp.sparkGain?.exp ?? 10} ✨` });
+      setTimeout(() => this.setData({ floatTag: "" }), 1100);
+      if (resp.promoted) setTimeout(() => wx.showToast({ title: resp.promoteLine || "它长大啦！", icon: "none", duration: 2000 }), 700);
+    } catch (e) {
+      const d = ((e as ApiError).data ?? {}) as { line?: string };
+      wx.showToast({ title: d.line || "火花还在攒", icon: "none" });
+    } finally {
+      this.setData({ reacting: false });
+    }
+  },
 
   async load() {
     try {
@@ -131,7 +185,15 @@ Page({
     else if (avail["sleep"]) { bVerb = "sleep"; bEmoji = "🌙"; bLabel = "哄睡"; }
 
     const statBars = STAT_META.map((m) => ({ label: m.label, color: m.color, value: pet.stats[m.key] ?? 0, pct: Math.max(2, Math.min(100, pet.stats[m.key] ?? 0)) }));
-    const mkActs = (verbs: string[]) => verbs.map((v) => ({ verb: v, emoji: VERB_META[v].emoji, label: VERB_META[v].label.replace("喂喂它", "喂食").replace("洗个澡", "洗澡").replace("陪它玩", "陪玩"), enabled: avail[v] !== false }));
+    // care actions carry a 倒计时 sub-line (现在可做 / Xm后 / 状态) so a visit shows "what & when".
+    const timers: Record<string, { due: boolean; etaSec: number | null; label: string }> = {};
+    for (const t of pet.careTimers || []) timers[t.verb] = t;
+    const lab = (v: string) => VERB_META[v].label.replace("喂喂它", "喂食").replace("洗个澡", "洗澡").replace("陪它玩", "陪玩");
+    const subFor = (v: string) => { const t = timers[v]; if (!t) return ""; if (t.due) return "现在可做"; if (t.etaSec != null) return fmtEta(t.etaSec) + "后"; return t.label; };
+    const careActs = CARE_ROW.map((v) => ({ verb: v, emoji: VERB_META[v].emoji, label: lab(v), enabled: avail[v] !== false, due: !!timers[v]?.due, sub: subFor(v) }));
+    const funActs = AFFECTION_ROW.map((v) => ({ verb: v, emoji: VERB_META[v].emoji, label: lab(v), enabled: avail[v] !== false, due: false, sub: "" }));
+
+    const sparkN = pet.sparks ?? 0, sparkEta = pet.sparkEtaSec ?? 0;
 
     this.setData({
       pet, theme: pet.theme || "cream", asleepNow: asleep,
@@ -142,7 +204,9 @@ Page({
       needCard, aVerb, aEmoji, aLabel, aReward, aGlow, bVerb, bEmoji, bLabel,
       roadmapLine: pet.roadmap?.line ?? "", levelPct: Math.max(3, pet.evolveProgress), levelNum: pet.level,
       growthPerDay: pet.growthPerDay, hearts: [0, 1, 2, 3, 4].map((i) => (i < pet.bondHearts ? 1 : 0)),
-      careActs: mkActs(CARE_ROW), funActs: mkActs(AFFECTION_ROW),
+      spriteScale: pet.sizeScale ?? 1, weightKg: ((pet.weight ?? 100) / 100).toFixed(1),
+      sparkN, sparkEta, sparkText: this.sparkTextFor(sparkN, sparkEta),
+      careActs, funActs,
       statBars, nameInput: pet.pet.name,
     });
 

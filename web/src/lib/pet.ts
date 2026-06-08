@@ -3,10 +3,14 @@
 
 import type { Tx } from "@/lib/db";
 import { query } from "@/lib/db";
-import type { ActionAvailability, CareCounts, CopyContext, NeedKind, PetRow, PetView, Recap, Roadmap, Snapshot, Stage, Verb } from "@/lib/types";
+import type { ActionAvailability, CareCounts, CareTimer, CopyContext, NeedKind, PetRow, PetView, Recap, Roadmap, Snapshot, Stage, Verb } from "@/lib/types";
 import { creature } from "@/data/bestiary";
 import { capForStage, expForNextStage, nextStage, pendingTeenFork } from "@/data/stage-table";
-import { ACTIONS, CARE_COVERED_AT, NIGHT_FROM, NIGHT_TO, SLEEPY_ENERGY } from "@/lib/game/constants";
+import {
+  ACTIONS, CARE_COVERED_AT, NIGHT_FROM, NIGHT_TO, SLEEPY_ENERGY,
+  MEALS, NEED_COOLDOWN_MS, SPARK_MAX, SPARK_REGEN_MS,
+  WEIGHT_START, WEIGHT_SIZE_RANGE, WEIGHT_SIZE_SPAN,
+} from "@/lib/game/constants";
 import { recompute } from "@/lib/game/tick";
 import { forkOptions, speciesName } from "@/lib/game/evolve";
 import { deriveNeeds, passiveRatePerHour, VERB_NEED, type NeedTimes } from "@/lib/game/needs";
@@ -27,16 +31,18 @@ export type Rows = {
   needTimes: NeedTimes; // V4: last-satisfied timestamps per need (cooldown anchors)
   tapsToday: number; // V4: pet-bond soft-cap counter
   tapsDay: string | null; // local date the tapsToday counter belongs to
+  sparks: number; // V8: banked 灵感火花 (tap-for-EXP)
+  sparksAt: number | null; // V8: spark-regen anchor (ms)
 };
 
 const PET_COLS = "id, user_id, archetype_key, species_id, name, stage, created_at::text AS created_at";
 const STATE_COLS =
-  "satiety, mood, cleanliness, energy, health, bond, exp::int AS exp, " +
+  "satiety, mood, cleanliness, energy, health, bond, exp::int AS exp, weight, " +
   "last_tick::text AS last_tick, state_flags, state_since::text AS state_since, " +
   "asleep, sleep_since::text AS sleep_since, " +
   "care_feed, care_clean, care_doctor, affection_taps, " +
   "need_fed_at::text, need_clean_at::text, need_bored_at::text, need_unwell_at::text, need_wants_at::text, " +
-  "pet_taps_today, taps_day::text";
+  "pet_taps_today, taps_day::text, sparks, sparks_at::text";
 const CD_COLS =
   "daily_reset_on::text AS daily_reset_on, streak_days, streak_state, " +
   "last_active_date::text AS last_active_date, care_charges, charges_updated_at::text AS charges_updated_at";
@@ -52,6 +58,7 @@ export async function loadRows(q: Tx, userId: string, forUpdate = false): Promis
     need_fed_at: string | null; need_clean_at: string | null; need_bored_at: string | null;
     need_unwell_at: string | null; need_wants_at: string | null;
     pet_taps_today: number; taps_day: string | null;
+    sparks: number; sparks_at: string | null;
   };
   const states = await q<StateRow>(`SELECT ${STATE_COLS} FROM pet_state WHERE pet_id = $1${lock}`, [pet.id]);
   const cds = await q<CooldownRow>(`SELECT ${CD_COLS} FROM pet_cooldown WHERE pet_id = $1${lock}`, [pet.id]);
@@ -63,11 +70,22 @@ export async function loadRows(q: Tx, userId: string, forUpdate = false): Promis
   const ms = (v: string | null) => (v ? Date.parse(v) : null);
   // need_wants_at is repurposed in V5 as "last slept at" (sleepy cooldown anchor).
   const needTimes: NeedTimes = { fed: ms(st.need_fed_at), clean: ms(st.need_clean_at), bored: ms(st.need_bored_at), unwell: ms(st.need_unwell_at), slept: ms(st.need_wants_at) };
-  return { pet, state: st, cooldown: cds[0], lastActionMs, care, needTimes, tapsToday: st.pet_taps_today, tapsDay: st.taps_day };
+  return { pet, state: st, cooldown: cds[0], lastActionMs, care, needTimes, tapsToday: st.pet_taps_today, tapsDay: st.taps_day, sparks: st.sparks, sparksAt: ms(st.sparks_at) };
 }
 
 export function lastInteractionMs(rows: Rows): number {
   return Math.max(rows.lastActionMs, Date.parse(rows.pet.created_at));
+}
+
+// 灵感火花 regen: +1 per SPARK_REGEN_MS since the anchor, capped at SPARK_MAX (compute-on-read,
+// so it accrues offline AND while the app stays open). Returns the new count + advanced anchor.
+export function regenSparks(sparks: number, sparksAt: number | null, nowMs: number): { sparks: number; sparksAt: number } {
+  if (sparks >= SPARK_MAX) return { sparks: SPARK_MAX, sparksAt: nowMs };
+  const anchor = sparksAt ?? nowMs; // first read just sets the anchor
+  const gained = Math.floor((nowMs - anchor) / SPARK_REGEN_MS);
+  if (gained <= 0) return { sparks, sparksAt: anchor };
+  const ns = Math.min(SPARK_MAX, sparks + gained);
+  return { sparks: ns, sparksAt: ns >= SPARK_MAX ? nowMs : anchor + gained * SPARK_REGEN_MS };
 }
 
 export async function tickAndPersistTz(
@@ -84,17 +102,19 @@ export async function tickAndPersistTz(
     seedArchetype: rows.pet.archetype_key,
     care: rows.care,
   });
+  const sp = regenSparks(rows.sparks, rows.sparksAt, nowMs);
   await q(
     `UPDATE pet_state SET satiety=$2, mood=$3, cleanliness=$4, energy=$5, health=$6,
-       bond=$7, exp=$8, last_tick=$9, state_flags=$10, state_since=$11, asleep=$12,
-       sleep_since=$13, updated_at=NOW() WHERE pet_id=$1`,
+       bond=$7, exp=$8, weight=$9, last_tick=$10, state_flags=$11, state_since=$12, asleep=$13,
+       sleep_since=$14, sparks=$15, sparks_at=$16, updated_at=NOW() WHERE pet_id=$1`,
     [rows.pet.id, out.s.satiety, out.s.mood, out.s.cleanliness, out.s.energy, out.s.health,
-     out.s.bond, out.s.exp, out.s.last_tick, out.s.state_flags, out.s.state_since, out.s.asleep, out.s.sleep_since],
+     out.s.bond, out.s.exp, out.s.weight, out.s.last_tick, out.s.state_flags, out.s.state_since, out.s.asleep, out.s.sleep_since,
+     sp.sparks, new Date(sp.sparksAt).toISOString()],
   );
   if (out.promoted) await q(`UPDATE pet SET stage=$2 WHERE id=$1`, [rows.pet.id, out.stage]);
   // The child→teen fork (which diverges species_id) is a deliberate player choice handled by
   // POST /api/pet/evolve, never the passive tick — so species_id is untouched here.
-  return { rows: { ...rows, pet: { ...rows.pet, stage: out.stage }, state: out.s }, promoted: out.promoted };
+  return { rows: { ...rows, pet: { ...rows.pet, stage: out.stage }, state: out.s, sparks: sp.sparks, sparksAt: sp.sparksAt }, promoted: out.promoted };
 }
 
 export function behaviorPattern(streakDays: number, noInteractionH: number, band: string): string[] {
@@ -203,6 +223,38 @@ export function buildRoadmap(rows: Rows, nowMs: number): Roadmap {
   return { level, stage, line };
 }
 
+// V8 倒计时: for each care verb, is it due now, and if not, how long until it's next available.
+// feed → next meal window; clean → its ~daily cooldown; doctor → only when sick. Gives the
+// home a "what can I do / when" readout so a visit is never just 陪玩/摸摸.
+export function buildCareTimers(needTimes: NeedTimes, nowMs: number, tz: number, dueKinds: NeedKind[]): CareTimer[] {
+  const localMs = nowMs + tz * 60000;
+  const hourF = (((localMs % 86400000) + 86400000) % 86400000) / 3600000;
+
+  const feedDue = dueKinds.includes("hungry");
+  let feedEta: number | null = null, feedLabel = "现在该喂啦";
+  if (!feedDue) {
+    const starts = MEALS.map((m) => m.from);
+    const target = starts.find((h) => h > hourF) ?? starts[0] + 24;
+    feedEta = Math.max(0, Math.round((target - hourF) * 3600));
+    feedLabel = "下一餐";
+  }
+
+  const cleanDue = dueKinds.includes("dirty");
+  let cleanEta: number | null = null, cleanLabel = "该洗澡啦";
+  if (!cleanDue) {
+    const ready = (needTimes.clean ?? 0) + NEED_COOLDOWN_MS.dirty;
+    if (ready > nowMs) { cleanEta = Math.round((ready - nowMs) / 1000); cleanLabel = "刚洗过澡"; }
+    else cleanLabel = "还挺干净";
+  }
+
+  const docDue = dueKinds.includes("unwell");
+  return [
+    { verb: "feed", due: feedDue, etaSec: feedEta, label: feedLabel },
+    { verb: "clean", due: cleanDue, etaSec: cleanEta, label: cleanLabel },
+    { verb: "doctor", due: docDue, etaSec: null, label: docDue ? "该看医生啦" : "健健康康" },
+  ];
+}
+
 export type ViewOpts = {
   nowMs: number;
   tz: number;
@@ -242,6 +294,11 @@ export function buildPetView(rows: Rows, o: ViewOpts): PetView {
     roadmap: buildRoadmap(rows, o.nowMs),
     recap: o.recap,
     growthPerDay: Math.round(passiveRatePerHour(state, capForStage(pet.stage)) * 24),
+    weight: state.weight,
+    sizeScale: WEIGHT_SIZE_RANGE[0] + (WEIGHT_SIZE_RANGE[1] - WEIGHT_SIZE_RANGE[0]) * Math.max(0, Math.min(1, (state.weight - WEIGHT_START) / WEIGHT_SIZE_SPAN)),
+    sparks: rows.sparks,
+    sparkEtaSec: rows.sparks >= SPARK_MAX ? 0 : Math.max(0, Math.round((SPARK_REGEN_MS - (o.nowMs - (rows.sparksAt ?? o.nowMs))) / 1000)),
+    careTimers: buildCareTimers(rows.needTimes, o.nowMs, o.tz, needs.map((n) => n.kind)),
     bondHearts: Math.min(5, Math.round(state.bond / 200)),
     streakDays: cooldown.streak_days,
     theme: o.theme,

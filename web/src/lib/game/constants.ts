@@ -100,6 +100,26 @@ export const OVERFEED_ABOVE = 80; // feed past this → feed.overfed flavor
 // growth is smooth, yet stays under the teen gate (180) so bonding still matters.
 export const INITIAL_BOND = 150;
 
+// --- 体重 / 体型 (V8): grows a little every day (faster when well-cared) + a bit per feed,
+// up to a per-stage soft cap. Drives the displayed body size, so the pet visibly gets
+// bigger over real days — a steady, legible sense of "它在我手里一天天长大". ---
+export const WEIGHT_START = 100;            // 1.0kg (displayed as weight/100)
+export const WEIGHT_PER_DAY = 14;           // base daily gain at neutral care
+export const WEIGHT_FEED = 3;               // +per feed (a good meal → grew a bit)
+export const WEIGHT_CARE: [number, number] = [0.5, 1.25]; // daily-gain multiplier by avg stat
+export const WEIGHT_STAGE_MAX: Record<Stage, number> = { egg: 110, baby: 155, child: 215, teen: 300, adult: 400 };
+export const WEIGHT_SIZE_SPAN = 230;        // weight above START that maps to the full size range
+export const WEIGHT_SIZE_RANGE: [number, number] = [0.92, 1.32]; // display scale at START..START+SPAN
+
+// --- 灵感火花 / sparks (V8): banked "tap-for-EXP" sparks that regen over time AND while you
+// linger. Gives every visit a fresh thing to do for growth (not just 陪玩/摸摸), and keeps
+// regenerating so staying in-app is rewarded. Server-authoritative (no client EXP trust). ---
+export const SPARK_MAX = 6;
+export const SPARK_START = 3;
+export const SPARK_REGEN_MS = 12 * MIN;     // +1 every 12 min (offline + while open), cap SPARK_MAX
+export const SPARK_EXP = 10;
+export const SPARK_BOND = 1;
+
 // --- actions: 3 buttons. care = battery-gated growth; play/pet/sleep = free ---
 export type ActionDef = {
   verb: Verb;

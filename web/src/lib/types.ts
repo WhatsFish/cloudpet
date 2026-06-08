@@ -67,6 +67,7 @@ export type Snapshot = {
   health: number;
   bond: number;
   exp: number;
+  weight: number; // V8: 体型, grows over real days + per feed up to a per-stage cap
   asleep: boolean;
   sleep_since: string | null;
   state_flags: number;
@@ -130,6 +131,8 @@ export type CopyContext = {
 
 // --- V4 needs / roadmap / recap view models ---
 export type NeedView = { kind: NeedKind; verb: Verb; label: string };
+// V8: a care action's availability timer — due now, or how long until it's next available.
+export type CareTimer = { verb: "feed" | "clean" | "doctor"; due: boolean; etaSec: number | null; label: string };
 export type Roadmap = {
   level: { level: number; expInto: number; expSpan: number; expRemaining: number };
   stage: {
@@ -168,6 +171,11 @@ export type PetView = {
   roadmap: Roadmap; // next level / next evolution + what it needs
   recap: Recap | null; // GET only, one-shot: it grew while you were away
   growthPerDay: number; // V5: quantified growth speed (passive exp/day at current care)
+  weight: number; // V8: 体重 (display weight/100 = kg); grows over real days
+  sizeScale: number; // V8: sprite display scale derived from weight (~0.92..1.32)
+  sparks: number; // V8: banked 灵感火花 (tap-for-EXP), regen over time
+  sparkEtaSec: number; // V8: seconds until the next spark regens (0 when already at max)
+  careTimers: CareTimer[]; // V8: per care verb — due now / next-due countdown
   bondHearts: number; // V5: 0–5 hearts, visible 亲密度
   streakDays: number;
   theme: string; // device skin

@@ -3,7 +3,7 @@ import { withTx, query } from "@/lib/db";
 import { getUserId } from "@/lib/auth";
 import { buildContext, buildPetView, loadRows, tickAndPersistTz } from "@/lib/pet";
 import { planAction } from "@/lib/game/actions";
-import { ACTIONS, AFFECTION_NEED_BOND, CARE_NEEDS, NEED_REWARD, PET_BOND_SOFTCAP } from "@/lib/game/constants";
+import { ACTIONS, AFFECTION_NEED_BOND, CARE_NEEDS, NEED_REWARD, PET_BOND_SOFTCAP, WEIGHT_FEED, WEIGHT_STAGE_MAX } from "@/lib/game/constants";
 import { deriveNeeds, NEED_EVENT, VERB_NEED } from "@/lib/game/needs";
 import { creature } from "@/data/bestiary";
 import { nextStage } from "@/data/stage-table";
@@ -88,9 +88,10 @@ export async function POST(req: NextRequest) {
 
     s.exp += plan.expGain + needBonusExp;
     s.bond = Math.max(0, Math.min(1000, s.bond + bondGain + needBonusBond));
+    if (verb === "feed") s.weight = Math.min(WEIGHT_STAGE_MAX[rows.pet.stage], s.weight + WEIGHT_FEED); // a good meal → grew a bit
 
-    await q(`UPDATE pet_state SET satiety=$2, mood=$3, cleanliness=$4, energy=$5, health=$6, bond=$7, exp=$8, last_tick=$9, state_flags=$10, state_since=$11, asleep=$12, sleep_since=$13, pet_taps_today=$14, taps_day=$15, updated_at=NOW() WHERE pet_id=$1`,
-      [rows.pet.id, s.satiety, s.mood, s.cleanliness, s.energy, s.health, s.bond, s.exp, s.last_tick, s.state_flags, s.state_since, s.asleep, s.sleep_since, tapsToday, tapsDay]);
+    await q(`UPDATE pet_state SET satiety=$2, mood=$3, cleanliness=$4, energy=$5, health=$6, bond=$7, exp=$8, weight=$9, last_tick=$10, state_flags=$11, state_since=$12, asleep=$13, sleep_since=$14, pet_taps_today=$15, taps_day=$16, updated_at=NOW() WHERE pet_id=$1`,
+      [rows.pet.id, s.satiety, s.mood, s.cleanliness, s.energy, s.health, s.bond, s.exp, s.weight, s.last_tick, s.state_flags, s.state_since, s.asleep, s.sleep_since, tapsToday, tapsDay]);
     rows.tapsToday = tapsToday; rows.tapsDay = tapsDay;
 
     // stamp the fulfilled need's cooldown anchor (sleepy → need_wants_at = "last slept")
