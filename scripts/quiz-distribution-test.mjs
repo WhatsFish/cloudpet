@@ -12,6 +12,7 @@ const ANCHORS = {
   blocky: { attach: -3, curio: -6, express: -6 },
   penguin: { attach: -5, curio: 5, express: -3 },
   bear: { attach: 5, curio: 3, express: 8 },
+  seal: { attach: 7, curio: -3, express: -4 },
 };
 
 // Q1–Q5 option weights — mirror web/src/data/quiz-questions.ts.
@@ -45,7 +46,7 @@ function match(v) {
   return tied[0].k;
 }
 
-const tally = { puff: 0, claude: 0, blocky: 0, penguin: 0, bear: 0 };
+const tally = { puff: 0, claude: 0, blocky: 0, penguin: 0, bear: 0, seal: 0 };
 let n = 0;
 (function rec(i, v) {
   if (i === Q.length) { tally[match(v)]++; n++; return; }

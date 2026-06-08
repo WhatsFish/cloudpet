@@ -33,8 +33,9 @@ export type NurtureTilt = {
 export type ForkOption = { branch: NurtureLean; speciesId: string; name: string; blurb: string };
 export type Fork = {
   pending: boolean; // child has met all teen gates → waiting at the fork for the player to choose
-  recommended: NurtureLean; // the care lean, shown as a "推荐" hint on the chooser (not binding)
-  options: ForkOption[]; // the 4 forms: true form + 3 branch variants
+  options: ForkOption[]; // the 4 forms: true form + 3 named variant forms. The player picks freely —
+                         // care does NOT decide or even bias the form (no 推荐), so disliking a form
+                         // never forces you to under-care the pet.
 };
 
 // --- personality model ---
@@ -172,8 +173,7 @@ export type PetView = {
   theme: string; // device skin
   voice: { line: string; lineId: string } | null; // today's 心声
   actions: ActionAvailability[];
-  nurtureTilt: NurtureTilt; // where your care is steering its evolution
-  fork: Fork; // V8: the child→teen fork — pending flag + the 4 choosable forms
+  fork: Fork; // V8: the child→teen fork — pending flag + the 4 player-choosable forms
 };
 
 // V2: 3 home buttons. care (battery) = feed/clean/doctor; affection (free) = play/pet/sleep.

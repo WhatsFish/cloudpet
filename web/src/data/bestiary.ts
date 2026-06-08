@@ -26,6 +26,8 @@ export const BESTIARY: BestiaryEntry[] = [
     decayMult: { mood: 0.85 }, lonelyAfterHours: 72, feed: { satietyMult: 0.9, moodBonus: 0 } }, // cool, aloof, patient
   { id: "bear", displayName: "墩墩熊", shipped: true, accentHex: "#2E2E3A",
     decayMult: { mood: 1.2, energy: 1.1 }, lonelyAfterHours: 40, feed: { satietyMult: 1.0, moodBonus: 2 } }, // volatile, lively
+  { id: "seal", displayName: "团团海豹", shipped: true, accentHex: "#9FB4C2",
+    decayMult: { mood: 1.1 }, lonelyAfterHours: 38, feed: { satietyMult: 1.0, moodBonus: 2 } }, // clingy, earnest, easygoing
 ];
 
 const BY_ID = new Map(BESTIARY.map((b) => [b.id, b]));

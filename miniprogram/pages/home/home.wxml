@@ -88,7 +88,7 @@
       <view class="road-big">{{roadmapLine}}</view>
       <view class="srow2" wx:if="{{pet.roadmap.stage}}">下一阶段「{{pet.roadmap.stage.towardName}}」：经验差 {{pet.roadmap.stage.expRemaining}} · 还要 {{pet.roadmap.stage.daysRemaining}} 天 · 亲密差 {{pet.roadmap.stage.bondRemaining}}</view>
       <view class="srow2">每天自然成长约 +{{growthPerDay}} 经验（养得越好长得越快）</view>
-      <view class="srow2">养育倾向：{{pet.nurtureTilt.label}}</view>
+      <view class="srow2">长成少年时，它的样子由你亲手选（本形 / 3 种近缘形态，4 选 1）</view>
       <view class="srow2">亲密度 {{pet.bond}}/1000 · 连续 {{pet.streakDays}} 天</view>
       <view wx:if="{{pet.fork.pending}}" class="fork-open" bindtap="openFork">✨ 它准备好长大了，选择它的样子 →</view>
       <view class="pbtn" bindtap="closeModals">知道啦</view>
@@ -98,11 +98,11 @@
   <view wx:if="{{showFork}}" class="mask" bindtap="closeFork">
     <view class="forkpanel" catchtap="noop">
       <view class="fork-title">它准备好长大啦！</view>
-      <view class="fork-sub">你希望它长成哪一种？选定后就不能再改咯～</view>
+      <view class="fork-sub">你希望它长成哪一种？随你喜欢，和怎么照顾它无关 · 选定后就不能再改咯～</view>
       <view class="fork-grid">
-        <view wx:for="{{forkOptions}}" wx:key="branch" class="fork-card {{item.recommended ? 'fork-card--rec' : ''}}" data-branch="{{item.branch}}" bindtap="chooseFork">
+        <view wx:for="{{forkOptions}}" wx:key="branch" class="fork-card" data-branch="{{item.branch}}" bindtap="chooseFork">
           <image class="fork-img" src="{{item.sprite}}" mode="aspectFit" binderror="onSpriteError" />
-          <view class="fork-name">{{item.name}}<text wx:if="{{item.recommended}}" class="fork-rec">推荐</text></view>
+          <view class="fork-name">{{item.name}}</view>
           <view class="fork-blurb">{{item.blurb}}</view>
         </view>
       </view>

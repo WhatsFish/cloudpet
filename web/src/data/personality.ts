@@ -15,8 +15,10 @@ export const MATCH_WEIGHTS = { attach: 1.0, curio: 1.0, express: 1.3 } as const;
 
 // Anchors are the rebalanced set from PLAN §6 (validated by the enumeration test
 // in scripts/quiz-distribution-test.mjs — no archetype < ~6% or > ~16%).
-// V7 roster: 5 creatures, one per design language. Anchors spread across the 3 axes so
-// the quiz routes to all 5. (Old 10 archetypes retired — see lines.json.)
+// V8 roster: 6 creatures, one per design language. Anchors spread across the 3 axes so
+// the quiz routes to all 6. (Old 10 archetypes retired — see lines.json.)
+// 团团海豹 fills the high-attach + LOW-express gap (黏人但憨厚不撒娇) — a clean split from
+// 奶团 (also clingy, but high-express/撒娇), so "你黏人——是爱撒娇的黏，还是憨憨实在的黏".
 export const ARCHETYPES: Archetype[] = [
   { key: "puff", nameCN: "奶团", anchor: { attach: 7, curio: -4, express: 5 },
     vibe: "软乎乎黏人团子，一切照旧最幸福", coreNeed: "稳稳的陪伴与抱抱" },
@@ -28,6 +30,8 @@ export const ARCHETYPES: Archetype[] = [
     vibe: "高冷优雅，慢条斯理看世界", coreNeed: "被尊重的距离感" },
   { key: "bear", nameCN: "墩墩熊", anchor: { attach: 5, curio: 3, express: 8 },
     vibe: "大大咧咧傻乐，热闹又黏人", coreNeed: "随时被回应的实时热闹" },
+  { key: "seal", nameCN: "团团海豹", anchor: { attach: 7, curio: -3, express: -4 },
+    vibe: "憨厚黏人的小海豹，慢半拍、用身体蹭着表达爱", coreNeed: "安安静静地贴着你" },
 ];
 
 const BY_KEY = new Map(ARCHETYPES.map((a) => [a.key, a]));

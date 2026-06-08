@@ -8,6 +8,7 @@ import claude from "./claude.json";
 import blocky from "./blocky.json";
 import penguin from "./penguin.json";
 import bear from "./bear.json";
+import seal from "./seal.json";
 import { DEFAULT_PACK } from "./_default";
 
 const PACKS: Record<string, CreatureCopyPack> = {
@@ -16,6 +17,7 @@ const PACKS: Record<string, CreatureCopyPack> = {
   blocky: blocky as CreatureCopyPack,
   penguin: penguin as CreatureCopyPack,
   bear: bear as CreatureCopyPack,
+  seal: seal as CreatureCopyPack,
 };
 
 export function getPack(creatureId: string): CreatureCopyPack {

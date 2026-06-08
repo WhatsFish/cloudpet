@@ -96,6 +96,7 @@ const CREATURE_INTRO: Record<string, string> = {
   blocky: "于是，一只方头方脑、冷面又靠谱的「方头崽」选中了你。它话不多，但你的节奏它都记着。",
   penguin: "于是，一只高冷优雅的「波波企鹅」慢悠悠踱到你身边。它的偏爱要你慢慢赢，而那正是它珍贵的地方。",
   bear: "于是，一只顶着大红脸蛋、傻乎乎直乐的「墩墩熊」一头扑进你怀里。它要的，是你随时都在。",
+  seal: "于是，一只圆滚滚、憨憨的「团团海豹」慢悠悠挪到你脚边，一声不吭地贴住了你。它不爱说话，却会一直一直黏着你。",
 };
 
 export function reveal(v: AxisVector, archetypeKey: string): { title: string; lines: string[] } {

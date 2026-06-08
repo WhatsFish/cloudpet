@@ -8,7 +8,7 @@ import { creature } from "@/data/bestiary";
 import { capForStage, expForNextStage, nextStage, pendingTeenFork } from "@/data/stage-table";
 import { ACTIONS, CARE_COVERED_AT, NIGHT_FROM, NIGHT_TO, SLEEPY_ENERGY } from "@/lib/game/constants";
 import { recompute } from "@/lib/game/tick";
-import { careBranch, forkOptions, nurtureTilt, speciesName } from "@/lib/game/evolve";
+import { forkOptions, speciesName } from "@/lib/game/evolve";
 import { deriveNeeds, passiveRatePerHour, VERB_NEED, type NeedTimes } from "@/lib/game/needs";
 import { expToReach, levelFromExp, levelProgress } from "@/lib/game/levels";
 import { badges, dominant, moodBand } from "@/lib/game/state";
@@ -247,10 +247,8 @@ export function buildPetView(rows: Rows, o: ViewOpts): PetView {
     theme: o.theme,
     voice: o.voice,
     actions: actionAvailability(pet.stage, state, needs.map((n) => n.kind), hour),
-    nurtureTilt: nurtureTilt(pet.archetype_key, rows.care),
     fork: {
       pending: pendingTeenFork(pet.stage, state.exp, state.bond, days),
-      recommended: careBranch(rows.care),
       options: forkOptions(pet.archetype_key),
     },
   };

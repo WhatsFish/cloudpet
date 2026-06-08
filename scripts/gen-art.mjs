@@ -1,8 +1,10 @@
 #!/usr/bin/env node
-// Procedural pixel-art engine v7 — FIVE distinct creatures, one per design language
-// (奶团 puff / 克劳德 claude / 方头崽 blocky / 波波企鹅 penguin / 墩墩熊 bear). Flat fills,
-// soft outline, big silly eyes — 蠢萌. Each creature: size by stage, its own signature +
-// 3 care-branch variant features, the 7 moods, and activity poses (feed/clean/play). Same
+// Procedural pixel-art engine v8 — SIX distinct creatures, one per design language
+// (奶团 puff / 克劳德 claude / 方头崽 blocky / 波波企鹅 penguin / 墩墩熊 bear / 团团海豹 seal).
+// Flat fills, soft outline, big silly eyes — 蠢萌. penguin/bear/seal's 3 teen forms are REAL
+// related species (帝企鹅/跳岩/加拉帕戈斯, 棕熊/北极熊/熊猫, 竖琴海豹/象海豹/豹海豹), distinct by
+// colour + silhouette. Each creature: size by stage, its 3 named variant forms, the 7 moods,
+// and activity poses (feed/clean/play). Same
 // interface (renderBuf/exports/main-loop/sprite paths) so the pipeline is unchanged.
 // Usage: `node scripts/gen-art.mjs [lineId]`, then scripts/sync-art.sh.
 
@@ -24,6 +26,7 @@ const PAL = {
   blocky: { body: hx("#A9C27E"), ink: hx("#37432A"), cheek: hx("#8AA862"), deco: hx("#E8845B") },
   penguin: { body: hx("#6F8DA9"), belly: hx("#FAFBFC"), beak: hx("#F2A23C"), ink: hx("#39465A"), cheek: hx("#F3B5BE"), foot: hx("#EF9A2E"), deco: hx("#F2A0B4") },
   bear: { body: hx("#2E2E3A"), muzzle: hx("#F2E8D8"), ink: hx("#16161E"), cheek: hx("#E23838"), deco: hx("#F2A03C") },
+  seal: { body: hx("#9FB4C2"), belly: hx("#E7EDF1"), ink: hx("#3A4750"), cheek: hx("#F3B5BE"), foot: hx("#8AA0AE"), deco: hx("#74909F") },
 };
 
 // ---- raster ----
@@ -137,36 +140,90 @@ const DRAW = {
   penguin(b, variant, node, mood) {
     const P = PAL.penguin, sc = SCALE[node];
     let rx = R(13 * sc), ry = R(16 * sc), cy = 33;
-    if (variant === "round") { rx = R(rx * 1.12); ry = R(ry * 1.02); }
+    if (variant === "emperor") ry = R(ry * 1.12);                         // tall, regal
+    if (variant === "galapagos") { rx = R(rx * 0.86); ry = R(ry * 0.9); } // dainty
+    const ex = R(rx * 0.36), eyeCy = cy - 3;
     ell(b, 32 - 5, cy + ry, 3, 2, P.foot); ell(b, 32 + 5, cy + ry, 3, 2, P.foot);
-    if (variant === "crest") { stroke(b, 32, cy - ry, 32, cy - ry - 6, 1, P.body); ell(b, 32, cy - ry - 7, 3, 2, P.body); }
-    if (variant === "fluff") for (const [dx, dy] of [[-4, -ry - 1], [0, -ry - 4], [4, -ry - 1]]) disc(b, 32 + dx, cy + dy, 2, P.body);
     ell(b, 32, cy, rx, ry, P.body);
     ell(b, 32 - rx, cy + 3, 2, 6, P.body); ell(b, 32 + rx, cy + 3, 2, 6, P.body);
     ell(b, 32, cy + 4, rx - 2, ry - 4, P.belly);
+    if (variant === "emperor") { // orange ear patches + golden upper-chest (帝企鹅标志)
+      const orange = hx("#F2A23C"), yel = hx("#F7D86B");
+      ell(b, 32 - rx + 1, eyeCy + 1, 2, 4, orange); ell(b, 32 + rx - 1, eyeCy + 1, 2, 4, orange);
+      ell(b, 32, cy + 6, rx - 4, 3, yel);
+    }
+    if (variant === "rockhopper") { // yellow spiky eyebrow crest flaring up-and-back
+      const yel = hx("#F2C53D");
+      for (const s of [-1, 1]) {
+        stroke(b, 32 + s * (ex + 1), eyeCy - 2, 32 + s * (rx + 1), cy - ry - 1, 0, yel);
+        stroke(b, 32 + s * (ex + 2), eyeCy - 1, 32 + s * (rx + 3), cy - ry + 1, 0, yel);
+        stroke(b, 32 + s * (ex + 3), eyeCy, 32 + s * (rx + 4), cy - ry + 5, 0, yel);
+      }
+    }
+    if (variant === "galapagos") // thin white face stripe curving around the cheek
+      for (const s of [-1, 1]) stroke(b, 32 + s * 2, cy - ry + 3, 32 + s * (rx - 1), cy + 4, 0, [255, 255, 255]);
     outline(b, P.ink);
-    const ex = R(rx * 0.36);
-    eyesDark(b, cy - 3, ex, mood, P.ink, 0);
+    eyesDark(b, eyeCy, ex, mood, variant === "rockhopper" ? hx("#C0392B") : P.ink, 0);
     tri(b, 32, cy + 1, 32 - 3, cy + 4, 32 + 3, cy + 4, P.beak); px(b, 32, cy + 4, P.ink);
     if (mood !== "sad" && mood !== "sulk") { blush2(b, 32 - rx + 1, cy + 1, P.cheek); blush2(b, 32 + rx - 2, cy + 1, P.cheek); }
     return { cy, hw: rx, hh: ry, ex };
   },
   bear(b, variant, node, mood) {
-    const P = PAL.bear, sc = SCALE[node];
+    const sc = SCALE[node], ink = PAL.bear.ink;
+    // real bear species: 墩墩(本·黑) / 棕熊崽 / 北极熊崽(白) / 熊猫崽(黑白眼圈). colour + eyes differ.
+    const C = ({
+      true:  { body: hx("#2E2E3A"), muzzle: hx("#F2E8D8"), ear: hx("#2E2E3A"), cheek: hx("#E23838"), patch: null,            smallEye: false },
+      brown: { body: hx("#A9774B"), muzzle: hx("#E9D2B0"), ear: hx("#8A5E38"), cheek: hx("#E07A5F"), patch: null,            smallEye: false },
+      polar: { body: hx("#EBEEF2"), muzzle: hx("#FBFCFD"), ear: hx("#D8DEE6"), cheek: null,          patch: null,            smallEye: true  },
+      panda: { body: hx("#F4F4F2"), muzzle: hx("#F4F4F2"), ear: hx("#22232A"), cheek: null,          patch: hx("#22232A"),   smallEye: false },
+    })[variant] || { body: hx("#2E2E3A"), muzzle: hx("#F2E8D8"), ear: hx("#2E2E3A"), cheek: hx("#E23838"), patch: null, smallEye: false };
     let r = R(15 * sc), cy = 36 - R(r * 0.1);
-    if (variant === "round") r = R(r * 1.12);
-    const er = variant === "roundear" ? 6 : 5;
-    disc(b, 32 - r + 2, cy - r + 2, er, P.body); disc(b, 32 + r - 2, cy - r + 2, er, P.body);
-    if (variant === "ahoge") { stroke(b, 32, cy - r, 32 + 2, cy - r - 7, 1, P.body); disc(b, 32 + 2, cy - r - 7, 1, P.body); }
-    if (node >= 3) { disc(b, 32 - 6, cy + r - 1, 3, P.body); disc(b, 32 + 6, cy + r - 1, 3, P.body); }
-    disc(b, 32, cy, r, P.body);
-    outline(b, P.ink);
+    if (variant === "brown") r = R(r * 1.08);
+    const er = 5;
+    disc(b, 32 - r + 2, cy - r + 2, er, C.ear); disc(b, 32 + r - 2, cy - r + 2, er, C.ear);
+    if (node >= 3) { disc(b, 32 - 6, cy + r - 1, 3, C.body); disc(b, 32 + 6, cy + r - 1, 3, C.body); }
+    disc(b, 32, cy, r, C.body);
     const ex = R(r * 0.42), eyeR = node === 1 ? 3 : 4;
-    eyesBig(b, cy - 1, ex, mood, P.ink, eyeR);
-    disc(b, 32 - r + 2, cy + 4, 3, P.cheek); disc(b, 32 + r - 2, cy + 4, 3, P.cheek);
-    ell(b, 32, cy + 6, 4, 3, P.muzzle);
-    px(b, 32, cy + 4, P.ink); px(b, 31, cy + 7, P.ink); px(b, 32, cy + 8, P.ink); px(b, 33, cy + 7, P.ink);
+    if (C.patch) { ell(b, 32 - ex, cy - 1, 3, 4, C.patch); ell(b, 32 + ex, cy - 1, 3, 4, C.patch); } // panda eye rings
+    outline(b, ink);
+    if (C.smallEye) eyesDark(b, cy - 1, ex, mood, ink, 1);                  // polar: small dark eyes on white
+    else eyesBig(b, cy - 1, ex, mood, ink, C.patch ? 3 : eyeR);            // 本/棕/熊猫: big eyes (panda inside rings)
+    if (C.cheek) { disc(b, 32 - r + 2, cy + 4, 3, C.cheek); disc(b, 32 + r - 2, cy + 4, 3, C.cheek); }
+    ell(b, 32, cy + 6, 4, 3, C.muzzle);
+    px(b, 32, cy + 4, ink); px(b, 31, cy + 7, ink); px(b, 32, cy + 8, ink); px(b, 33, cy + 7, ink);
     return { cy, hw: r, hh: r, ex };
+  },
+  seal(b, variant, node, mood) {
+    const sc = SCALE[node], ink = hx("#3A4750");
+    // 团团(本·灰白斑) / 雪团(竖琴海豹宝宝·白绒大眼) / 阔鼻(象海豹·大鼻) / 豹斑(豹海豹·深色流线).
+    const C = ({
+      true:     { body: hx("#9FB4C2"), belly: hx("#E7EDF1"), flip: hx("#8AA0AE"), spot: hx("#74909F") },
+      harp:     { body: hx("#F1F3F5"), belly: hx("#FBFCFD"), flip: hx("#E0E5EA"), spot: null },
+      elephant: { body: hx("#8E8C86"), belly: hx("#CBC9C2"), flip: hx("#7C7A74"), spot: null },
+      leopard:  { body: hx("#56697A"), belly: hx("#93A8B6"), flip: hx("#48596A"), spot: hx("#36434F") },
+    })[variant] || { body: hx("#9FB4C2"), belly: hx("#E7EDF1"), flip: hx("#8AA0AE"), spot: hx("#74909F") };
+    let rx = R(14 * sc), ry = R(15 * sc), cy = 35;
+    if (variant === "harp") rx = R(rx * 1.04);
+    if (variant === "leopard") { rx = R(rx * 0.92); ry = R(ry * 1.06); }   // sleeker
+    ell(b, 32, cy + ry - 1, 6, 3, C.flip);                                  // tail flippers
+    ell(b, 32, cy, rx, ry, C.body);                                         // round body
+    ell(b, 32, cy + 5, rx - 3, ry - 5, C.belly);                            // pale belly
+    ell(b, 32 - rx + 1, cy + ry - 6, 3, 5, C.flip); ell(b, 32 + rx - 1, cy + ry - 6, 3, 5, C.flip); // front flippers
+    if (C.spot) for (const [dx, dy] of [[-6, -5], [5, -7], [-4, 2], [7, 2], [1, -9], [-8, -1]]) blush2(b, 32 + dx, cy + dy, C.spot);
+    if (variant === "elephant") ell(b, 32, cy + 4, 3, 5, mix(C.body, [0, 0, 0], 0.16)); // big droopy proboscis
+    outline(b, ink);
+    const ex = R(rx * 0.4), er = variant === "harp" ? 3 : 2, eyeCy = cy - 2; // big glossy eyes (harp pup = bigger)
+    for (const e of [-ex, ex]) {
+      if (mood === "happy" || mood === "eating") { for (let i = -1; i <= 1; i++) px(b, 32 + e + i, eyeCy + Math.abs(i), ink); }
+      else if (mood === "sleeping") { px(b, 32 + e - 1, eyeCy, ink); px(b, 32 + e, eyeCy + 1, ink); px(b, 32 + e + 1, eyeCy, ink); }
+      else if (mood === "sulk") { px(b, 32 + e - 1, eyeCy - 1, ink); px(b, 32 + e, eyeCy - 1, ink); px(b, 32 + e + 1, eyeCy, ink); }
+      else if (mood === "sad") disc(b, 32 + e, eyeCy + 1, er, ink);
+      else { disc(b, 32 + e, eyeCy, er, ink); px(b, 32 + e - 1, eyeCy - 1, [255, 255, 255]); }
+    }
+    if (variant !== "elephant") { px(b, 31, cy + 3, ink); px(b, 32, cy + 3, ink); px(b, 33, cy + 3, ink); } else { px(b, 31, cy + 8, ink); px(b, 32, cy + 8, ink); } // nose (elephant: at tip of proboscis)
+    for (const s of [-1, 1]) { px(b, 32 + s * 5, cy + 4, ink); px(b, 32 + s * 7, cy + 3, ink); px(b, 32 + s * 7, cy + 5, ink); } // whiskers
+    if (mood !== "sad" && mood !== "sulk") { blush2(b, 32 - rx + 2, cy + 2, hx("#F3B5BE")); blush2(b, 32 + rx - 3, cy + 2, hx("#F3B5BE")); }
+    return { cy, hw: rx, hh: ry, ex };
   },
 };
 

@@ -10,7 +10,6 @@ type Roadmap = {
   line: string;
 };
 type Recap = { kind: string; daysAway: number; levelFrom: number; levelTo: number; stageFrom: string; stageTo: string; evolvedToName: string | null; expGained: number; line: string };
-type NurtureTilt = { leaning: string; towardName: string; label: string };
 type ForkOpt = { branch: string; speciesId: string; name: string; blurb: string };
 type PetView = {
   pet: { id: number; name: string; archetypeKey: string; stage: string; daysKnown: number; level: number };
@@ -19,9 +18,9 @@ type PetView = {
   sprite: { creatureId: string; stage: string; mood: string; animation: string };
   needs: NeedView[]; topNeed: NeedView | null; asleepNow: boolean; roadmap: Roadmap; recap: Recap | null;
   growthPerDay: number; bondHearts: number; streakDays: number; theme: string; voice: { line: string } | null;
-  actions: ActionAvail[]; nurtureTilt: NurtureTilt;
+  actions: ActionAvail[];
   dominantState?: string; badges?: string[];
-  fork?: { pending: boolean; recommended: string; options: ForkOpt[] };
+  fork?: { pending: boolean; options: ForkOpt[] };
 };
 type ActionResp = PetView & { ok: boolean; line: string; fx: string; animation: string; woke: boolean; promoted: string | null; promoteLine: string | null; needReward: { kind: string; exp: number; bond: number } | null };
 
@@ -58,7 +57,7 @@ Page({
     roadmapLine: "", levelPct: 0, levelNum: 1, growthPerDay: 0, hearts: [0, 0, 0, 0, 0],
     showDrawer: false, showRoadmap: false, showStatus: false, showSettings: false,
     showFork: false, forkDismissed: false,
-    forkOptions: [] as (ForkOpt & { sprite: string; recommended: boolean })[],
+    forkOptions: [] as (ForkOpt & { sprite: string })[],
     recap: null as Recap | null,
     careActs: [] as { verb: string; emoji: string; label: string; enabled: boolean }[],
     funActs: [] as { verb: string; emoji: string; label: string; enabled: boolean }[],
@@ -151,7 +150,7 @@ Page({
     // chooser when the pet is waiting at the fork (unless dismissed for this load).
     const fk = pet.fork;
     if (fk) {
-      const opts = fk.options.map((o) => ({ ...o, sprite: spritePath(o.speciesId, "teen", "happy"), recommended: o.branch === fk.recommended }));
+      const opts = fk.options.map((o) => ({ ...o, sprite: spritePath(o.speciesId, "teen", "happy") }));
       this.setData({ forkOptions: opts });
       if (fk.pending && !this.data.showFork && !this.data.forkDismissed) this.setData({ showFork: true });
     }

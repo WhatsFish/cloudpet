@@ -1,14 +1,14 @@
 {
-  "_doc": "V7 roster: 5 distinct creatures, one per design language (奶团/克劳德/方头崽/企鹅/墩墩熊). Single source of truth for the art engine (scripts/gen-art.mjs) AND the backend (web/src/lib/game/evolve.ts). A pet is bonded to a creature (= one of these keys, also its quiz archetype). The 3 GATED care actions steer the TEEN fork (play/pet stay free + decoupled from growth): feed→丰裕 branch, 洗澡/梳理(clean)→敏捷 branch, 看医生(doctor)→守护 branch, balanced→its own true form. species_id is the key for the true form, or `<key>__<variant>` for a branch.",
+  "_doc": "V8 roster: 6 creatures, one per design language (奶团/克劳德/方头崽/波波企鹅/墩墩熊/团团海豹). Single source of truth for the art engine (scripts/gen-art.mjs) AND the backend (web/src/lib/game/evolve.ts). A pet is bonded to a creature (= one of these keys, also its quiz archetype). At the child→teen fork the PLAYER picks which of 4 forms it becomes (the line's true form + 3 named variant forms) — this is a deliberate choice in a modal (POST /api/pet/evolve), NOT decided by how you care for it (care is need-based and must never gate growth direction). The 3 branch slots are still keyed feed/engage/tend for storage compatibility, but those keys carry NO care-semantics anymore — they are just 3 distinct forms. For penguin/bear/seal the 3 forms are REAL related species (帝企鹅/跳岩/加拉帕戈斯, 棕熊/北极熊/熊猫, 竖琴海豹/象海豹/豹海豹). species_id is the key for the true form, or `<key>__<variant>` for a chosen form.",
   "lines": {
     "puff": {
       "name": "奶团",
       "accent": "#FBE3C8",
       "trueBlurb": "软乎乎的小团子，黏着你最幸福",
       "branches": {
-        "feed": { "variant": "round", "name": "圆奶团", "blurb": "越喂越圆滚，顶上还结了颗小樱桃" },
-        "engage": { "variant": "bunny", "name": "兔耳团", "blurb": "勤梳洗，冒出一对软软的兔耳朵" },
-        "tend": { "variant": "horn", "name": "独角团", "blurb": "悉心照料，长出一只小独角" }
+        "feed": { "variant": "round", "name": "圆奶团", "blurb": "圆滚滚的小团子，顶上还结了颗小樱桃" },
+        "engage": { "variant": "bunny", "name": "兔耳团", "blurb": "软软一对兔耳朵，蹦蹦哒哒" },
+        "tend": { "variant": "horn", "name": "独角团", "blurb": "顶着一只小独角，乖巧又神气" }
       }
     },
     "claude": {
@@ -16,9 +16,9 @@
       "accent": "#D96A4A",
       "trueBlurb": "好奇又淡定的小家伙，爱捣鼓爱做事",
       "branches": {
-        "feed": { "variant": "round", "name": "饱墩克", "blurb": "喂成圆滚滚的方墩，懒洋洋的" },
-        "engage": { "variant": "curl", "name": "卷须克", "blurb": "常打理，头顶翘起一根灵动卷须" },
-        "tend": { "variant": "ears", "name": "团耳克", "blurb": "细心照护，冒出一对圆圆的小耳朵" }
+        "feed": { "variant": "round", "name": "饱墩克", "blurb": "圆滚滚的方墩，懒洋洋的" },
+        "engage": { "variant": "curl", "name": "卷须克", "blurb": "头顶翘起一根灵动卷须" },
+        "tend": { "variant": "ears", "name": "团耳克", "blurb": "一对圆圆的小耳朵" }
       }
     },
     "blocky": {
@@ -26,9 +26,9 @@
       "accent": "#A9C27E",
       "trueBlurb": "复古方头方脑，话不多、冷面金句",
       "branches": {
-        "feed": { "variant": "round", "name": "胖方崽", "blurb": "喂得方圆方圆，肚子鼓鼓" },
-        "engage": { "variant": "antenna", "name": "天线崽", "blurb": "常打理，顶出一根复古小天线" },
-        "tend": { "variant": "wing", "name": "飞翅崽", "blurb": "照护出一对方块小翅膀" }
+        "feed": { "variant": "round", "name": "胖方崽", "blurb": "方圆方圆，肚子鼓鼓" },
+        "engage": { "variant": "antenna", "name": "天线崽", "blurb": "顶出一根复古小天线" },
+        "tend": { "variant": "wing", "name": "飞翅崽", "blurb": "一对方块小翅膀" }
       }
     },
     "penguin": {
@@ -36,9 +36,9 @@
       "accent": "#6F8DA9",
       "trueBlurb": "高冷优雅的圆企鹅，慢条斯理",
       "branches": {
-        "feed": { "variant": "round", "name": "圆肚企鹅", "blurb": "喂出圆滚滚的小肚腩" },
-        "engage": { "variant": "crest", "name": "呆毛企鹅", "blurb": "常梳洗，翘起一撮俏皮呆毛" },
-        "tend": { "variant": "fluff", "name": "绒球企鹅", "blurb": "照护成毛茸茸的绒球宝宝" }
+        "feed": { "variant": "emperor", "name": "帝企鹅", "blurb": "橙耳橙颈、气场十足的大块头" },
+        "engage": { "variant": "rockhopper", "name": "跳岩企鹅", "blurb": "顶着黄色尖眉冠，蹦蹦跳跳" },
+        "tend": { "variant": "galapagos", "name": "加拉帕戈斯", "blurb": "白脸纹的赤道小企鹅，娇小机灵" }
       }
     },
     "bear": {
@@ -46,9 +46,19 @@
       "accent": "#2E2E3A",
       "trueBlurb": "黑乎乎大红脸蛋，大大咧咧傻乐",
       "branches": {
-        "feed": { "variant": "round", "name": "饱墩熊", "blurb": "喂成圆滚滚的大肚熊" },
-        "engage": { "variant": "roundear", "name": "圆耳熊", "blurb": "常打理，长出一对大圆耳" },
-        "tend": { "variant": "ahoge", "name": "呆毛熊", "blurb": "照护出一根翘翘的呆毛" }
+        "feed": { "variant": "brown", "name": "棕熊崽", "blurb": "圆滚滚的棕熊宝宝，憨厚壮实" },
+        "engage": { "variant": "polar", "name": "北极熊崽", "blurb": "雪白小耳朵，软乎乎的北极宝宝" },
+        "tend": { "variant": "panda", "name": "熊猫崽", "blurb": "黑白眼圈，圆头圆脑的熊猫崽" }
+      }
+    },
+    "seal": {
+      "name": "团团海豹",
+      "accent": "#9FB4C2",
+      "trueBlurb": "圆滚滚的灰白斑小海豹，憨厚又黏人",
+      "branches": {
+        "feed": { "variant": "harp", "name": "雪团", "blurb": "白绒绒一团，大黑眼睛圆又亮" },
+        "engage": { "variant": "elephant", "name": "阔鼻", "blurb": "顶着憨憨的大鼻子，一脸老实" },
+        "tend": { "variant": "leopard", "name": "豹斑", "blurb": "身姿流线，慢悠悠透着股高冷" }
       }
     }
   }

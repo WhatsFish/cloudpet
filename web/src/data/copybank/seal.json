@@ -1,0 +1,1085 @@
+{
+  "archetypeKey": "seal",
+  "displayName": "团团海豹",
+  "slots": {
+    "endearment": [
+      "你",
+      "你呀",
+      "我认定的人"
+    ],
+    "kaomoji": [
+      "🌊",
+      "💧",
+      "🐟",
+      "(´-ω-`)",
+      "( ´ ▽ ` )",
+      ""
+    ],
+    "activity": [
+      "默默靠过来",
+      "把头搁在你手上",
+      "贴着你不动",
+      "挪到你身边",
+      "用身子蹭一蹭"
+    ],
+    "food": [
+      "小鱼干",
+      "新鲜的鱼",
+      "一条肥鱼",
+      "鱼鱼",
+      "凉凉的小鱼"
+    ],
+    "treat": [
+      "一条小鱼",
+      "攒下的鱼干",
+      "圆圆的鱼丸",
+      "晒干的小鱼"
+    ],
+    "mutter": [
+      "嗯…",
+      "有你在就行了…",
+      "慢慢来也没关系…",
+      "靠着你最踏实…",
+      "还是老样子最好…"
+    ]
+  },
+  "lines": [
+    {
+      "id": "seal.greet.open.1",
+      "event": "greet.open",
+      "text": "是{endearment}…团团慢吞吞地挪了过来{kaomoji}",
+      "weight": 2
+    },
+    {
+      "id": "seal.greet.open.2",
+      "event": "greet.open",
+      "text": "嗯，你来了。团团一直在这儿等着{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "seal.greet.open.3",
+      "event": "greet.open",
+      "text": "看到{endearment}，团团把头慢慢抬了起来{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.greet.open.4",
+      "event": "greet.open",
+      "text": "不说话…先{activity}一会儿就好{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.greet.open.5",
+      "event": "greet.open",
+      "text": "团团反应慢半拍…哦，原来是{endearment}回来啦{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.greet.open.6",
+      "event": "greet.open",
+      "text": "你在的地方，团团就安心{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.greet.open.egg.1",
+      "event": "greet.open",
+      "text": "蛋壳里暖暖的…外面是{endearment}吗？团团听得到{kaomoji}",
+      "requires": {
+        "stage": [
+          "egg"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "seal.greet.open.egg.2",
+      "event": "greet.open",
+      "text": "壳壳轻轻地靠着你的方向，没动，就这么靠着{kaomoji}",
+      "requires": {
+        "stage": [
+          "egg"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "seal.greet.open.elated.1",
+      "event": "greet.open",
+      "text": "今天心里特别踏实…团团一声不吭地贴了过来{kaomoji}",
+      "requires": {
+        "moodBand": [
+          "极好"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "seal.greet.return.1",
+      "event": "greet.return",
+      "text": "你回来啦。团团刚还在这儿发呆呢{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "seal.greet.return.2",
+      "event": "greet.return",
+      "text": "嗯…就那么一会儿，团团也把头转向门口了{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.greet.return.3",
+      "event": "greet.return",
+      "text": "团团没走，一直在原地等{endearment}{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.greet.return_long.1",
+      "event": "greet.return_long",
+      "text": "你回来了…团团等了好久好久，一直没挪窝{kaomoji}",
+      "weight": 2
+    },
+    {
+      "id": "seal.greet.return_long.2",
+      "event": "greet.return_long",
+      "text": "好久没靠着你了…团团慢慢地、用力地蹭了过来{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "seal.greet.return_long.3",
+      "event": "greet.return_long",
+      "text": "团团有点不高兴…可看到{endearment}，还是先贴过去了{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.greet.morning.1",
+      "event": "greet.morning",
+      "text": "早…团团还没完全醒，先让它靠会儿{kaomoji}",
+      "requires": {
+        "timeBand": [
+          "清晨"
+        ]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "seal.greet.morning.2",
+      "event": "greet.morning",
+      "text": "睁开眼，第一件事就是慢慢挪到{endearment}身边{kaomoji}",
+      "requires": {
+        "timeBand": [
+          "清晨"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "seal.greet.morning.3",
+      "event": "greet.morning",
+      "text": "今天也老样子，跟{endearment}一起慢慢醒就好{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.greet.latenight.1",
+      "event": "greet.latenight",
+      "text": "这么晚还不睡呀…那团团陪你坐着，不说话{kaomoji}",
+      "requires": {
+        "timeBand": [
+          "深夜"
+        ]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "seal.greet.latenight.2",
+      "event": "greet.latenight",
+      "text": "夜里黑黑的，团团把身子往{endearment}这边挪了挪{kaomoji}",
+      "requires": {
+        "timeBand": [
+          "深夜"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "seal.greet.latenight.3",
+      "event": "greet.latenight",
+      "text": "安安静静的…正好{activity}{kaomoji}",
+      "requires": {
+        "timeBand": [
+          "深夜"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "seal.feed.love.1",
+      "event": "feed.love",
+      "text": "是{food}…团团埋下头，一口一口慢慢吃{kaomoji}",
+      "weight": 2
+    },
+    {
+      "id": "seal.feed.love.2",
+      "event": "feed.love",
+      "text": "好吃。吃完团团又把头搁回你手上了{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "seal.feed.love.3",
+      "event": "feed.love",
+      "text": "{food}最实在了…{endearment}喂的，团团都记着{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "seal.feed.love.4",
+      "event": "feed.love",
+      "text": "嗯，吃饱了。吃饱了就能安心{activity}了{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.feed.love.5",
+      "event": "feed.love",
+      "text": "跟昨天一个味儿…团团就喜欢老样子{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.feed.neutral.1",
+      "event": "feed.neutral",
+      "text": "嗯…吃是吃了，团团其实更想挨着你{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.feed.neutral.2",
+      "event": "feed.neutral",
+      "text": "还行吧…要是{food}就更好了{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.feed.neutral.3",
+      "event": "feed.neutral",
+      "text": "慢慢嚼…{endearment}在旁边看着，团团吃得才香{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.feed.dislike.1",
+      "event": "feed.dislike",
+      "text": "这个…团团闻了闻，把头扭开了{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.feed.dislike.2",
+      "event": "feed.dislike",
+      "text": "团团不太想吃这个…还是鱼实在{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.feed.dislike.3",
+      "event": "feed.dislike",
+      "text": "嗯…吃不下。团团默默把身子缩了缩{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.feed.overfed.1",
+      "event": "feed.overfed",
+      "text": "圆滚滚的了…团团动一下都得缓半天{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.feed.overfed.2",
+      "event": "feed.overfed",
+      "text": "肚子鼓鼓的，团团趴着不想挪了{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.feed.sick_refuse.1",
+      "event": "feed.sick_refuse",
+      "text": "现在…团团吃不下，身上没力气{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "SICK"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "seal.feed.sick_refuse.2",
+      "event": "feed.sick_refuse",
+      "text": "不想吃…{endearment}陪着团团就够了{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "SICK"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "seal.clean.1",
+      "event": "clean",
+      "text": "擦干净了…团团的灰毛又变得软软的{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "seal.clean.2",
+      "event": "clean",
+      "text": "凉凉的水珠…团团喜欢这样被照顾，没出声{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.clean.3",
+      "event": "clean",
+      "text": "轻点儿…团团有点怕痒，可还是乖乖趴着{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.clean.4",
+      "event": "clean",
+      "text": "擦完干干净净的，团团满足地哼了一声{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.play.1",
+      "event": "play",
+      "text": "玩归玩…玩完团团还是要挪回{endearment}身边的{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "seal.play.2",
+      "event": "play",
+      "text": "团团慢悠悠地翻了个身，只要你在就不怕{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "seal.play.3",
+      "event": "play",
+      "text": "慢慢晃就好…团团不爱太快的{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.play.4",
+      "event": "play",
+      "text": "嗯，这个好玩。团团憨憨地又凑近了点{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.play.5",
+      "event": "play",
+      "text": "就喜欢这种慢慢的小游戏，老样子最安心{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.play.declined.1",
+      "event": "play.declined",
+      "text": "那个…又蹦又跳的，团团有点怕，挪开了{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.play.declined.2",
+      "event": "play.declined",
+      "text": "不太想玩这个…安安静静地靠着不行吗{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.play.declined.3",
+      "event": "play.declined",
+      "text": "新东西…团团慢半拍才反应过来，先躲一躲{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.pet.1",
+      "event": "pet",
+      "text": "被摸到了…团团眯起眼，把头往你手里又埋深了点{kaomoji}",
+      "weight": 2
+    },
+    {
+      "id": "seal.pet.2",
+      "event": "pet",
+      "text": "嗯…再摸会儿。团团一动不动，就靠着{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "seal.pet.3",
+      "event": "pet",
+      "text": "{endearment}的手，是团团待着最踏实的地方{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "seal.pet.4",
+      "event": "pet",
+      "text": "团团用脸蹭了蹭你的掌心，不出声，就蹭{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.pet.5",
+      "event": "pet",
+      "text": "被这样宠着…团团慢慢把身子整个靠了过去{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.pet.egg.1",
+      "event": "pet",
+      "text": "壳壳被轻轻摸着…里面的团团也暖暖的，没动{kaomoji}",
+      "requires": {
+        "stage": [
+          "egg"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "seal.sleep.tuck.1",
+      "event": "sleep.tuck",
+      "text": "那…团团靠着你睡，把头搁在手边就行{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "seal.sleep.tuck.2",
+      "event": "sleep.tuck",
+      "text": "晚安。团团守着{endearment}，一整晚都不挪{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.sleep.tuck.3",
+      "event": "sleep.tuck",
+      "text": "睡前再贴一下…这样团团才睡得踏实{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.sleep.wake.1",
+      "event": "sleep.wake",
+      "text": "嗯…醒了。睁眼先找{endearment}在哪儿{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "seal.sleep.wake.2",
+      "event": "sleep.wake",
+      "text": "团团慢吞吞地伸了个懒腰，又靠了回来{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.sleep.wake.3",
+      "event": "sleep.wake",
+      "text": "刚睡醒，反应还慢…先挨着你缓一缓{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.medicine.1",
+      "event": "medicine",
+      "text": "苦…可是{endearment}喂的，团团忍着咽下去了{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "SICK"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "seal.medicine.2",
+      "event": "medicine",
+      "text": "吃了药…团团默默把头靠过来，想快点好{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.medicine.3",
+      "event": "medicine",
+      "text": "有{endearment}在，难受也没那么怕了{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.checkin.1",
+      "event": "checkin",
+      "text": "今天也来看团团了…老样子最让它安心{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "seal.checkin.2",
+      "event": "checkin",
+      "text": "只要{endearment}每天都来，团团就一直在这儿等{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "seal.checkin.3",
+      "event": "checkin",
+      "text": "嗯，点个卯…再让团团蹭一下就圆满了{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.checkin.egg.1",
+      "event": "checkin",
+      "text": "壳壳又感受到{endearment}的温度了，里面的团团轻轻动了动{kaomoji}",
+      "requires": {
+        "stage": [
+          "egg"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "seal.state.hungry.1",
+      "event": "state.hungry",
+      "text": "肚子空空的…团团想要一条{food}{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "seal.state.hungry.2",
+      "event": "state.hungry",
+      "text": "有点没力气了…{endearment}喂喂团团{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.state.hungry.3",
+      "event": "state.hungry",
+      "text": "团团蔫蔫的…吃口{treat}就缓过来了{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.state.dirty.1",
+      "event": "state.dirty",
+      "text": "毛黏糊糊的…擦干净了才好挨着你嘛{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.state.dirty.2",
+      "event": "state.dirty",
+      "text": "身上脏脏的，团团有点不自在{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.state.sleepy.1",
+      "event": "state.sleepy",
+      "text": "眼皮重重的…团团靠着你{activity}好不好{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.state.sleepy.2",
+      "event": "state.sleepy",
+      "text": "团团动得越来越慢，快趴下打盹了{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.state.sick.1",
+      "event": "state.sick",
+      "text": "团团蔫蔫的…缩成一团趴着没出声{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "SICK"
+        ]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "seal.state.sick.2",
+      "event": "state.sick",
+      "text": "难受…团团就想被{endearment}轻轻挨着{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "SICK"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "seal.state.sick.3",
+      "event": "state.sick",
+      "text": "动都动不了了…{endearment}别担心团团{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "SICK"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "seal.state.sulky.1",
+      "event": "state.sulky",
+      "text": "刚被突然放下了…团团扭过头去，不看你{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "SULKING"
+        ]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "seal.state.sulky.2",
+      "event": "state.sulky",
+      "text": "团团在生闷气…一声不吭地趴在角落{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "SULKING"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "seal.state.sulky.3",
+      "event": "state.sulky",
+      "text": "哼…要多挨一会儿，团团才肯转回来{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "SULKING"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "seal.state.hiding.1",
+      "event": "state.hiding",
+      "text": "被吓到了…团团慢慢挪到角落里，不出来{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "HIDING"
+        ]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "seal.state.hiding.2",
+      "event": "state.hiding",
+      "text": "这儿安全…{endearment}慢慢把手伸过来嘛{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "HIDING"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "seal.state.hiding.3",
+      "event": "state.hiding",
+      "text": "团团露出半只眼睛…确认是{endearment}才敢挪出来{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "HIDING"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "seal.state.lonely.1",
+      "event": "state.lonely",
+      "text": "一个人好久了…团团对着空空的地方发呆{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "LONELY"
+        ]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "seal.state.lonely.2",
+      "event": "state.lonely",
+      "text": "别走嘛…团团慢慢挪过来，想再挨一会儿{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "LONELY"
+        ]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "seal.state.lonely.3",
+      "event": "state.lonely",
+      "text": "{endearment}是在看手机吗…看看团团嘛{kaomoji}",
+      "requires": {
+        "stateFlag": [
+          "LONELY"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "seal.mood.elated.1",
+      "event": "mood.elated",
+      "text": "今天心里特别踏实…团团趴在你身边，慢慢哼着{kaomoji}",
+      "requires": {
+        "moodBand": [
+          "极好"
+        ]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "seal.mood.elated.2",
+      "event": "mood.elated",
+      "text": "和{endearment}在一起的日子…团团觉得就这样最好{kaomoji}",
+      "requires": {
+        "moodBand": [
+          "极好"
+        ]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "seal.mood.elated.3",
+      "event": "mood.elated",
+      "text": "开心的时候团团也不闹…就是更想挨着你一点{kaomoji}",
+      "requires": {
+        "moodBand": [
+          "极好"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "seal.mood.elated.4",
+      "event": "mood.elated",
+      "text": "这种安安稳稳的日子…团团想一直这么过下去{kaomoji}",
+      "requires": {
+        "moodBand": [
+          "极好"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "seal.idle.mutter.1",
+      "event": "idle.mutter",
+      "text": "{mutter}{kaomoji}",
+      "weight": 2
+    },
+    {
+      "id": "seal.idle.mutter.2",
+      "event": "idle.mutter",
+      "text": "团团趴着，慢慢把头转向你这边{kaomoji}",
+      "weight": 2
+    },
+    {
+      "id": "seal.idle.mutter.3",
+      "event": "idle.mutter",
+      "text": "嗯…发着发着呆，又靠近了一点点{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.idle.mutter.4",
+      "event": "idle.mutter",
+      "text": "{endearment}在看团团吗…它假装没看见，其实挺高兴{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.idle.mutter.5",
+      "event": "idle.mutter",
+      "text": "想吃{food}…想挨着你…团团都想{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.idle.mutter.6",
+      "event": "idle.mutter",
+      "text": "老样子的感觉…团团觉得最踏实{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.idle.mutter.7",
+      "event": "idle.mutter",
+      "text": "团团慢半拍地眨了眨眼，又趴回去了{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.idle.mutter.8",
+      "event": "idle.mutter",
+      "text": "身边没人的时候…团团就默默地等着{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.idle.mutter.egg.1",
+      "event": "idle.mutter",
+      "text": "壳壳里安安静静的…团团轻轻晃着等{endearment}{kaomoji}",
+      "requires": {
+        "stage": [
+          "egg"
+        ]
+      },
+      "weight": 1
+    },
+    {
+      "id": "seal.idle.mutter.night.1",
+      "event": "idle.mutter",
+      "text": "夜深了…团团怕黑，悄悄往{endearment}的方向挪了挪{kaomoji}",
+      "requires": {
+        "timeBand": [
+          "深夜"
+        ]
+      },
+      "weight": 0.6
+    },
+    {
+      "id": "seal.beg.want.1",
+      "event": "beg.want",
+      "text": "那个…团团能来一条{treat}吗{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "seal.beg.want.2",
+      "event": "beg.want",
+      "text": "团团想{activity}…就一会儿{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "seal.beg.want.3",
+      "event": "beg.want",
+      "text": "{endearment}…让团团靠一下嘛，就一下{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.growth.promote.1",
+      "event": "growth.promote",
+      "text": "嗯…团团好像长大了一点点{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "seal.growth.promote.2",
+      "event": "growth.promote",
+      "text": "身子结实了些…可团团还是最爱挨着{endearment}{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.growth.promote.egg.1",
+      "event": "growth.promote",
+      "text": "壳壳裂开了…团团终于能慢慢挪到{endearment}身边了{kaomoji}",
+      "requires": {
+        "stage": [
+          "egg"
+        ]
+      },
+      "weight": 1.5
+    },
+    {
+      "id": "seal.streak.milestone.1",
+      "event": "streak.milestone",
+      "text": "{endearment}连着好多天都没走开…团团把这事记得牢牢的{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "seal.streak.milestone.2",
+      "event": "streak.milestone",
+      "text": "这就是团团最爱的『老样子』呀{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.streak.milestone.3",
+      "event": "streak.milestone",
+      "text": "每天都有{endearment}在…团团再也不怕一个人了{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.reunion.gift.1",
+      "event": "reunion.gift",
+      "text": "{endearment}回来了…团团偷偷攒了{treat}，慢慢推到你跟前{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "seal.reunion.gift.2",
+      "event": "reunion.gift",
+      "text": "等你的时候，团团留了条小鱼，没舍得吃{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.reunion.gift.3",
+      "event": "reunion.gift",
+      "text": "这个{treat}给最想念的{endearment}…团团不太会说，就给你了{kaomoji}",
+      "weight": 1
+    },
+    {
+      "id": "seal.name.given.1",
+      "event": "name.given",
+      "text": "这是…团团的名字吗？它愣了一下，慢慢点了点头{kaomoji}",
+      "weight": 1.5
+    },
+    {
+      "id": "seal.name.given.2",
+      "event": "name.given",
+      "text": "嗯…以后{endearment}这样叫，团团都听得见{kaomoji}",
+      "weight": 1
+    }
+  ],
+  "diary": {
+    "openers": [
+      {
+        "id": "seal.diary.opener.1",
+        "text": "今天团团也慢吞吞地过了一整天，"
+      },
+      {
+        "id": "seal.diary.opener.2",
+        "text": "清晨挨着你慢慢醒来，",
+        "requires": {
+          "timeBand": [
+            "清晨"
+          ]
+        }
+      },
+      {
+        "id": "seal.diary.opener.3",
+        "text": "傍晚心里暖暖的，",
+        "requires": {
+          "timeBand": [
+            "傍晚"
+          ]
+        }
+      },
+      {
+        "id": "seal.diary.opener.4",
+        "text": "夜深了，团团趴在角落里默默记下，",
+        "requires": {
+          "timeBand": [
+            "深夜"
+          ]
+        }
+      },
+      {
+        "id": "seal.diary.opener.5",
+        "text": "白天又是安安稳稳的一天，",
+        "requires": {
+          "timeBand": [
+            "白天"
+          ]
+        }
+      },
+      {
+        "id": "seal.diary.opener.6",
+        "text": "连着好多天没和{endearment}分开了，",
+        "requires": {
+          "streakMin": 3
+        }
+      },
+      {
+        "id": "seal.diary.opener.7",
+        "text": "团团今天大半时间都靠着你，"
+      },
+      {
+        "id": "seal.diary.opener.8",
+        "text": "慢慢趴着趴着，又想起一件小事——"
+      }
+    ],
+    "bodies": [
+      {
+        "id": "seal.diary.body.1",
+        "text": "最踏实的就是把头搁在{endearment}手上，{activity}。"
+      },
+      {
+        "id": "seal.diary.body.2",
+        "text": "吃到新鲜的{food}时，团团一口一口慢慢吃，心里美。"
+      },
+      {
+        "id": "seal.diary.body.3",
+        "text": "被突然放下的时候，团团扭过头去，闷了好一会儿…"
+      },
+      {
+        "id": "seal.diary.body.4",
+        "text": "只要{endearment}在身边，团团就一直安安稳稳的。"
+      },
+      {
+        "id": "seal.diary.body.5",
+        "text": "团团话不多，可你做的每件小事，它都默默记着。"
+      },
+      {
+        "id": "seal.diary.body.6",
+        "text": "最怕一个人了…{endearment}走开时，团团就对着门口发呆。"
+      },
+      {
+        "id": "seal.diary.body.7",
+        "text": "老样子的日子，是团团最喜欢的踏实味道。"
+      },
+      {
+        "id": "seal.diary.body.8",
+        "text": "挨着你打了个盹，慢吞吞地做了个安稳的梦。"
+      },
+      {
+        "id": "seal.diary.body.9",
+        "text": "会动的新玩具有点吓人，团团慢半拍地躲了好久。"
+      },
+      {
+        "id": "seal.diary.body.10",
+        "text": "想攒一条{treat}，等{endearment}回来时，悄悄推给你。"
+      }
+    ],
+    "memory": [
+      {
+        "id": "seal.diary.memory.1",
+        "text": "我们已经第{streak}天没分开了，团团心里特别踏实~",
+        "requires": {
+          "streakMin": 5
+        }
+      },
+      {
+        "id": "seal.diary.memory.2",
+        "text": "认识{endearment}第{days}天了，团团每天都更黏你一点。",
+        "requires": {
+          "daysMin": 7
+        }
+      },
+      {
+        "id": "seal.diary.memory.3",
+        "text": "和{endearment}的羁绊到{bond}了，团团认定你了。",
+        "requires": {
+          "bondMin": 300
+        }
+      },
+      {
+        "id": "seal.diary.memory.4",
+        "text": "羁绊都{bond}了…团团想就这样一直挨着你，不挪窝。",
+        "requires": {
+          "bondMin": 600
+        }
+      },
+      {
+        "id": "seal.diary.memory.5",
+        "text": "{endearment}总是很晚才来喂团团，肚子等得咕咕叫…",
+        "requires": {
+          "pattern": [
+            "late_feeder"
+          ]
+        }
+      },
+      {
+        "id": "seal.diary.memory.6",
+        "text": "{endearment}今天又把团团喂得圆滚滚的，动都动不了啦~",
+        "requires": {
+          "pattern": [
+            "overfeeder"
+          ]
+        }
+      },
+      {
+        "id": "seal.diary.memory.7",
+        "text": "{endearment}每天都准时来，这就是团团最爱的老样子。",
+        "requires": {
+          "pattern": [
+            "daily_regular"
+          ]
+        }
+      },
+      {
+        "id": "seal.diary.memory.8",
+        "text": "最近{endearment}有点不理团团…它对着门口发了好几回呆。",
+        "requires": {
+          "pattern": [
+            "neglected_recently"
+          ]
+        }
+      }
+    ],
+    "signoffs": [
+      {
+        "id": "seal.diary.signoff.1",
+        "text": "明天还要挨着你哦{kaomoji}"
+      },
+      {
+        "id": "seal.diary.signoff.2",
+        "text": "别走嘛…团团守着你，晚安{kaomoji}"
+      },
+      {
+        "id": "seal.diary.signoff.3",
+        "text": "今天也踏踏实实的，记下了{kaomoji}"
+      },
+      {
+        "id": "seal.diary.signoff.4",
+        "text": "要一直一直在一起呀{kaomoji}"
+      },
+      {
+        "id": "seal.diary.signoff.5",
+        "text": "团团把这页悄悄搁在你手边{kaomoji}"
+      },
+      {
+        "id": "seal.diary.signoff.6",
+        "text": "想{endearment}了，慢慢合上小本本{kaomoji}"
+      }
+    ]
+  }
+}
