@@ -1,0 +1,6 @@
+# Shell scripts and the nginx template MUST stay LF — they run in Linux containers. Without this,
+# a checkout on a Windows machine (the DevTools/云托管 upload host) rewrites them to CRLF, which
+# breaks the script shebang ("exec ...: no such file or directory") and nginx config parsing.
+*.sh            text eol=lf
+*.template      text eol=lf
+cloudrun/docker-entrypoint.sh text eol=lf

@@ -9,7 +9,10 @@
 FROM nginx:1.27-alpine
 COPY nginx.conf.template /etc/nginx/nginx.conf.template
 COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
+# Strip any CRLF line endings — the folder may be checked out on a Windows DevTools machine before
+# upload, which would otherwise leave the shebang as "#!/bin/sh\r" and break exec ("no such file or
+# directory"). Then make the entrypoint executable.
+RUN sed -i 's/\r$//' /docker-entrypoint.sh /etc/nginx/nginx.conf.template && chmod +x /docker-entrypoint.sh
 EXPOSE 80
 HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://127.0.0.1/healthz || exit 1
 ENTRYPOINT ["/docker-entrypoint.sh"]
