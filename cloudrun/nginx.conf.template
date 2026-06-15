@@ -1,6 +1,10 @@
 worker_processes 1;
 events { worker_connections 1024; }
 
+# TEMPLATE — ${PROXY_TOKEN} is substituted at container start by docker-entrypoint.sh (envsubst).
+# The secret comes from the PROXY_TOKEN env var set in the 微信云托管 console; it is NEVER stored
+# in this repo. Only ${PROXY_TOKEN} is substituted — all other $vars are nginx runtime variables.
+
 http {
   # Public DNS so nginx can resolve the Azure host at runtime (China-reachable resolvers).
   resolver 119.29.29.29 114.114.114.114 valid=300s;
@@ -33,6 +37,10 @@ http {
       # trusts it over the client-set X-User-Id (web/src/lib/auth.ts). The mini program cannot
       # forge it through callContainer — the gateway always overwrites it.
       proxy_set_header X-WX-OPENID $http_x_wx_openid;
+      # Shared-secret proof that this request came THROUGH this gateway. Azure's nginx rejects
+      # any /cloudpet/api request that lacks it (403), so the public can't reach the API directly
+      # and forge identity headers. Substituted from the PROXY_TOKEN env at container start.
+      proxy_set_header X-Proxy-Token "${PROXY_TOKEN}";
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto https;
       proxy_connect_timeout 10s;
