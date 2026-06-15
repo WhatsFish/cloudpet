@@ -257,6 +257,18 @@ function renderBuf(lineId, variant, stage, mood) {
 function render(lineId, variant, stage, mood) { return encode(renderBuf(lineId, variant, stage, mood)); }
 
 export { renderBuf, encode, LINES, W, H };
+// raster toolkit + head anchors — reused by the decoration engine (scripts/gen-deco.mjs) so
+// hats are drawn with the SAME primitives and placed on each creature's real head-top.
+export { canvas, px, disc, ell, rrect, tri, stroke, NODE, PAL };
+
+// Head-top anchor for a decoration (hat) in 64-canvas coords: the row where a hat's contact
+// line should sit, derived from each creature's face box (top of head ≈ cy - hh). Lets the deco
+// engine + client place hats per (species, stage) with no hand-tuned constants. egg → fixed top.
+export function headAnchor(lineId, variant, stage) {
+  if (stage === "egg") return { x: 32, y: 16 };
+  const box = DRAW[lineId](canvas(), variant, NODE[stage], "idle");
+  return { x: 32, y: box.cy - box.hh };
+}
 
 // ---- PNG ----
 const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++)c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();

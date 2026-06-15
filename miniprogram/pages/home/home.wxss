@@ -92,7 +92,10 @@ page { font-family: "Zpix", "PingFang SC", -apple-system, "Microsoft YaHei", san
 .stage-wrap:active { transform:scale(0.97); }
 .needcard:active { background:rgba(255,255,255,0.82); }
 /* 体型: the sprite grows from its feet as weight rises (scale wrapper, keeps idle anim intact) */
-.sprite-scale { display:flex; justify-content:center; align-items:flex-end; transform-origin:center bottom; transition:transform 0.6s ease; }
+.sprite-scale { position:relative; display:flex; justify-content:center; align-items:flex-end; transform-origin:center bottom; transition:transform 0.6s ease; }
+/* 可装饰 head overlay: same 208rpx box as the sprite, bottom-aligned; per-render translateY (inline
+   style) lifts the hat's contact row onto the creature/stage head-top. Scales with .sprite-scale. */
+.deco-hat { position:absolute; left:50%; bottom:0; width:208rpx; height:208rpx; margin-left:-104rpx; image-rendering:pixelated; -ms-interpolation-mode:nearest-neighbor; pointer-events:none; z-index:3; }
 
 /* ===== 灵感火花 spark bar (tap for EXP; regen countdown when empty) ===== */
 .sparkbar { display:flex; align-items:center; justify-content:center; gap:12rpx; margin-top:14rpx; height:66rpx; border-radius:18rpx; background:var(--hi); border:2rpx solid var(--rim); }
@@ -162,6 +165,21 @@ page { font-family: "Zpix", "PingFang SC", -apple-system, "Microsoft YaHei", san
 
 /* ===== roadmap panel (info structure + tips + 灵感 explainer) ===== */
 .panel--road { max-height:84vh; overflow-y:auto; }
+
+/* 衣柜 / wardrobe */
+.panel--ward { max-height:84vh; overflow-y:auto; }
+.ward-sub { font-size:21rpx; color:#8A7D6E; margin:-8rpx 0 18rpx; line-height:1.5; }
+.ward-loading { text-align:center; color:#8A7D6E; font-size:24rpx; padding:40rpx 0; }
+.ward-grid { display:flex; flex-wrap:wrap; gap:14rpx; }
+.ward-card { width:168rpx; box-sizing:border-box; background:#FBF6EC; border:3rpx solid #F0E7D6; border-radius:16rpx; padding:10rpx 6rpx 12rpx; display:flex; flex-direction:column; align-items:center; gap:2rpx; }
+.ward-card--on { border-color:#E8607A; background:#FFF1F5; }
+.ward-card--lock { opacity:0.62; }
+.ward-img { width:120rpx; height:96rpx; image-rendering:pixelated; -ms-interpolation-mode:nearest-neighbor; }
+.ward-card--lock .ward-img { filter:grayscale(0.9); }
+.ward-name { font-size:23rpx; font-weight:700; color:#5A4E42; }
+.ward-tag { font-size:20rpx; color:#C2557A; }
+.ward-card--on .ward-tag { font-weight:700; }
+.ward-lock { font-size:18rpx; color:#9A8E7E; text-align:center; line-height:1.35; }
 .rm-head { display:flex; align-items:center; gap:18rpx; background:#FBF4E8; border-radius:16rpx; padding:14rpx 16rpx; margin-bottom:14rpx; }
 .rm-sprite { width:118rpx; height:118rpx; image-rendering:pixelated; flex-shrink:0; }
 .rm-head-r { flex:1; min-width:0; }

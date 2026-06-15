@@ -33,6 +33,7 @@ export type Rows = {
   tapsDay: string | null; // local date the tapsToday counter belongs to
   sparks: number; // V8: banked 灵感火花 (tap-for-EXP)
   sparksAt: number | null; // V8: spark-regen anchor (ms)
+  equippedHat: string | null; // V8.8 可装饰: equipped head deco id
 };
 
 const PET_COLS = "id, user_id, archetype_key, species_id, name, stage, created_at::text AS created_at";
@@ -42,7 +43,7 @@ const STATE_COLS =
   "asleep, sleep_since::text AS sleep_since, " +
   "care_feed, care_clean, care_doctor, affection_taps, " +
   "need_fed_at::text, need_clean_at::text, need_bored_at::text, need_unwell_at::text, need_wants_at::text, " +
-  "pet_taps_today, taps_day::text, sparks, sparks_at::text";
+  "pet_taps_today, taps_day::text, sparks, sparks_at::text, equipped_hat";
 const CD_COLS =
   "daily_reset_on::text AS daily_reset_on, streak_days, streak_state, " +
   "last_active_date::text AS last_active_date, care_charges, charges_updated_at::text AS charges_updated_at, " +
@@ -60,6 +61,7 @@ export async function loadRows(q: Tx, userId: string, forUpdate = false): Promis
     need_unwell_at: string | null; need_wants_at: string | null;
     pet_taps_today: number; taps_day: string | null;
     sparks: number; sparks_at: string | null;
+    equipped_hat: string | null;
   };
   const states = await q<StateRow>(`SELECT ${STATE_COLS} FROM pet_state WHERE pet_id = $1${lock}`, [pet.id]);
   const cds = await q<CooldownRow>(`SELECT ${CD_COLS} FROM pet_cooldown WHERE pet_id = $1${lock}`, [pet.id]);
@@ -71,7 +73,7 @@ export async function loadRows(q: Tx, userId: string, forUpdate = false): Promis
   const ms = (v: string | null) => (v ? Date.parse(v) : null);
   // need_wants_at is repurposed in V5 as "last slept at" (sleepy cooldown anchor).
   const needTimes: NeedTimes = { fed: ms(st.need_fed_at), clean: ms(st.need_clean_at), bored: ms(st.need_bored_at), unwell: ms(st.need_unwell_at), slept: ms(st.need_wants_at) };
-  return { pet, state: st, cooldown: cds[0], lastActionMs, care, needTimes, tapsToday: st.pet_taps_today, tapsDay: st.taps_day, sparks: st.sparks, sparksAt: ms(st.sparks_at) };
+  return { pet, state: st, cooldown: cds[0], lastActionMs, care, needTimes, tapsToday: st.pet_taps_today, tapsDay: st.taps_day, sparks: st.sparks, sparksAt: ms(st.sparks_at), equippedHat: st.equipped_hat };
 }
 
 export function lastInteractionMs(rows: Rows): number {
@@ -333,6 +335,20 @@ export function buildPetView(rows: Rows, o: ViewOpts): PetView {
       pending: pendingTeenFork(pet.stage, state.exp, state.bond, days),
       options: forkOptions(pet.archetype_key),
     },
+    equipped: { hat: rows.equippedHat },
+  };
+}
+
+// The facts a deco unlock is judged against — shared by GET /api/deco and the equip guard.
+export function decoContext(rows: Rows, nowMs: number): import("@/data/deco").DecoCtx {
+  const order = ({ egg: 0, baby: 1, child: 2, teen: 3, adult: 4 } as Record<Stage, number>)[rows.pet.stage];
+  const daysKnown = Math.max(1, Math.floor(daysBetween(Date.parse(rows.pet.created_at), nowMs)) + 1);
+  return {
+    stageOrder: order,
+    daysKnown,
+    streakDays: rows.cooldown.streak_days,
+    maxStreak: rows.cooldown.max_streak_reached ?? 0,
+    bond: rows.state.bond,
   };
 }
 

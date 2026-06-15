@@ -70,6 +70,7 @@ CREATE TABLE IF NOT EXISTS pet_state (
   -- V8 灵感火花: banked tap-for-EXP sparks (regen over time, compute-on-read off sparks_at).
   sparks      INTEGER NOT NULL DEFAULT 3,
   sparks_at   TIMESTAMPTZ,
+  equipped_hat TEXT,                                   -- V8.8 可装饰: equipped head deco id (NULL = none)
   -- care_charges/charges_updated_at remain (dormant) — battery removed from read path in V4.
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -177,6 +178,9 @@ ALTER TABLE pet_state ADD COLUMN IF NOT EXISTS taps_day       DATE;
 ALTER TABLE pet_state ADD COLUMN IF NOT EXISTS weight    INTEGER NOT NULL DEFAULT 100;
 ALTER TABLE pet_state ADD COLUMN IF NOT EXISTS sparks    INTEGER NOT NULL DEFAULT 3;
 ALTER TABLE pet_state ADD COLUMN IF NOT EXISTS sparks_at TIMESTAMPTZ;
+-- V8.8 可装饰: the equipped head decoration (deco catalog id), or NULL for bare-headed. Ownership
+-- is compute-on-read (unlock conditions); only the equipped choice persists.
+ALTER TABLE pet_state ADD COLUMN IF NOT EXISTS equipped_hat TEXT;
 -- bond: newborns start warm (INITIAL_BOND ≈ 2 hearts) — retrofit the default for old DBs.
 ALTER TABLE pet_state ALTER COLUMN bond SET DEFAULT 300;
 

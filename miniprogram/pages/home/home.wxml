@@ -15,6 +15,7 @@
       <view class="stage-wrap" bindtap="onPet">
         <view class="sprite-scale" style="transform:scale({{spriteScale}})">
           <image class="sprite {{animClass}}" src="{{spriteSrc}}" mode="aspectFit" binderror="onSpriteError" />
+          <image wx:if="{{decoOn}}" class="deco-hat" src="{{decoSrc}}" style="{{decoStyle}}" mode="aspectFit" />
         </view>
         <view wx:for="{{particles}}" wx:key="key" class="particle" style="left:{{item.x}}rpx; --rot:{{item.rot}}deg; animation-delay:{{item.delay}}ms">{{item.emoji}}</view>
         <view wx:if="{{floatTag}}" class="floattag">{{floatTag}}</view>
@@ -59,6 +60,7 @@
       </view>
       <view class="dnav-lab">— 查看与设置 —</view>
       <view class="dnav">
+        <view class="dnav-item" bindtap="openWardrobe"><text class="dnav-i">🎩</text><text class="dnav-t">衣柜</text></view>
         <view class="dnav-item" bindtap="openStatus"><text class="dnav-i">📊</text><text class="dnav-t">状态</text></view>
         <view class="dnav-item" bindtap="goDiary"><text class="dnav-i">📓</text><text class="dnav-t">心声</text></view>
         <view class="dnav-item" bindtap="goCodex"><text class="dnav-i">📖</text><text class="dnav-t">图鉴</text></view>
@@ -194,6 +196,23 @@
       <view class="namerow">
         <input class="ninput" value="{{nameInput}}" maxlength="12" bindinput="onNameInput" />
         <view class="nbtn" bindtap="saveName">保存</view>
+      </view>
+      <view class="pbtn" bindtap="closeModals">关闭</view>
+    </view>
+  </view>
+
+  <view wx:if="{{showWardrobe}}" class="mask" bindtap="closeModals">
+    <view class="panel panel--ward" catchtap="noop">
+      <view class="panel-title">衣柜 · 头顶装扮</view>
+      <view class="ward-sub">陪它长大、常来看它，会解锁更多帽子 🎀</view>
+      <view wx:if="{{decoLoading}}" class="ward-loading">打开衣柜中…</view>
+      <view wx:else class="ward-grid">
+        <view wx:for="{{decoItems}}" wx:key="id" class="ward-card {{item.equipped ? 'ward-card--on' : ''}} {{item.unlocked ? '' : 'ward-card--lock'}}" data-item="{{item}}" bindtap="equipHat">
+          <image class="ward-img" src="/assets/deco/{{item.id}}.png" mode="aspectFit" />
+          <view class="ward-name">{{item.name}}</view>
+          <view wx:if="{{item.unlocked}}" class="ward-tag">{{item.equipped ? '已戴 ✓' : '戴上'}}</view>
+          <view wx:else class="ward-lock">🔒 {{item.lockHint}}</view>
+        </view>
       </view>
       <view class="pbtn" bindtap="closeModals">关闭</view>
     </view>

@@ -1,6 +1,10 @@
 import { request, type ApiError } from "../../utils/api";
 import { ensureUserId } from "../../utils/auth";
 import { spritePath, FALLBACK_SPRITE } from "../../utils/format";
+import { HEAD_ANCHORS, HAT_BASE, HAT_DROP } from "../../utils/anchors";
+
+const DECO_K = 208 / 64; // sprite px → rpx (sprite is a 64-canvas rendered at 208rpx)
+type DecoItem = { id: string; slot: string; name: string; blurb: string; unlocked: boolean; lockHint: string; equipped: boolean };
 
 type NeedView = { kind: string; verb: string; label: string; rewardExp?: number; rewardBond?: number };
 type ActionAvail = { verb: string; enabled: boolean; reason?: string };
@@ -24,6 +28,7 @@ type PetView = {
   dominantState?: string; badges?: string[];
   fork?: { pending: boolean; options: ForkOpt[] };
   checkin?: { firstOpenToday: boolean; bond: number; streakDays: number; milestoneExp: number; greet: string } | null;
+  equipped?: { hat: string | null };
 };
 type ActionResp = PetView & { ok: boolean; line: string; fx: string; animation: string; woke: boolean; promoted: string | null; promoteLine: string | null; needReward: { kind: string; exp: number; bond: number } | null; gainExp?: number; gainBond?: number };
 
@@ -72,6 +77,8 @@ Page({
     spriteScale: 1, weightKg: "1.0", sparkN: 0, sparkEta: 0, sparkText: "",
     showDrawer: false, showRoadmap: false, showStatus: false, showSettings: false,
     showFork: false, forkDismissed: false,
+    showWardrobe: false, decoItems: [] as DecoItem[], decoLoading: false,
+    decoOn: false, decoSrc: "", decoStyle: "",
     forkOptions: [] as (ForkOpt & { sprite: string })[],
     recap: null as Recap | null,
     careActs: [] as { verb: string; emoji: string; label: string; enabled: boolean }[],
@@ -92,6 +99,20 @@ Page({
     if (b.indexOf("脏") >= 0) return "anim-itch";
     return IDLE_ANIM[pet.pet.archetypeKey] || "anim-bob";
   },
+  // 可装饰: overlay the equipped hat on the sprite. Same 64-canvas as the sprite, translated so the
+  // hat's contact row lands on this creature/stage's head-top (HEAD_ANCHORS, verified via QA montage).
+  // Hidden while the pet is hiding (it's curled away). Lives inside .sprite-scale so it scales with 体型.
+  decoFor(pet: PetView): { on: boolean; src: string; style: string } {
+    const hat = pet.equipped && pet.equipped.hat;
+    if (!hat || pet.sprite.mood === "hide") return { on: false, src: "", style: "" };
+    const sid = pet.sprite.creatureId, stage = pet.sprite.stage;
+    const a = (HEAD_ANCHORS[sid] && HEAD_ANCHORS[sid][stage])
+      || (HEAD_ANCHORS[sid.split("__")[0]] && HEAD_ANCHORS[sid.split("__")[0]][stage])
+      || { x: 32, y: 20 };
+    const dy = (a.y - HAT_BASE + HAT_DROP) * DECO_K;
+    return { on: true, src: `/assets/deco/${hat}.png`, style: `transform:translateY(${dy.toFixed(1)}rpx)` };
+  },
+
   // a small looping ambient mark near the pet that reinforces a bad state
   statusFxFor(pet: PetView): string {
     if (pet.asleepNow) return "";
@@ -242,6 +263,7 @@ Page({
       bgSrc: this.chooseBg(pet),
       animClass: this.idleAnimFor(pet),
       statusFx: this.statusFxFor(pet),
+      ...(() => { const d = this.decoFor(pet); return { decoOn: d.on, decoSrc: d.src, decoStyle: d.style }; })(),
       stageLabel: STAGE_CN[pet.pet.stage] || pet.pet.stage,
       needCard, aVerb, aEmoji, aLabel, aReward, aGlow, bVerb, bEmoji, bLabel,
       roadmapLine: pet.roadmap?.line ?? "", levelPct: Math.max(3, pet.evolveProgress), levelNum: pet.level,
@@ -332,7 +354,34 @@ Page({
   openSettings() { this.setData({ showSettings: true, showDrawer: false }); },
   goDiary() { wx.navigateTo({ url: "/pages/diary/diary" }); },
   goCodex() { wx.navigateTo({ url: "/pages/codex/codex" }); },
-  closeModals() { this.setData({ showStatus: false, showSettings: false, showRoadmap: false }); },
+  closeModals() { this.setData({ showStatus: false, showSettings: false, showRoadmap: false, showWardrobe: false }); },
+
+  // 衣柜: list hats with unlock state; tap an unlocked one to equip/unequip (toggles).
+  async openWardrobe() {
+    this.setData({ showWardrobe: true, showDrawer: false, decoLoading: true });
+    try {
+      const r = await request<{ items: DecoItem[] }>({ path: "/deco" });
+      this.setData({ decoItems: r.items || [], decoLoading: false });
+    } catch { this.setData({ decoLoading: false }); wx.showToast({ title: "衣柜没打开，再试一次", icon: "none" }); }
+  },
+  async equipHat(e: WechatMiniprogram.TouchEvent) {
+    if (this.data.reacting) return;
+    const item = e.currentTarget.dataset.item as DecoItem;
+    if (!item.unlocked) { wx.showToast({ title: item.lockHint || "还没解锁哦", icon: "none" }); return; }
+    const hatId = item.equipped ? null : item.id; // tapping the equipped one takes it off
+    this.haptic();
+    this.setData({ reacting: true });
+    try {
+      await request({ path: "/deco/equip", method: "POST", body: { hatId } });
+      const pet = this.data.pet;
+      if (pet) { pet.equipped = { hat: hatId }; this.apply(pet); } // re-render the sprite overlay
+      this.setData({ decoItems: this.data.decoItems.map((d) => ({ ...d, equipped: d.id === hatId })) });
+      wx.showToast({ title: hatId ? "戴上啦～" : "摘下来啦", icon: "none" });
+    } catch (err) {
+      const d = ((err as ApiError).data ?? {}) as { line?: string };
+      wx.showToast({ title: d.line || "戴不上,再试试", icon: "none" });
+    } finally { this.setData({ reacting: false }); }
+  },
   noop() {},
 
   // richer reaction: a burst of particles + a per-action sprite reaction
