@@ -91,6 +91,8 @@ page { font-family: "Zpix", "PingFang SC", -apple-system, "Microsoft YaHei", san
 .stage-wrap { transition:transform 0.12s ease; }
 .stage-wrap:active { transform:scale(0.97); }
 .needcard:active { background:rgba(255,255,255,0.82); }
+/* day-1 / all-done come-back hook — a calm persistent banner under the need card. */
+.comeback { position:relative; z-index:2; margin-top:6rpx; background:rgba(120,150,200,0.14); border:2rpx solid rgba(120,150,200,0.32); border-radius:14rpx; padding:10rpx 16rpx; font-size:22rpx; line-height:1.4; color:#5C6B86; }
 /* 体型: the sprite grows from its feet as weight rises (scale wrapper, keeps idle anim intact) */
 .sprite-scale { position:relative; display:flex; justify-content:center; align-items:flex-end; transform-origin:center bottom; transition:transform 0.6s ease; }
 /* 可装饰 head overlay: same 208rpx box as the sprite, bottom-aligned; per-render translateY (inline

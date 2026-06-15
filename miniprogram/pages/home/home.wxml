@@ -35,6 +35,7 @@
       </view>
 
       <view class="needcard" bindtap="onPet">{{needCard}}</view>
+      <view wx:if="{{comeback}}" class="comeback">{{comeback}}</view>
     </view>
 
     <view class="sparkbar {{sparkN > 0 ? 'sparkbar--on' : ''}}" bindtap="onSpark">

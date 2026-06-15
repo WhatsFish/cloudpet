@@ -85,7 +85,26 @@ Page({
     funActs: [] as { verb: string; emoji: string; label: string; enabled: boolean }[],
     statBars: [] as { label: string; color: string; value: number; pct: number }[],
     particles: [] as { key: number; emoji: string; x: number; rot: number; delay: number }[],
-    floatTag: "", fxKey: 0, reacting: false, nameInput: "", statusFx: "",
+    floatTag: "", fxKey: 0, reacting: false, nameInput: "", statusFx: "", comeback: "",
+  },
+
+  // "today's care is done" = awake, no need is due, and the 灵感 are spent — i.e. nothing
+  // growth-y left to do right now. This is exactly the day-1 wall (after feed×2 + wash + the 3
+  // starter sparks). We surface a gentle come-back-tomorrow hook (banner + once/day toast) so
+  // closing the app has a reason to return — paired with the overnight soft-recap (V8.7) that
+  // pays it off ("它趁你不在长大了").
+  spentState(pet: PetView): boolean {
+    return !pet.asleepNow && !pet.topNeed && (pet.sparks || 0) === 0;
+  },
+  localDateStr(): string { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; },
+  comebackNudge(delayMs: number) {
+    const pet = this.data.pet;
+    if (!pet || !this.spentState(pet)) return;
+    let last = ""; try { last = wx.getStorageSync("comeback_date") || ""; } catch { /* ignore */ }
+    const today = this.localDateStr();
+    if (last === today) return; // at most once per day
+    try { wx.setStorageSync("comeback_date", today); } catch { /* ignore */ }
+    setTimeout(() => wx.showToast({ title: "今天照顾好啦 🌙 明天再来看它长大～", icon: "none", duration: 2600 }), delayMs);
   },
 
   // When the pet is in a bad state its sprite shows the sad/sick frame — drive a matching idle
@@ -161,6 +180,7 @@ Page({
       this.setData({ floatTag: `+${resp.sparkGain?.exp ?? 10} ✨` });
       setTimeout(() => this.setData({ floatTag: "" }), 1100);
       if (resp.promoted) setTimeout(() => wx.showToast({ title: resp.promoteLine || "它长大啦！", icon: "none", duration: 2000 }), 700);
+      else this.comebackNudge(1500); // tapping the last spark can empty the growth loop → nudge a return
     } catch (e) {
       const d = ((e as ApiError).data ?? {}) as { line?: string };
       wx.showToast({ title: d.line || "火花还在攒", icon: "none" });
@@ -184,7 +204,7 @@ Page({
         const c = pet.checkin;
         if (c.milestoneExp > 0) wx.showToast({ title: `连续 ${c.streakDays} 天！+${c.milestoneExp} ✨`, icon: "none", duration: 2400 });
         else wx.showToast({ title: c.greet || `今天也来啦 +${c.bond}♥ · 连续 ${c.streakDays} 天`, icon: "none", duration: 1800 });
-      }
+      } else this.comebackNudge(700); // opened to an all-done pet → gentle come-back nudge (once/day)
       this.setData({ loading: false, error: "" });
     } catch (e) {
       const err = e as ApiError;
@@ -256,9 +276,10 @@ Page({
     const funActs = AFFECTION_ROW.map((v) => ({ verb: v, emoji: VERB_META[v].emoji, label: lab(v), enabled: avail[v] !== false, due: false, sub: "" }));
 
     const sparkN = pet.sparks ?? 0, sparkEta = pet.sparkEtaSec ?? 0;
+    const comeback = this.spentState(pet) ? "🌙 今天照顾好啦～睡一觉它会悄悄长大，明天再来看看它" : "";
 
     this.setData({
-      pet, theme: pet.theme || "cream", asleepNow: asleep,
+      pet, theme: pet.theme || "cream", asleepNow: asleep, comeback,
       spriteSrc: spritePath(pet.sprite.creatureId, pet.sprite.stage, pet.sprite.mood),
       bgSrc: this.chooseBg(pet),
       animClass: this.idleAnimFor(pet),
@@ -299,6 +320,7 @@ Page({
       if (tag) { this.setData({ floatTag: tag }); setTimeout(() => this.setData({ floatTag: "" }), 1100); }
       if (resp.line) wx.showToast({ title: resp.line, icon: "none", duration: 1800 });
       if (resp.promoted) setTimeout(() => wx.showToast({ title: resp.promoteLine || "它长大啦！", icon: "none", duration: 2200 }), 900);
+      else this.comebackNudge(1900); // just finished caring → if nothing's left to do, nudge a return (once/day)
     } catch (e) {
       const err = e as ApiError;
       const d = (err.data ?? {}) as { line?: string };
