@@ -60,6 +60,13 @@ Page({
         birthLine: hatched.line || "我出来啦！",
       });
     } catch (e) {
+      const data = (e as { data?: { error?: string; message?: string } })?.data || null;
+      if (data?.error === "name_rejected") {
+        // naming hit content moderation — stay on the name step so they can retry
+        this.setData({ submitting: false, phase: "name" });
+        wx.showModal({ title: "换个名字试试", content: data.message || "这个名字不太合适～", showCancel: false });
+        return;
+      }
       console.error("hatch failed", e);
       // pet exists regardless — just go home.
       wx.removeStorageSync("hatch_result");

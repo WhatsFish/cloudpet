@@ -444,6 +444,13 @@ Page({
       await request({ path: "/pet/rename", method: "POST", body: { name } });
       this.setData({ "pet.pet.name": name });
       wx.showToast({ title: "改好啦", icon: "none" });
-    } catch { wx.showToast({ title: "改名失败", icon: "none" }); }
+    } catch (e) {
+      const data = (e as { data?: { error?: string; message?: string } })?.data || null;
+      if (data?.error === "name_rejected") {
+        wx.showModal({ title: "换个名字试试", content: data.message || "这个名字不太合适～", showCancel: false });
+      } else {
+        wx.showToast({ title: "改名失败", icon: "none" });
+      }
+    }
   },
 });
