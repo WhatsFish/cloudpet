@@ -10,7 +10,13 @@
     "postcss": true,
     "minified": true,
     "newFeature": true,
+    "ignoreUploadUnusedFiles": true,
     "useCompilerPlugins": ["typescript"]
+  },
+  "packOptions": {
+    "ignore": [
+      { "type": "folder", "value": "node_modules" }
+    ]
   },
   "compileType": "miniprogram",
   "libVersion": "3.5.5",
