@@ -85,7 +85,7 @@ export async function GET(req: NextRequest) {
           `INSERT INTO growth_event (pet_id, kind, level_from, level_to, stage_from, stage_to, evolved_to, days_away, exp_gained, local_date)
            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
           [rows.pet.id, kind, levelFrom, levelTo, prevStage, rows.pet.stage, evolved ? rows.pet.species_id : null,
-           Number((elapsedMs / 86400000).toFixed(1)), expGained, localDate],
+           Number((elapsedMs / 86400000).toFixed(1)), Math.round(expGained), localDate],
         );
       }
     }

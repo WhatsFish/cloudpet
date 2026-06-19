@@ -38,7 +38,7 @@ export type Rows = {
 
 const PET_COLS = "id, user_id, archetype_key, species_id, name, stage, created_at::text AS created_at";
 const STATE_COLS =
-  "satiety, mood, cleanliness, energy, health, bond, exp::int AS exp, weight, " +
+  "satiety, mood, cleanliness, energy, health, bond, exp, weight, " +
   "last_tick::text AS last_tick, state_flags, state_since::text AS state_since, " +
   "asleep, sleep_since::text AS sleep_since, " +
   "care_feed, care_clean, care_doctor, affection_taps, " +
@@ -201,13 +201,13 @@ export function buildRoadmap(rows: Rows, nowMs: number): Roadmap {
   const { state, pet } = rows;
   const lvl = levelFromExp(state.exp);
   const lo = expToReach(lvl), hi = expToReach(lvl + 1);
-  const level = { level: lvl, expInto: state.exp - lo, expSpan: Math.max(1, hi - lo), expRemaining: Math.max(0, hi - state.exp) };
+  const level = { level: lvl, expInto: Math.round(state.exp - lo), expSpan: Math.max(1, hi - lo), expRemaining: Math.max(0, Math.round(hi - state.exp)) };
 
   const nxt = nextStage(pet.stage);
   if (!nxt) return { level, stage: null, line: "已经长成大成宠啦 🌟 和你的羁绊还在一天天加深" };
 
   const days = daysBetween(Date.parse(pet.created_at), nowMs);
-  const expRemaining = Math.max(0, nxt.expReq - state.exp);
+  const expRemaining = Math.max(0, Math.round(nxt.expReq - state.exp));
   // bond-accelerated day gate, plus how much of that acceleration is already realized vs.
   // still attainable — so the roadmap can say "亲密已让它提前X天 · 再亲密些还能提前Y天".
   const effNow = effectiveMinDays(nxt.minDays, state.bond);
@@ -300,9 +300,9 @@ export function buildPetView(rows: Rows, o: ViewOpts): PetView {
 
   return {
     pet: { id: pet.id, name: pet.name, archetypeKey: pet.archetype_key, stage: pet.stage, daysKnown, level },
-    stats: { satiety: state.satiety, mood: state.mood, cleanliness: state.cleanliness, energy: state.energy, health: state.health },
-    bond: state.bond,
-    exp: state.exp,
+    stats: { satiety: Math.round(state.satiety), mood: Math.round(state.mood), cleanliness: Math.round(state.cleanliness), energy: Math.round(state.energy), health: Math.round(state.health) },
+    bond: Math.round(state.bond),
+    exp: Math.floor(state.exp),
     level,
     evolveProgress: levelProgress(state.exp),
     expForNextStage: expForNextStage(pet.stage),
@@ -318,7 +318,7 @@ export function buildPetView(rows: Rows, o: ViewOpts): PetView {
     roadmap: buildRoadmap(rows, o.nowMs),
     recap: o.recap,
     growthPerDay: Math.round(passiveRatePerHour(state, capForStage(pet.stage)) * 24),
-    weight: state.weight,
+    weight: Math.round(state.weight),
     sizeScale: WEIGHT_SIZE_RANGE[0] + (WEIGHT_SIZE_RANGE[1] - WEIGHT_SIZE_RANGE[0]) * Math.max(0, Math.min(1, (state.weight - WEIGHT_START) / WEIGHT_SIZE_SPAN)),
     sparks: rows.sparks,
     // min 1s below cap so the client never sees eta 0 with sparks<6 (would trip the ticker's refresh loop)

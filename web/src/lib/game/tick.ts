@@ -125,7 +125,7 @@ export function recompute(inp: RecomputeIn): RecomputeOut {
     }
 
     s.bond = Math.max(bondFloorForStage(stage), Math.min(1000, s.bond - 0.05 * dhTotal));
-    s.exp += Math.min(PASSIVE_WINDOW_CAP, Math.round(passiveExp)); // bounded so a long absence can't fast-forward
+    s.exp += Math.min(PASSIVE_WINDOW_CAP, passiveExp); // bounded so a long absence can't fast-forward (float — B3, no per-read rounding)
 
     // 体型: grow weight ~per real day (faster when well-cared), capped per stage. dhTotal is
     // already clamped to DH_CAP so a long absence can't balloon it past the cap.
@@ -184,14 +184,9 @@ export function recompute(inp: RecomputeIn): RecomputeOut {
     nxt = nextStage(stage);
   }
 
-  // round for integer persistence
-  s.satiety = Math.round(s.satiety);
-  s.mood = Math.round(s.mood);
-  s.cleanliness = Math.round(s.cleanliness);
-  s.energy = Math.round(s.energy);
-  s.health = Math.round(s.health);
-  s.bond = Math.round(s.bond);
-  s.weight = Math.round(s.weight);
+  // B3: persist stats as FLOATS (columns are DOUBLE PRECISION). Do NOT round here — rounding the
+  // sub-unit residual away on every read froze both decay and growth under frequent refreshes
+  // (home's 1s ticker). buildPetView rounds for display. state_flags stays an int bitmask.
   s.last_tick = new Date(nowMs).toISOString();
 
   return { s, stage, promoted, sick: (s.state_flags & STATE.SICK) !== 0 };

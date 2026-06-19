@@ -39,13 +39,16 @@ CREATE INDEX IF NOT EXISTS idx_pet_user ON pet (user_id);
 
 CREATE TABLE IF NOT EXISTS pet_state (
   pet_id      BIGINT PRIMARY KEY REFERENCES pet(id) ON DELETE CASCADE,
-  satiety     INTEGER NOT NULL DEFAULT 70 CHECK (satiety     BETWEEN 0 AND 100),
-  mood        INTEGER NOT NULL DEFAULT 60 CHECK (mood        BETWEEN 0 AND 100),
-  cleanliness INTEGER NOT NULL DEFAULT 80 CHECK (cleanliness BETWEEN 0 AND 100),
-  energy      INTEGER NOT NULL DEFAULT 80 CHECK (energy      BETWEEN 0 AND 100),
-  health      INTEGER NOT NULL DEFAULT 80 CHECK (health      BETWEEN 0 AND 100),  -- 80 == egg cap
-  bond        INTEGER NOT NULL DEFAULT 300 CHECK (bond BETWEEN 0 AND 1000),  -- INITIAL_BOND: newborn hatches at ~2 hearts
-  exp         BIGINT  NOT NULL DEFAULT 0  CHECK (exp >= 0),
+  -- B3: live stats are DOUBLE PRECISION (not INTEGER) so the compute-on-read tick's sub-unit
+  -- residual survives FREQUENT reads — rounding it away on every read froze BOTH decay and growth.
+  -- Rounded only at the view layer (buildPetView). CHECK ranges still hold for floats.
+  satiety     DOUBLE PRECISION NOT NULL DEFAULT 70 CHECK (satiety     BETWEEN 0 AND 100),
+  mood        DOUBLE PRECISION NOT NULL DEFAULT 60 CHECK (mood        BETWEEN 0 AND 100),
+  cleanliness DOUBLE PRECISION NOT NULL DEFAULT 80 CHECK (cleanliness BETWEEN 0 AND 100),
+  energy      DOUBLE PRECISION NOT NULL DEFAULT 80 CHECK (energy      BETWEEN 0 AND 100),
+  health      DOUBLE PRECISION NOT NULL DEFAULT 80 CHECK (health      BETWEEN 0 AND 100),  -- 80 == egg cap
+  bond        DOUBLE PRECISION NOT NULL DEFAULT 300 CHECK (bond BETWEEN 0 AND 1000),  -- INITIAL_BOND: newborn hatches at ~2 hearts
+  exp         DOUBLE PRECISION NOT NULL DEFAULT 0  CHECK (exp >= 0),
   last_tick   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   state_flags INTEGER NOT NULL DEFAULT 0,                    -- SICK=1 SULKING=2 HIDING=4 LONELY=8
   state_since TIMESTAMPTZ,
@@ -66,7 +69,7 @@ CREATE TABLE IF NOT EXISTS pet_state (
   pet_taps_today INTEGER NOT NULL DEFAULT 0,  -- pet-bond soft cap per local day
   taps_day       DATE,
   -- V8 体型: grows over real days + per feed up to a per-stage cap; drives display size.
-  weight      INTEGER NOT NULL DEFAULT 100,
+  weight      DOUBLE PRECISION NOT NULL DEFAULT 100,
   -- V8 灵感火花: banked tap-for-EXP sparks (regen over time, compute-on-read off sparks_at).
   sparks      INTEGER NOT NULL DEFAULT 3,
   sparks_at   TIMESTAMPTZ,
@@ -192,3 +195,16 @@ ALTER TABLE pet_cooldown ADD COLUMN IF NOT EXISTS charges_updated_at TIMESTAMPTZ
 -- that already passed a milestone don't get paid again on their next reclimb.
 ALTER TABLE pet_cooldown ADD COLUMN IF NOT EXISTS max_streak_reached INTEGER NOT NULL DEFAULT 0;
 UPDATE pet_cooldown SET max_streak_reached = streak_days WHERE max_streak_reached < streak_days;
+
+-- B3 fix (2026-06-19): widen live stats INTEGER/BIGINT → DOUBLE PRECISION so the compute-on-read
+-- tick keeps the sub-unit residual across frequent reads (rounding it away froze decay AND growth).
+-- Idempotent: ALTERing an already-double column just rewrites a tiny table. Rounded at view layer.
+ALTER TABLE pet_state
+  ALTER COLUMN satiety     TYPE DOUBLE PRECISION,
+  ALTER COLUMN mood        TYPE DOUBLE PRECISION,
+  ALTER COLUMN cleanliness TYPE DOUBLE PRECISION,
+  ALTER COLUMN energy      TYPE DOUBLE PRECISION,
+  ALTER COLUMN health      TYPE DOUBLE PRECISION,
+  ALTER COLUMN bond        TYPE DOUBLE PRECISION,
+  ALTER COLUMN exp         TYPE DOUBLE PRECISION,
+  ALTER COLUMN weight      TYPE DOUBLE PRECISION;
