@@ -1,9 +1,11 @@
 /* Cozy, warm, rounded global theme. */
+@import "styles/zpix.wxss"; /* packaged pixel font (subset, base64); see scripts/build-font.py */
 
 page {
   background: #FFF7E6;
   color: #4A3F35;
-  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+  /* Zpix first → pixel look; system fonts after → per-char fallback for any glyph not in the subset */
+  font-family: "Zpix", -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
   font-size: 28rpx;
   line-height: 1.6;
 }

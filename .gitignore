@@ -10,3 +10,6 @@ miniprogram/.DS_Store
 miniprogram/node_modules/
 miniprogram/miniprogram_npm/
 miniprogram/.idea/
+
+# 4.4MB pixel-font source for scripts/build-font.py (subset is what ships, not this)
+scripts/fonts/
