@@ -1,6 +1,7 @@
 import { request, type ApiError } from "../../utils/api";
 import { ensureUserId } from "../../utils/auth";
 import { spritePath } from "../../utils/format";
+import { shareAppMessage, shareTimeline } from "../../utils/share";
 
 // V8 roster: 6 creatures (mirrors web/src/data/lines.json). Each: a true form + 3 named
 // variant forms it can grow into. The form is the PLAYER's choice at the teen fork — it is
@@ -51,7 +52,10 @@ type Line = { key: string; name: string; bonded: boolean; forms: Form[] };
 Page({
   data: { lines: [] as Line[] },
 
+  onLoad() { wx.showShareMenu({ menus: ["shareAppMessage", "shareTimeline"] }); },
   onShow() { this.load(); },
+  onShareAppMessage() { return shareAppMessage(); },
+  onShareTimeline() { return shareTimeline(); },
 
   async load() {
     let bondedKey = "";

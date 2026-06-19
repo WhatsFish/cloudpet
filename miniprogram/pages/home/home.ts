@@ -2,6 +2,7 @@ import { request, type ApiError } from "../../utils/api";
 import { ensureUserId } from "../../utils/auth";
 import { spritePath, FALLBACK_SPRITE } from "../../utils/format";
 import { HEAD_ANCHORS, HAT_BASE, HAT_DROP } from "../../utils/anchors";
+import { shareAppMessage, shareTimeline } from "../../utils/share";
 
 const DECO_K = 208 / 64; // sprite px → rpx (sprite is a 64-canvas rendered at 208rpx)
 type DecoItem = { id: string; slot: string; name: string; blurb: string; unlocked: boolean; lockHint: string; equipped: boolean };
@@ -142,9 +143,12 @@ Page({
     return "";
   },
 
+  onLoad() { wx.showShareMenu({ menus: ["shareAppMessage", "shareTimeline"] }); },
   onShow() { this.load(); this.startTick(); },
   onHide() { this.stopTick(); },
   onUnload() { this.stopTick(); },
+  onShareAppMessage() { return shareAppMessage(); },
+  onShareTimeline() { return shareTimeline(); },
   async onPullDownRefresh() { await this.load(); wx.stopPullDownRefresh(); },
 
   // a 1s ticker drives the spark countdown so the user SEES it refilling; when it reaches 0

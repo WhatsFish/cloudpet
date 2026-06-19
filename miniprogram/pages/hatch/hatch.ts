@@ -1,4 +1,5 @@
 import { request } from "../../utils/api";
+import { shareAppMessage, shareTimeline } from "../../utils/share";
 import { ensureUserId } from "../../utils/auth";
 import { spritePath } from "../../utils/format";
 
@@ -20,6 +21,7 @@ Page({
   },
 
   onLoad() {
+    wx.showShareMenu({ menus: ["shareAppMessage", "shareTimeline"] });
     const r = wx.getStorageSync("hatch_result") as Result | "";
     // No pending hatch result means this pet already hatched (result is cleared on confirm) — a
     // re-entry to hatch should NOT flash through the quiz. Go home; home self-routes to the quiz
@@ -31,6 +33,9 @@ Page({
       name: r.displayName,
     });
   },
+
+  onShareAppMessage() { return shareAppMessage(); },
+  onShareTimeline() { return shareTimeline(); },
 
   toName() { this.setData({ phase: "name" }); },
 
