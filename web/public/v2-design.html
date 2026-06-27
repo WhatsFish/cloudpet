@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>本命小宠 · V2 设计稿（留存改版）</title>
+<style>
+  :root{
+    --bg:#FFF7E6; --card:#FFFDF7; --line:#F0E2CC; --ink:#4A4034; --mut:#8B7E6A;
+    --accent:#E8845B; --accent2:#7FA86B; --pink:#E8607A; --blue:#6F8DA9; --gold:#D9A93A;
+    --shadow:0 2px 0 #EAD9BC, 0 8px 24px rgba(120,90,40,.10);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:
+      radial-gradient(1200px 500px at 50% -10%, #FFF0D6 0%, transparent 60%),
+      var(--bg);
+    color:var(--ink);font:16px/1.7 -apple-system,"Segoe UI",system-ui,"PingFang SC","Microsoft Yahei",sans-serif;
+    -webkit-font-smoothing:antialiased;padding:0 0 80px}
+  .wrap{max-width:980px;margin:0 auto;padding:0 20px}
+  header.hero{text-align:center;padding:54px 20px 30px}
+  .badge{display:inline-block;font-size:12px;letter-spacing:.18em;color:var(--accent);
+    background:#FFEFE2;border:1px solid #FBD9C4;border-radius:999px;padding:5px 14px;font-weight:700}
+  h1{font-size:34px;margin:16px 0 8px;letter-spacing:.02em}
+  .sub{color:var(--mut);max-width:640px;margin:0 auto;font-size:15px}
+  .goal{margin:20px auto 0;max-width:680px;background:linear-gradient(180deg,#FFFDF7,#FFF6E6);
+    border:1px solid var(--line);border-radius:16px;padding:14px 18px;box-shadow:var(--shadow);font-size:15px}
+  .goal b{color:var(--accent)}
+  nav.toc{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:26px 0 8px}
+  nav.toc a{font-size:13px;color:var(--ink);text-decoration:none;background:var(--card);
+    border:1px solid var(--line);border-radius:999px;padding:6px 12px}
+  nav.toc a:hover{border-color:var(--accent);color:var(--accent)}
+  section{background:var(--card);border:1px solid var(--line);border-radius:18px;
+    padding:26px 26px 28px;margin:26px 0;box-shadow:var(--shadow)}
+  .sec-h{display:flex;align-items:flex-start;gap:14px;margin:0 0 6px}
+  .num{flex:none;width:34px;height:34px;border-radius:10px;background:var(--accent);color:#fff;
+    font-weight:800;display:grid;place-items:center;font-size:16px;box-shadow:0 2px 0 #C96A45}
+  h2{font-size:22px;margin:2px 0 2px}
+  .pain{color:var(--pink);font-size:13.5px;background:#FFEDF1;border:1px solid #F8CEDA;
+    border-radius:10px;padding:8px 12px;margin:10px 0 16px}
+  .pain b{color:#C8395A}
+  h3{font-size:16px;margin:20px 0 8px;color:var(--accent)}
+  p{margin:8px 0}
+  ul{margin:8px 0 8px;padding-left:20px}
+  li{margin:5px 0}
+  code{background:#F4ECDC;border:1px solid #ECE0C9;border-radius:6px;padding:1px 6px;font-size:13px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#7A5B33}
+  .now{color:var(--mut);font-size:13.5px;border-left:3px solid #E6D6B6;padding-left:12px;margin:8px 0}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:7px 10px;text-align:center}
+  th{background:#FBF1DD;font-weight:700}
+  td.l,th.l{text-align:left}
+  .tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:999px;font-weight:700}
+  .t-new{background:#E9F4E2;color:#4F7A38;border:1px solid #CDE6BC}
+  .t-keep{background:#EEF2F6;color:#5B7186;border:1px solid #D2DEE8}
+  .t-fix{background:#FFEFE2;color:#C96A45;border:1px solid #FBD9C4}
+  /* evolution tree */
+  .tree{overflow-x:auto;padding:6px 2px 14px}
+  .stages{display:flex;gap:0;min-width:880px;align-items:stretch}
+  .stagecol{flex:1;min-width:150px;position:relative;padding:0 6px}
+  .stagecap{text-align:center;font-weight:800;font-size:13px;color:var(--accent);margin-bottom:4px}
+  .stageday{text-align:center;font-size:11px;color:var(--mut);margin-bottom:10px}
+  .node{background:#FFF;border:2px solid var(--line);border-radius:12px;padding:9px 8px;margin:7px 0;
+    text-align:center;font-size:12.5px;position:relative}
+  .node b{display:block;font-size:13px}
+  .node small{color:var(--mut);font-size:11px}
+  .node.true{border-color:var(--accent);background:#FFF6EE}
+  .node.fork{border-color:var(--accent2);background:#F4FAEE}
+  .node.awaken{border-color:var(--gold);background:#FBF3DE}
+  .node.aura{border-color:var(--blue);background:#EFF4F8}
+  .forklabel{text-align:center;font-size:11px;color:var(--accent2);font-weight:700;margin:2px 0}
+  .arrowrow{display:flex;justify-content:center;color:#D9C7A4;font-size:18px;margin:-2px 0}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--mut);margin-top:8px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:12px;height:12px;border-radius:4px;display:inline-block}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:680px){.cols{grid-template-columns:1fr}}
+  .lcd{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+  .lcdbox{flex:none;width:150px;height:150px;border:3px solid #C9B68E;border-radius:14px;
+    background:linear-gradient(180deg,#F3F7E9,#E7EFD6);position:relative;overflow:hidden;display:grid;place-items:end center}
+  .lcdbox .safe{position:absolute;inset:14px 18px 10px;border:1px dashed #9DB07F;border-radius:8px;opacity:.6}
+  .lcdbox .blob{width:70px;height:54px;background:var(--accent);border-radius:50% 50% 46% 46%;margin-bottom:14px}
+  .lcdbox.over .blob{width:118px;height:104px;margin-bottom:0;border-radius:46%}
+  .lcdcap{font-size:12px;color:var(--mut);text-align:center;margin-top:6px}
+  .pill{font-size:11px;background:#FFF;border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--mut)}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  @media(max-width:680px){.grid3{grid-template-columns:1fr 1fr}}
+  .slot{background:#FFF;border:1px solid var(--line);border-radius:12px;padding:10px}
+  .slot b{font-size:13px}
+  .slot small{display:block;color:var(--mut);font-size:11.5px;margin-top:2px}
+  .foot{text-align:center;color:var(--mut);font-size:13px;margin-top:30px}
+  .callout{background:#F4FAEE;border:1px solid #CDE6BC;border-radius:12px;padding:12px 16px;margin:12px 0;font-size:14px}
+  .callout.warn{background:#FFF4EC;border-color:#FBD9C4}
+  .kv{font-size:13px;color:var(--mut)}
+  .kv b{color:var(--ink)}
+</style>
+</head>
+<body>
+<header class="hero">
+  <span class="badge">V2 DESIGN · REVIEW</span>
+  <h1>本命小宠 — 留存改版设计稿</h1>
+  <p class="sub">把 7 条运营痛点落成一版可实施的 V2。核心目标：让<strong>已经在玩的用户</strong>有持续上号的理由。</p>
+  <div class="goal">🎯 <b>北极星</b>：一个正常每天登录 1–2 次的玩家，能稳定玩 <b>≥50 天</b>、把宠物养到 <b>Lv30</b>，且全程每周都有新东西可期待。<br>
+  <span class="kv">基线（线上真实数据 06-27）：你的大熊 Lv20@18 天；头部用户海豹/克劳德 Lv14@6 天；21 只用户宠物里 17 只还在幼年。</span></div>
+  <nav class="toc">
+    <a href="#s1">①屏幕取景</a><a href="#s2">②经验曲线</a><a href="#s3">③进化树</a>
+    <a href="#s4">④濒危召回</a><a href="#s5">⑤配饰品类</a><a href="#s6">⑥连登/打卡</a>
+    <a href="#s7">⑦成年后纪元</a><a href="#s8">⑧50天旅程</a><a href="#s9">落地与改动量</a>
+  </nav>
+</header>
+<div class="wrap">
+
+<!-- 1 -->
+<section id="s1">
+  <div class="sec-h"><div class="num">1</div><div><h2>掌机屏幕取景 — 大宠不再溢出</h2></div></div>
+  <div class="pain"><b>痛点：</b>宠物越来越大，但模拟掌机屏幕还是这么大，会不会超出范围？</div>
+  <p class="now"><b>现状（代码）：</b><code>.stage-wrap</code> 高 220rpx、<code>.sprite</code> 208rpx 方框，体型 <code>sizeScale</code> 由 weight 线性映射到 <code>[0.92, 1.32]</code>（<code>WEIGHT_SIZE_RANGE</code>），weight 成年上限 <code>400</code>。成年满膘 ≈ 208×1.32 ≈ <b>275rpx</b>，已超出 220rpx 的取景高度 → <b>会顶出/被裁切</b>。</p>
+  <div class="lcd">
+    <div>
+      <div class="lcdbox over"><div class="safe"></div><div class="blob"></div></div>
+      <div class="lcdcap">现状：成年体顶破安全框 ⚠️</div>
+    </div>
+    <div style="font-size:26px;color:#D9C7A4">→</div>
+    <div>
+      <div class="lcdbox"><div class="safe"></div><div class="blob"></div></div>
+      <div class="lcdcap">V2：永远落在安全框内 ✅</div>
+    </div>
+    <div style="flex:1;min-width:220px">
+      <h3 style="margin-top:0">三条一起上</h3>
+      <ul>
+        <li><span class="tag t-fix">改</span> <b>取景框固定 + 安全区</b>：把舞台抽象成一块固定 LCD（如 <code>300rpx</code> 高、内缩 8% 安全区）。宠物锚点 <code>center bottom</code>，任何形态都必须画进安全区。</li>
+        <li><span class="tag t-fix">改</span> <b>每阶段归一化基准缩放</b>：每个 stage 的 idle 精灵渲染前先按"该 stage 目标占框比"归一（egg≈55% / baby≈62% / child≈70% / teen≈78% / adult≈84%）。"长大"的体感由<b>换 stage 精灵 + 取景缩小</b>表达，而不是无上限放大像素。</li>
+        <li><span class="tag t-fix">改</span> <b>收紧 within-stage 体型 band</b>：weight 在同一 stage 内只微调 <code>±7%</code>（<code>[0.96,1.06]</code>），保留"养胖了一点"的可见反馈，但绝不溢出。配一个相机 <b>轻微 zoom-out</b>：体型越大，舞台整体缩 2–4%，越显"它在画面里更有分量"。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout">📐 <b>验收</b>：adult + 满 weight + 戴最高的帽子（含 V2 新增的"光环/背景"槽）时，精灵 + 配饰 + 顶部 Zzz/心情 FX 全部落在安全区内，且 child→adult 肉眼能感到"它真的变大了一圈"。</div>
+</section>
+
+<!-- 2 -->
+<section id="s2">
+  <div class="sec-h"><div class="num">2</div><div><h2>经验曲线 — 不再"一登就升两级"</h2></div></div>
+  <div class="pain"><b>痛点：</b>升级经验没有曲线吗？感觉每次登录都能升一两级。</div>
+  <p class="now"><b>现状：</b>等级是从 exp 实时派生（不存库）：<code>Lv = 1 + ⌊(−60 + √(3600+40·exp))/20⌋</code>，即 <code>到达 Lv N 累计 = 60(N−1)+10(N−1)²</code>。低级段每级间隔只有 60–230 exp，而一个活跃日产出 ~300–450 exp（头部用户 6 天到 Lv14 ≈ 430/天），所以早期"一登升两级"，且没有<b>每日上限</b>去节流——成长全靠堆点击。</p>
+  <h3>两个杠杆</h3>
+  <ul>
+    <li><span class="tag t-new">新</span> <b>每日成长 EXP 软上限 <code>dailyCap(Lv) = 300 + 12·Lv</code></b>：每个本地日（午夜重置）能<b>计入升级</b>的成长 exp 有上限。超出后当天的照顾仍给亲密度/心情/体型反馈，但 exp 转成"明天再算"。→ 杜绝囤一波点爆 3–4 级，把成长摊成<b>每天一点</b>的仪式。</li>
+    <li><span class="tag t-fix">改</span> <b>更陡的每级间隔 <code>gap(Lv) = 90 + 20·Lv + 1.1·Lv²</code></b>：早期仍 ~1 级/天（有正反馈），Lv12 起每级 >1 天，Lv20+ 每级 2–3 天，Lv25+ 约 3 天/级。到 Lv30 累计 ≈ <b>20,700 exp</b>（现行只要 10,150）。</li>
+  </ul>
+  <table>
+    <tr><th>到达</th><th>新累计 EXP</th><th>本级间隔</th><th>每日上限</th><th>≈ 用时(天)</th><th>体感</th></tr>
+    <tr><td>Lv5</td><td>~620</td><td>188</td><td>360</td><td>4</td><td>每天升级，新手爽</td></tr>
+    <tr><td>Lv10</td><td>~2,000</td><td>359</td><td>408</td><td>9</td><td>~1 级/天</td></tr>
+    <tr><td>Lv15</td><td>~4,400</td><td>586</td><td>468</td><td>18</td><td>~2 天/级，开始有分量</td></tr>
+    <tr><td>Lv20</td><td>~8,200</td><td>867</td><td>528</td><td>28</td><td>2–3 天/级</td></tr>
+    <tr><td>Lv25</td><td>~13,600</td><td>1,204</td><td>588</td><td>39</td><td>3 天/级，靠里程碑驱动</td></tr>
+    <tr><td><b>Lv30</b></td><td>~20,700</td><td>1,595</td><td>648</td><td><b>~54</b></td><td>纪元玩家的远期目标</td></tr>
+  </table>
+  <div class="callout">⚙️ <b>迁移</b>：曲线变陡会让现有高 exp 宠物的 Lv 数字回落（如大熊 4813 exp 现 Lv20 → 新曲线约 Lv13）。<b>方案</b>：上线时一次性把存量 exp 按 <code>新累计⁻¹(旧Lv)</code> 平移补偿，保证"等级数字不倒退"，只是之后涨得更有节奏。具体补偿表随实现给出。</div>
+</section>
+
+<!-- 3 -->
+<section id="s3">
+  <div class="sec-h"><div class="num">3</div><div><h2>进化树 — 从"只变一次"到三段抉择 + 光环</h2></div></div>
+  <div class="pain"><b>痛点：</b>宠物只变形一次还是单调，需要在合适的时机增加进化。设计更多进化路线是个很大的工程。</div>
+  <p class="now"><b>现状：</b>只有 <b>child→teen 一个 fork</b>（真形 + 3 个谱系变体，玩家在 modal 里选 <code>POST /api/pet/evolve</code>）；teen→adult 自动、成年后再无形态变化。</p>
+  <h3>V2 进化树（以海豹 <code>seal</code> 为例，6 条线同构）</h3>
+  <div class="tree">
+    <div class="stages">
+      <div class="stagecol">
+        <div class="stagecap">蛋 · 幼年 · 童年</div><div class="stageday">day 0–5</div>
+        <div class="node"><b>🥚 → 🐣 → 团团崽</b><small>自动成长，无抉择</small></div>
+        <div class="forklabel">↓ 自动</div>
+      </div>
+      <div class="stagecol">
+        <div class="stagecap">少年 · 抉择①</div><div class="stageday">≈ day 12</div>
+        <div class="forklabel">谱系变体（保留现有）</div>
+        <div class="node fork"><b>雪团 / 阔鼻 / 豹斑</b><small>真形 + 3 近缘种<br>玩家选</small></div>
+      </div>
+      <div class="stagecol">
+        <div class="stagecap">成年 · 抉择②</div><div class="stageday">≈ day 21</div>
+        <div class="forklabel">成体特化（新增）</div>
+        <div class="node fork"><b>圆乎 / 矫健 / 威严</b><small>体态特化：3 种姿态/比例<br>各带专属待机动作</small></div>
+      </div>
+      <div class="stagecol">
+        <div class="stagecap">觉醒 · 抉择③</div><div class="stageday">≈ day 30 · Lv20</div>
+        <div class="forklabel">本命觉醒（新增 · 大事件）</div>
+        <div class="node awaken"><b>✦ 星辉 / 月华 / 潮汐 ✦</b><small>觉醒形：调色板焕新<br>+ 光环 overlay + 专属心声</small></div>
+      </div>
+      <div class="stagecol">
+        <div class="stagecap">纪元 · 持续</div><div class="stageday">day 30 → 50+</div>
+        <div class="forklabel">季节/羁绊光环（可切换）</div>
+        <div class="node aura"><b>四季 & 羁绊光环</b><small>樱/夏/枫/雪 + bond 850/1000<br>不改本体，叠 overlay</small></div>
+      </div>
+    </div>
+  </div>
+  <div class="legend">
+    <span><span class="dot" style="background:var(--accent)"></span>真形/自动</span>
+    <span><span class="dot" style="background:var(--accent2)"></span>玩家抉择 fork</span>
+    <span><span class="dot" style="background:var(--gold)"></span>觉醒（里程碑大事件）</span>
+    <span><span class="dot" style="background:var(--blue)"></span>光环 overlay（可切换/收集）</span>
+  </div>
+  <h3>为什么这套美术工程量可控</h3>
+  <ul>
+    <li><span class="tag t-keep">复用</span> <b>抉择①</b> 谱系变体已有美术，原样保留。</li>
+    <li><span class="tag t-new">中等</span> <b>抉择② 成体特化</b>：3 选 1，但用<b>同一 adult 基底 + 体态变形/比例 tween</b>（圆乎=胖、矫健=瘦长、威严=挺立）+ 一两处局部部件，避免重画整套。</li>
+    <li><span class="tag t-new">低</span> <b>抉择③ 觉醒</b> 与 <b>光环/季节</b>：走现有<b>配饰 overlay 同款管线</b>（调色板替换 + 共享光环/粒子贴图叠加），<b>0 新增本体姿态</b>。一张 ~10KB 光环图集复用全 6 线。</li>
+  </ul>
+  <div class="callout">🌱 <b>抉择节奏</b>：day12 / day21 / day30 三个"我的宠物长成了我选的样子"高光时刻，正好卡在用户最可能流失的第 2/3/4 周，每个都是<b>分享/截图</b>的天然钩子。</div>
+</section>
+
+<!-- 4 -->
+<section id="s4">
+  <div class="sec-h"><div class="num">4</div><div><h2>濒危召回 — 吓一跳，但永不真死</h2></div></div>
+  <div class="pain"><b>痛点：</b>可以增加宠物濒死系统吸引用户返回。</div>
+  <div class="callout warn">⚠️ <b>红线</b>：产品核心承诺是"<b>永不死亡、永不丢失、软可逆</b>"。所以做的是"<b>濒危假警报</b>"，不是真死亡——制造担心与回访动机，但回来一摸就满血复活，绝不惩罚。</div>
+  <h3>虚弱 → 濒危 级联</h3>
+  <table>
+    <tr><th class="l">阶段</th><th>触发</th><th>表现</th><th>召回</th></tr>
+    <tr><td class="l">😟 蔫蔫</td><td>health &lt; 30 持续</td><td>专属虚弱待机 + 灰调 + 委屈心声</td><td>应用内角标</td></tr>
+    <tr><td class="l">🆘 濒危</td><td>health 触底 <code>15</code> 且 &gt;24h 无照顾</td><td>趴下/打颤特写，一句"快撑不住了…"心声，屏幕暗角</td><td><b>订阅消息推送</b>"你的{名字}快撑不住了，回来看看它"</td></tr>
+    <tr><td class="l">💖 复活</td><td>玩家返回并完成 1 次照顾</td><td>满血+一段"还好你回来了"的感人 reunion 心声 + 爱心爆</td><td>—（给一点"愧疚转感动"的留存燃料）</td></tr>
+  </table>
+  <ul>
+    <li><span class="tag t-new">新</span> 复用已有 <code>health</code> / <code>HEALTH_FLOOR=15</code> / <code>state_flags</code>，新增 <code>CRITICAL</code> 状态位与一张濒危待机图（每线 1 张，或共享 sad 基底 + 暗角 overlay）。</li>
+    <li><span class="tag t-new">新</span> 推送走微信<b>订阅消息</b>（DB 已有 <code>sub_opt_in</code> 字段，目前未接）——濒危是最有正当性的推送理由，顺手把订阅消息闭环做起来。</li>
+    <li>🛡️ <b>反焦虑保险</b>：濒危每 <b>3 天最多触发 1 次</b>；连续登录中的玩家永不进入濒危；复活后给一个短暂"免疫期"。绝不让它变成 FOMO。</li>
+  </ul>
+</section>
+
+<!-- 5 -->
+<section id="s5">
+  <div class="sec-h"><div class="num">5</div><div><h2>配饰系统 — 多品类 + 等级解锁</h2></div></div>
+  <div class="pain"><b>痛点：</b>配饰系统需要增加对不同等级的限制和品类。</div>
+  <p class="now"><b>现状：</b>单槽位（<code>hat</code>），7 顶帽子，compute-on-read 解锁（always/stage/streak/days/bond）；其中只有巫师帽(bond700)/皇冠(成年)在后期解锁，~day7 基本拿全。</p>
+  <h3>V2：6 个品类槽位（<code>deco.ts</code> 扩成多 slot + Lv 解锁条件）</h3>
+  <div class="grid3">
+    <div class="slot"><b>👒 头饰 Hat</b><small>沿用现有 7 顶 + 季节款</small></div>
+    <div class="slot"><b>🧣 颈饰 Collar</b><small>围巾/铃铛/项链，Lv 解锁</small></div>
+    <div class="slot"><b>🖼️ 背景 Backdrop</b><small>窝/书房/海边/星空，stage+Lv</small></div>
+    <div class="slot"><b>🧸 手持 Prop</b><small>小玩具/气球/灯笼，bond/streak</small></div>
+    <div class="slot"><b>✨ 光环 Aura</b><small>觉醒/季节 overlay，Lv20+</small></div>
+    <div class="slot"><b>🟫 足垫 Base</b><small>坐垫/草地/浮冰，days 解锁</small></div>
+  </div>
+  <ul style="margin-top:14px">
+    <li><span class="tag t-new">新</span> 新增解锁类型 <code>{ type:"level"; lv:N }</code>，把<b>等级直接变成配饰货币</b>——这正是"Lv 有什么用"的答案：每升几级解锁一件新装扮。</li>
+    <li>解锁曲线<b>铺满 50 天</b>：Lv5/8/12/16/20/24/28/30 各解锁不同品类的件，配合 streak/bond/season，让"今天差 1 件就齐了"的收集欲长期在线。</li>
+    <li>渲染沿用现有 <code>.deco-hat</code> overlay 思路：每个 slot 一个 208rpx 对齐层 + <code>head-anchors.json</code> 式锚点表，<b>0 改本体精灵</b>。</li>
+  </ul>
+</section>
+
+<!-- 6 -->
+<section id="s6">
+  <div class="sec-h"><div class="num">6</div><div><h2>连续登录 / 打卡奖励</h2></div></div>
+  <div class="pain"><b>痛点：</b>可以增加连续登录奖励、打卡奖励，你自己决定。</div>
+  <p class="now"><b>现状：</b>DB <b>已有</b> <code>streak_days / streak_state(active|grace) / max_streak_reached</code> 与 1 天 grace 宽限，但只用于解锁毛线帽 + 少量心声，没有<b>每日礼</b>。</p>
+  <h3>V2 打卡轨道（直接复用 streak 字段）</h3>
+  <table>
+    <tr><th>连登</th><th>每日礼</th><th>里程碑</th></tr>
+    <tr><td>day 1–6</td><td class="l">小额成长 exp 加成（不破每日上限，只是更快触顶）+ 心情</td><td class="l">day3 → 毛线帽（已有）</td></tr>
+    <tr><td>day 7</td><td class="l">配饰碎片 / 一件颈饰</td><td class="l">🎖️ 周勋章 + 相册页</td></tr>
+    <tr><td>day 14</td><td class="l">进化加速券（抉择②提前 1 天）</td><td class="l">背景解锁</td></tr>
+    <tr><td>day 30 / 60 / 100</td><td class="l">专属光环 / 称号 / 季节款</td><td class="l">🏆 纪元徽章（见 §7）</td></tr>
+  </table>
+  <ul>
+    <li><span class="tag t-keep">复用</span> <b>补签宽限</b>：沿用 <code>streak_state=grace</code>，漏一天不断签（软可逆，不制造愧疚）；周末容忍阈值同 /status cron 约定。</li>
+    <li>打卡 = <b>每日唯一焦点卡</b>的收尾动作（"✓ 明天见"时盖个章），不新增繁琐按钮，契合 REDESIGN_V2 的"一个终点线"原则。</li>
+  </ul>
+</section>
+
+<!-- 7 -->
+<section id="s7">
+  <div class="sec-h"><div class="num">7</div><div><h2>成年后的"纪元" — Lv20 之后为什么还上号</h2></div></div>
+  <div class="pain"><b>痛点：</b>玩到 20 级以后缺乏登录动力，宠物升级对我没区别，没有上号的动力。</div>
+  <p>把"上号理由"从<b>裸等级数字</b>解耦到一组<b>长尾收集与情感轨道</b>，每周都有新东西熟成：</p>
+  <div class="cols">
+    <div>
+      <h3>📖 心声相册 / 记忆</h3>
+      <ul><li>里程碑触发的专属心声、第一次濒危复活、每个抉择日，自动收进一本<b>相册</b>，按周/月成页。</li>
+      <li>"它还记得我们一起…"——这是最便宜的 aliveness 保险，给硬核玩家"翻看我们的历史"的理由。</li></ul>
+      <h3>🌳 星图 / 成长树</h3>
+      <ul><li>一张 50 天慢慢点亮的星图：每个 stage、抉择、连登里程碑、配饰收集点亮一颗星，<b>可视化"我们走了多远"</b>。</li></ul>
+    </div>
+    <div>
+      <h3>🏅 称号系统</h3>
+      <ul><li>Lv / 天数 / bond / 收集度 解锁称号（如"相伴百日""本命满羁绊""四季见证者"），显示在主页与分享卡。</li></ul>
+      <h3>✦ 觉醒 & 季节</h3>
+      <ul><li>§3 的觉醒形（day30）+ 四季光环（每季一套）+ bond 850/1000 的稀有光环，构成<b>成年后持续的视觉新鲜感</b>。</li>
+      <li>Lv 仍每 2–3 天涨一格、每几级解锁配饰，所以等级<b>始终对应一个具体的解锁</b>，不再是空数字。</li></ul>
+    </div>
+  </div>
+  <div class="callout">🎯 <b>一句话</b>：Lv20 后的玩家，每天上号是为了——推进当前 fork / 凑齐这周的配饰 / 点亮下一颗星 / 看今天的专属心声 / 不断连登拿月度款。升级只是这些的节拍器。</div>
+</section>
+
+<!-- 8 -->
+<section id="s8">
+  <div class="sec-h"><div class="num">8</div><div><h2>50 天旅程 — 每周都有盼头</h2></div></div>
+  <table>
+    <tr><th>时间</th><th>等级</th><th>大事件</th><th>这周为什么上号</th></tr>
+    <tr><td>day 0–1</td><td>Lv1–2</td><td class="l">测验 → 孵化本命宠</td><td class="l">认识它、第一个照顾闭环</td></tr>
+    <tr><td>day 2–5</td><td>Lv3–6</td><td class="l">幼年→童年，连登起步</td><td class="l">每天升级 + 拿前几件配饰</td></tr>
+    <tr><td>day ~12</td><td>~Lv12</td><td class="l">🌿 <b>抉择① 谱系变体</b></td><td class="l">"我要把它养成哪一种"</td></tr>
+    <tr><td>day ~21</td><td>~Lv16</td><td class="l">💪 <b>抉择② 成体特化</b> + 周勋章</td><td class="l">成年体态揭晓 + 背景解锁</td></tr>
+    <tr><td>day ~30</td><td>~Lv20</td><td class="l">✦ <b>抉择③ 本命觉醒</b>（大事件）</td><td class="l">觉醒焕新 + 进入纪元轨道</td></tr>
+    <tr><td>day 31–45</td><td>Lv20–27</td><td class="l">四季光环 / 称号 / 星图 / 月度连登款</td><td class="l">收集 + 相册 + 稀有光环</td></tr>
+    <tr><td>day ~50</td><td><b>Lv30</b></td><td class="l">🏆 满羁绊(1000) + 纪元徽章</td><td class="l">远期目标达成，仍有季节款续航</td></tr>
+  </table>
+  <div class="callout">每个潜在流失点（第 2/3/4 周）都压了一个<b>抉择/解锁大事件</b>；周内的日常由连登 + 配饰收集 + 每日心声托底。</div>
+</section>
+
+<!-- 9 -->
+<section id="s9">
+  <div class="sec-h"><div class="num">9</div><div><h2>落地与改动量评估</h2></div></div>
+  <table>
+    <tr><th class="l">模块</th><th>改动</th><th>美术</th><th>工程量</th></tr>
+    <tr><td class="l">①屏幕取景</td><td>纯前端：取景框 + per-stage 归一 + 收紧 band + 相机</td><td>无</td><td>小</td></tr>
+    <tr><td class="l">②经验曲线 + 每日上限</td><td><code>levels.ts</code> 重算 + tick 加 dailyCap + 存量平移迁移</td><td>无</td><td>小–中</td></tr>
+    <tr><td class="l">③进化树（抉择②③）</td><td><code>lines.json</code>/<code>evolve.ts</code> 扩 fork；新 evolve 节点 + modal</td><td>抉择②中 / 觉醒&光环低(overlay)</td><td>中</td></tr>
+    <tr><td class="l">④濒危召回</td><td><code>CRITICAL</code> 状态位 + 订阅消息接入(<code>sub_opt_in</code>)</td><td>每线 1 张虚弱图或共享</td><td>中</td></tr>
+    <tr><td class="l">⑤配饰品类</td><td><code>deco.ts</code> 多 slot + <code>level</code> 解锁 + 锚点表</td><td>每件 overlay 图</td><td>中（含画货）</td></tr>
+    <tr><td class="l">⑥连登/打卡</td><td>复用已有 streak 字段，加每日礼发放表</td><td>勋章小图</td><td>小</td></tr>
+    <tr><td class="l">⑦纪元（相册/星图/称号）</td><td>新 UI 页 + 里程碑事件落库（<code>growth_event</code> 已有）</td><td>UI 资源</td><td>中</td></tr>
+  </table>
+  <div class="callout">📦 <b>建议上线顺序</b>（按"性价比/见效快"）：①屏幕取景 → ⑥连登每日礼 → ②经验曲线 → ④濒危召回 → ⑤配饰品类 → ③进化抉择②③ → ⑦纪元轨道。前 4 项可在 ~1 周内见到留存动作，后 3 项是吃美术的长尾。</div>
+  <p class="kv">所有数值都集中在 <code>web/src/lib/game/constants.ts</code> / <code>levels.ts</code> / <code>data/*.ts</code>，沿用现有 compute-on-read + 服务器权威 + 无 LLM 架构，无需新依赖。</p>
+</section>
+
+<p class="foot">本命小宠 · V2 设计稿 — 供 review。改动点、数值、上线顺序均可逐条讨论后再开工。<br>
+生成于 <span id="ts"></span>，基于线上真实代码与数据。</p>
+</div>
+<script>document.getElementById('ts').textContent=new Date().toISOString().slice(0,10);</script>
+</body>
+</html>
