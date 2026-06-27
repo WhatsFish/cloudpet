@@ -149,8 +149,23 @@ export const WEIGHT_PER_DAY = 14;           // base daily gain at neutral care
 export const WEIGHT_FEED = 3;               // +per feed (a good meal → grew a bit)
 export const WEIGHT_CARE: [number, number] = [0.5, 1.25]; // daily-gain multiplier by avg stat
 export const WEIGHT_STAGE_MAX: Record<Stage, number> = { egg: 110, baby: 155, child: 215, teen: 300, adult: 400 };
-export const WEIGHT_SIZE_SPAN = 230;        // weight above START that maps to the full size range
-export const WEIGHT_SIZE_RANGE: [number, number] = [0.92, 1.32]; // display scale at START..START+SPAN
+export const WEIGHT_SIZE_SPAN = 230;        // weight above START that maps to the full size range (legacy)
+export const WEIGHT_SIZE_RANGE: [number, number] = [0.92, 1.32]; // display scale at START..START+SPAN (legacy)
+
+// V2 体型显示 (screen-fit): STAGE drives the big size step (authored target占框比), WEIGHT only nudges
+// ±SIZE_WITHIN_BAND inside a stage. This BOUNDS the sprite so even an adult at full weight + tallest
+// hat fits the LCD safe frame (the old single weight→[0.92,1.32] range let adult hit 1.32 and 顶破取景框).
+// "长大" reads via the stage step (and a subtle camera zoom-out on the client), not unbounded scaling.
+export const STAGE_SIZE_BASE: Record<Stage, number> = { egg: 0.62, baby: 0.72, child: 0.84, teen: 0.95, adult: 1.04 };
+export const SIZE_WITHIN_BAND = 0.06; // ±6% within a stage, by where weight sits in the stage's band
+// floor = the previous stage's weight ceiling (egg floor = START); ceil = this stage's WEIGHT_STAGE_MAX.
+export const STAGE_WEIGHT_FLOOR: Record<Stage, number> = { egg: WEIGHT_START, baby: 110, child: 155, teen: 215, adult: 300 };
+export function displaySizeScale(stage: Stage, weight: number): number {
+  const floor = STAGE_WEIGHT_FLOOR[stage];
+  const ceil = WEIGHT_STAGE_MAX[stage];
+  const norm = ceil > floor ? Math.max(0, Math.min(1, (weight - floor) / (ceil - floor))) : 0.5;
+  return +(STAGE_SIZE_BASE[stage] * (1 + SIZE_WITHIN_BAND * (2 * norm - 1))).toFixed(3);
+}
 
 // --- 灵感火花 / sparks (V8): banked "tap-for-EXP" sparks that regen over time AND while you
 // linger. Gives every visit a fresh thing to do for growth (not just 陪玩/摸摸), and keeps

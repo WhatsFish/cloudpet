@@ -37,7 +37,10 @@ page { font-family: "Zpix", "PingFang SC", -apple-system, "Microsoft YaHei", san
 .lvfill { height:100%; background:var(--accent); border-radius:999rpx; transition:width 0.4s ease; }
 .roadtxt { flex:1; font-size:21rpx; color:var(--lcd-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-.stage-wrap { position:relative; z-index:2; display:flex; justify-content:center; align-items:flex-end; height:220rpx; }
+/* V2 screen-fit: taller fixed stage viewport so the bounded sprite (≤~1.10× of 208rpx ≈ 229rpx) plus
+   the tallest hat/光环 overlay and top FX always sit INSIDE the frame, feet planted (align flex-end).
+   Body size is now stage-driven & capped backend-side (displaySizeScale), so this never overflows. */
+.stage-wrap { position:relative; z-index:2; display:flex; justify-content:center; align-items:flex-end; height:252rpx; }
 .sprite { width:208rpx; height:208rpx; image-rendering:pixelated; -ms-interpolation-mode:nearest-neighbor; }
 /* particle burst (multiple flying emojis per action) */
 .particle { position:absolute; top:70rpx; font-size:40rpx; animation:floatburst 1s ease-out forwards; }

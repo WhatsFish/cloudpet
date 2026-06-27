@@ -8,7 +8,7 @@ import { capForStage, effectiveMinDays, expForNextStage, nextStage, pendingTeenF
 import {
   ACTIONS, CARE_COVERED_AT, NIGHT_FROM, NIGHT_TO, SLEEPY_ENERGY,
   DECAY, M_STAGE, NEED_THRESH, SPARK_MAX, SPARK_REGEN_MS,
-  WEIGHT_START, WEIGHT_SIZE_RANGE, WEIGHT_SIZE_SPAN,
+  displaySizeScale,
   BOND_SPEED_FULL, CARE_NEEDS, NEED_REWARD, careExp,
 } from "@/lib/game/constants";
 import { recompute } from "@/lib/game/tick";
@@ -319,7 +319,7 @@ export function buildPetView(rows: Rows, o: ViewOpts): PetView {
     recap: o.recap,
     growthPerDay: Math.round(passiveRatePerHour(state, capForStage(pet.stage)) * 24),
     weight: Math.round(state.weight),
-    sizeScale: WEIGHT_SIZE_RANGE[0] + (WEIGHT_SIZE_RANGE[1] - WEIGHT_SIZE_RANGE[0]) * Math.max(0, Math.min(1, (state.weight - WEIGHT_START) / WEIGHT_SIZE_SPAN)),
+    sizeScale: displaySizeScale(pet.stage, state.weight),
     sparks: rows.sparks,
     // min 1s below cap so the client never sees eta 0 with sparks<6 (would trip the ticker's refresh loop)
     sparkEtaSec: rows.sparks >= SPARK_MAX ? 0 : Math.max(1, Math.round((SPARK_REGEN_MS - (o.nowMs - (rows.sparksAt ?? o.nowMs))) / 1000)),
