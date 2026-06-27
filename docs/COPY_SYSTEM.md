@@ -1,5 +1,8 @@
 # 灵气 / 文案系统 (Copy System)
 
+> ⚠️ **过时提示（V8 roster）**：本文档成文于早期 **10 原型 / “3 只 + 7 占位”** 方案，其中具体怪物名（布丁团子 / 影狐 / 夜灯蛾 / `mochi_pudding` / `echo_fox` …）**均已退役**。线上实际是 **6 只全量怪**：奶团 `puff` / 克劳德 `claude` / 方头崽 `blocky` / 波波企鹅 `penguin` / 墩墩熊 `bear` / 团团海豹 `seal`。当前图谱与真相源见 **`docs/BESTIARY.md`** + `web/src/data/{personality.ts,lines.json,bestiary.ts}`。下文的系统/设计思路多数仍适用，只把怪物名当历史示例读。
+
+
 This is a pure design task within a locked spec. No code to read, no LLM provider work (the product explicitly forbids runtime LLM calls), and no skill matches a copywriting/design deliverable. I'll produce the spec directly.
 
 # 云宠物 COPY ("灵气") SYSTEM — Architecture + Sample Content (V1)

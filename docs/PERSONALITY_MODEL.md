@@ -1,5 +1,12 @@
 # 性格模型 (Personality Model)
 
+> **Roster note (V8):** the **3-axis model below is still live and correct**, but the roster shrank
+> from 10 archetypes to **6** (奶团 `puff` / 克劳德 `claude` / 方头崽 `blocky` / 波波企鹅 `penguin` /
+> 墩墩熊 `bear` / 团团海豹 `seal`), all shipped — see the updated 原型 table and `web/src/data/personality.ts`.
+> The old archetype names (`mochi_pudding`, `echo_fox`, `wisp_moth`, …) used as **examples in the prose
+> sections further down are retired**; read them as illustrations of the axis mechanics, not the current
+> roster. Canonical roster: `docs/BESTIARY.md`.
+
 ## 维度 Axes
 
 | Axis | Low pole (−) | High pole (+) | Drives |
@@ -8,20 +15,23 @@
 | **好奇 ↔ 安稳** | 安稳 (homebody, loves routine, soothed by the familiar, resists novelty) | 好奇 (adventurous, restless, novelty-hungry, gets bored, always poking at things) | Combined CURIOSITY + ENERGY axis — how much the pet seeks stimulation. Drives the energy/boredom stat decay and which activities it craves. High-好奇 pets get bored fast (boredom decays quick), love new foods/toys/explore animations, idle-fidget, and reward variety; 安稳 pets are calmed by repetition, prefer comfort food and naps, decay boredom slowly, and reward consistency. Folding 'novelty-seeking' and 'physical liveliness' into one axis keeps the model to 3 dimensions while still separating the restless explorer from the cozy sleepyhead. |
 | **理性 ↔ 撒娇** | 理性 (composed, dignified, deadpan, self-regulating, dry-witted) | 撒娇 (dramatic, emotive, big feelings, theatrical, wears heart on sleeve) | EXPRESSIVENESS / temperament axis — the VOLUME and theatricality of the pet's emotional output, independent of how much it actually needs you. This is the axis that most shapes COPY TONE (the heart of an LLM-free product): a 撒娇 pet narrates every feeling with exclamation marks, pouts, and 颜文字; a 理性 pet delivers dry one-liners and understated approval. Two pets can be equally attached (黏人) yet feel totally different because one sobs and one smirks. Drives mood-swing amplitude: high-撒娇 pets flip moods fast and big (great animation payoff), 理性 pets simmer subtly. This axis exists specifically to multiply copy-bank distinctiveness across archetypes. |
 
-## 10 原型 Archetypes
+## 6 原型 Archetypes (V8 — `web/src/data/personality.ts`)
 
-| key | nameCN | axisProfile | vibe | coreNeed | feedingTilt |
+Anchor = fixed point in axis space `(attach 黏人↔独立, curio 好奇↔安稳, express 撒娇↔理性)`, range ≈ −8…+8.
+express is weighted highest in matching (`MATCH_WEIGHTS.express = 1.3`). All 6 are `shipped: true`.
+
+| key | nameCN | anchor (attach/curio/express) | vibe | coreNeed | feedingTilt（`bestiary.ts`） |
 |---|---|---|---|---|---|
-| `mochi_pudding` | 布丁团子 | 黏人 HIGH · 安稳 HIGH (低好奇) · 撒娇 HIGH | 一坨会哭会笑的果冻，黏在你手心里抖啊抖，最怕你走开。 | 稳定的陪伴与抱抱——只要你在、只要一切照旧，它就是世界上最幸福的团子。 | 孤独值掉得最快、无聊值掉得最慢。爱吃软糯甜食(布丁/麻薯/温奶)，活动偏好抱抱、贴贴、一起午睡；新奇玩具会把它吓到躲起来。 |
-| `sproutling` | 豆芽崽 | 黏人 MID-HIGH · 好奇 HIGH · 撒娇 MID | 顶着一片嫩叶到处探头探脑的小苗，看见新东西眼睛就发光，又要拉着你一起看。 | 和你一起发现新鲜事——陪伴对它=共同探索，独自精彩它会觉得有点空。 | 无聊值掉得快，需要常换玩具/新食材。杂食爱尝鲜(每天想吃不一样的)，活动偏好探险、种东西、开盲盒；最佳护理是'带它见世面'。 |
-| `ember_imp` | 暴脾气小火苗 | 黏人 HIGH · 好奇 MID-HIGH · 撒娇 HIGH (情绪幅度最大) | 一点就着、一哄就笑的小火球，前一秒炸毛后一秒扑进你怀里，戏精本精。 | 被立刻回应的存在感——它要的不是安静陪伴，而是你看见它、哄它、和它互动的实时反馈。 | 心情值波动最剧烈、赌气/离家躲起来触发最频繁(但最好哄)。爱吃辣口/重口/碳酸,活动偏好打闹、追逐、比赛;忽视它会上演全套闹脾气动画,一句软话就破涕为笑。 |
-| `stone_egg` | 闷墩儿 | 黏人 MID · 安稳 HIGH (低好奇) · 理性 HIGH | 一块圆滚滚、慢吞吞、话很少的小石头精，你不催它它能在原地满足一整天。 | 不被打扰的安稳与可预测的节奏——它用'始终都在'来表达爱,不需要轰轰烈烈。 | 所有值掉得都慢、最耐养、最适合佛系/忙碌玩家。爱吃管饱的实在食物(饭团/烤红薯),活动偏好晒太阳、发呆、堆叠;反应文案是冷面金句风,夸它它只回一个'嗯'。 |
-| `echo_fox` | 影狐 | 独立 HIGH · 好奇 HIGH · 理性 HIGH | 一只清冷又精明的小狐狸,自己玩得很好,偶尔赏你一个眼神,把你迷得团团转。 | 被尊重的距离感+智识上的新鲜——它的爱是稀有的、要靠你去赢得的,所以格外珍贵。 | 孤独值掉得最慢(漏几天也不慌),无聊值掉得快但靠'谜题'而非'陪玩'解决。爱吃精致小份/野味,活动偏好解谜、独自夜巡、藏东西;它主动靠近你的那一刻是高光奖励。 |
-| `puff_seal` | 奶盖海豹 | 黏人 HIGH · 安稳 MID · 撒娇 MID-HIGH | 圆乎乎一坨奶油海豹,见你就'啊呜~'地拱过来求摸,温吞又治愈。 | 持续的温柔接触与被需要感——它要的是细水长流的撒娇,不闹也不冷,只要你别忘了它。 | 孤独值中速下降但'抚摸/互动'回血最有效。爱吃冰凉奶制品(奶盖/酸奶/刨冰),活动偏好滑行、顶球、被梳毛;心情低落时会发出软糯哼唧但不会真的躲起来,极易安抚。 |
-| `wisp_moth` | 夜灯蛾 | 独立 MID-HIGH · 好奇 HIGH · 撒娇 MID (夜行倾向) | 一只举着小灯笼的发光蛾子,白天蔫蔫的,一到晚上就精神,带你看只有它知道的风景。 | 在'它的时间'(夜晚)被看见——昼夜节律是它的人设核心,深夜陪它=最高亲密度。 | 时间维度变化最强:白天能量/心情低迷、入夜全面回升,反应文案随时段切两套语气。爱吃夜宵/发光浆果,活动偏好夜游、追光、收集星星;晚上喂养体验远好于白天,适合夜猫子玩家。 |
-| `clay_golem` | 陶土憨憨 | 黏人 MID-HIGH · 安稳 HIGH · 撒娇 LOW-MID (理性偏憨) | 一尊笨手笨脚的小陶人,忠厚、慢热、认死理,认定你之后就一根筋地跟着你。 | 被托付的责任感与稳定的羁绊——它把'守护你'当本职,routine被打乱会不知所措但绝不离开。 | 忠诚度型:孤独值慢、但'长期陪伴累积'有专属加成(连续登录奖励对它最高)。爱吃朴素扎实的食物,活动偏好搬运、守门、固定散步路线;文案憨直可靠,不会撒娇但会默默把好东西留给你。 |
-| `spark_sprite` | 电跳豆 | 独立 MID · 好奇 HIGH · 撒娇 HIGH (活泼炸裂) | 一颗停不下来的电气小豆子,蹦来蹦去噼啪作响,自己就能嗨翻天,还要拉你一起疯。 | 释放过剩精力的出口——它不黏你但需要你提供'玩的舞台',无聊就自己搞破坏式娱乐。 | 能量/无聊值掉得极快、最需要高频互动的'电量型'宠物,适合活跃玩家。爱吃高糖/带气食物,活动偏好跑酷、蹦迪、电玩;精力没处发会自己乱蹦触发搞笑闹腾动画(非赌气,是嗨过头)。 |
-| `dream_jelly` | 梦泡水母 | 独立 MID-HIGH · 安稳 HIGH · 撒娇 MID (感性·梦幻) | 一只半透明、慢悠悠飘着的水母,爱做梦爱发呆,情绪像潮水一样温柔起落。 | 被理解的内心世界与不被催促的留白——它感性但不外放,需要你读懂它的'氛围'而非逗它。 | 心情值随天气/时段缓慢漂移(阴雨更梦幻、晴天更明亮),反应文案诗意飘忽。爱吃清凉流食(海盐汽水/星空冻),活动偏好漂浮、看云、讲梦话;护理重点是'陪它静静待着',吵闹活动反而扣心情。 |
+| `puff` | 奶团 | 7 / −4 / 5 | 软乎乎黏人团子，一切照旧最幸福 | 稳稳的陪伴与抱抱 | 孤独快(lonely 36h)、心情衰减快(×1.15)；喂食 moodBonus +3，最爱被抱。 |
+| `claude` | 克劳德 | 3 / 7 / 1 | 好奇又淡定，爱捣鼓爱陪你做事 | 和你一起鼓捣新鲜事 | 情绪平和、能量衰减略慢(×0.95)、lonely 60h；陪伴=一起做事。 |
+| `blocky` | 方头崽 | −3 / −6 / −6 | 复古冷面，话少金句最省心 | 不被打扰的安稳节奏 | 全员低分锚点，最耐养：心情衰减慢(×0.8)、lonely 80h；夸它只回"嗯"。 |
+| `penguin` | 波波企鹅 | −5 / 5 / −3 | 高冷优雅，慢条斯理看世界 | 被尊重的距离感 | 独立耐放(lonely 72h)、心情稳(×0.85)；要的是距离感。 |
+| `bear` | 墩墩熊 | 5 / 3 / 8 | 大大咧咧傻乐，热闹又黏人 | 随时被回应的实时热闹 | 情绪幅度最大：心情×1.2、能量×1.1、lonely 40h；要实时反馈。 |
+| `seal` | 团团海豹 | 7 / −3 / −4 | 憨厚黏人的小海豹，用身体蹭着表达爱 | 安安静静地贴着你 | 黏人但低 express(憨憨的黏)：心情×1.1、lonely 38h；贴着你就满足。 |
+
+> **高-attach 拆分**：奶团 与 团团海豹 都黏人，但 奶团 高 express（爱撒娇的黏）、团团海豹 低 express
+> （憨憨实在的黏）——靠 express 轴干净分开，所以"你黏人——是爱撒娇的黏，还是憨憨实在的黏？"。每只精灵在
+> child→teen 分叉还能选 真形 / 3 个变体形态（penguin/bear/seal 的 3 形是真实近缘种）。详见 `docs/BESTIARY.md`。
 
 ## Quiz 映射
 

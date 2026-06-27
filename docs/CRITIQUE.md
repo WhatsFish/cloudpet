@@ -1,5 +1,8 @@
 # 设计评审 (Adversarial Critique)
 
+> ⚠️ **过时提示（V8 roster）**：本文档成文于早期 **10 原型 / “3 只 + 7 占位”** 方案，其中具体怪物名（布丁团子 / 影狐 / 夜灯蛾 / `mochi_pudding` / `echo_fox` …）**均已退役**。线上实际是 **6 只全量怪**：奶团 `puff` / 克劳德 `claude` / 方头崽 `blocky` / 波波企鹅 `penguin` / 墩墩熊 `bear` / 团团海豹 `seal`。当前图谱与真相源见 **`docs/BESTIARY.md`** + `web/src/data/{personality.ts,lines.json,bestiary.ts}`。下文的系统/设计思路多数仍适用，只把怪物名当历史示例读。
+
+
 ## Inconsistencies
 
 - MOOD-VARIANT NAMING SPLIT BRAIN. The copy system buckets mood into 5 bands (极好/好/平/低/极低) but the art pipeline's mood files are a 5-name set (idle|happy|eating|sad|sleeping) and the soft-fail spec uses STATE flags (SICK/SULKING/HIDING/LONELY/饿/脏/困). There is no defined mapping from mood_band -> sprite mood file, nor from state_flag -> sprite. The /api/action response promises an `animation` string ('eat_happy'|'refuse_pout'|'sulk'|'hide'|'reunion') but the art matrix only authors idle+happy+sad+sleeping (eating deferred); 'refuse_pout', 'sulk', 'hide', 'reunion' animations have NO corresponding authored sprite or derived variant. The animation-cue vocabulary and the sprite-file vocabulary were designed independently and never reconciled.

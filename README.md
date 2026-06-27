@@ -40,6 +40,11 @@ Mini program: open `miniprogram/` in WeChat DevTools, set the real AppID, 编译
 
 ## Status
 
-V1 vertical slice: quiz → bonded pet, 3 fully-built creatures (布丁团子 / 墨影狐 / 炸毛团) +
-placeholder art for the other 7, the core care loop + 每日心声, soft-fail states, egg→baby→child.
-See `PLAN.md` §12 for what's in/out of V1.
+Quiz → bonded pet, **6 fully-authored creatures (V8 roster), all shipped**: 奶团 `puff` /
+克劳德 `claude` / 方头崽 `blocky` / 波波企鹅 `penguin` / 墩墩熊 `bear` / 团团海豹 `seal` — one per
+design language, each with a true form + 3 player-chosen fork forms (child→teen). Full life cycle
+egg→baby→child→teen→adult, the core care loop + 每日心声, soft-fail states, head-decoration system.
+
+> The old "3 shipped + 7 placeholder / 10 archetypes" plan is **retired**. The live roster is the
+> source of truth in `web/src/data/{personality.ts,lines.json,bestiary.ts}` — see `docs/BESTIARY.md`.
+> Older design docs (`PLAN.md`, `docs/QUIZ.md`, etc.) describe the superseded V1 roster.

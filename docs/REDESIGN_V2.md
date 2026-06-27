@@ -4,6 +4,11 @@
 > **Untouched on purpose:** the compute-on-read tick (`tick.ts`), the per-creature copy soul (~114–117 行/只 + 32–33 条日记 part), the `pet_state` core, soft-reversible safety (宠物永不死亡/丢失). We only rebuild the **action / economy / growth-presentation** layer on top of them.
 >
 > **One-line pitch:** 打开应用 → 一个发光的「今天」卡告诉你唯一要做的事：点几下「照顾」。看它有反应，做完出现一个明确的「✓ 明天见」终点线，今天就结束了。摸摸/逗逗永远免费无限。没有道具、没有货币、没有要操心的额度——刷新规则只有一条：你本地的午夜。
+>
+> **Roster note (V8):** the action/economy/growth spec below is **still canonical**, but any creature
+> names used as examples predate the V8 roster. Live roster = **6 creatures** (奶团 `puff` / 克劳德
+> `claude` / 方头崽 `blocky` / 波波企鹅 `penguin` / 墩墩熊 `bear` / 团团海豹 `seal`); canonical roster
+> doc = `docs/BESTIARY.md`, source = `web/src/data/{personality.ts,lines.json,bestiary.ts}`.
 
 ---
 
