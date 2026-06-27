@@ -38,7 +38,39 @@ export const STATE_THRESH = {
   lonelyAfterH: 48, reunionAfterH: 48,
 };
 
-export const STREAK_EXP = { day7: 50, day30: 150 };
+export const STREAK_EXP = { day7: 50, day30: 150 }; // legacy (superseded by STREAK_MILESTONES below)
+
+// V2 §6 连续登录 / 打卡奖励. Reuses pet_cooldown.{streak_days,max_streak_reached}. Two parts:
+//  (1) a small ESCALATING DAILY gift just for showing up on a streak (exp + a little bond), and
+//  (2) richer one-time MILESTONES at day 3/7/14/30/60/100, each paid ONCE EVER (gated on the
+//      max-streak high-water mark, so a halve-and-reclimb past an already-passed day never re-grants).
+// Daily gift is deliberately modest so it rewards the ritual without trivialising leveling.
+export const STREAK_DAILY = { base: 8, perDay: 2, expCap: 60, bondFrom: 5, bondCap: 4 };
+export function streakDailyExp(streak: number): number {
+  return Math.min(STREAK_DAILY.expCap, STREAK_DAILY.base + STREAK_DAILY.perDay * Math.max(0, streak));
+}
+export function streakDailyBond(streak: number): number {
+  // a tiny extra warmth once you're a few days deep, capped — long streaks feel a bit cosier.
+  return streak >= STREAK_DAILY.bondFrom ? Math.min(STREAK_DAILY.bondCap, 1 + Math.floor(streak / 14)) : 0;
+}
+export type StreakMilestone = { day: number; exp: number; bond: number; label: string };
+export const STREAK_MILESTONES: StreakMilestone[] = [
+  { day: 3,   exp: 20,  bond: 5,  label: "连签三天" },
+  { day: 7,   exp: 50,  bond: 8,  label: "连签一周" },
+  { day: 14,  exp: 90,  bond: 10, label: "连签两周" },
+  { day: 30,  exp: 150, bond: 15, label: "连签一个月" },
+  { day: 60,  exp: 250, bond: 20, label: "连签两个月" },
+  { day: 100, exp: 400, bond: 30, label: "连签百日" },
+];
+// the HIGHEST milestone newly crossed this check-in (day in (prevMax, streak]); null if none.
+export function newlyCrossedMilestone(streak: number, prevMax: number): StreakMilestone | null {
+  let hit: StreakMilestone | null = null;
+  for (const m of STREAK_MILESTONES) if (m.day <= streak && m.day > prevMax) hit = m; // ascending → last wins = highest
+  return hit;
+}
+export function nextStreakMilestone(streak: number): StreakMilestone | null {
+  return STREAK_MILESTONES.find((m) => m.day > streak) ?? null;
+}
 
 // --- V4 economy: needs loop (battery removed) ---
 export const CARE = { maxCharges: 3, regenMs: 5 * H }; // DORMANT (kept for legacy imports)

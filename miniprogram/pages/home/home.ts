@@ -28,7 +28,7 @@ type PetView = {
   careTimers?: { verb: string; due: boolean; etaSec: number | null; label: string }[];
   dominantState?: string; badges?: string[];
   fork?: { pending: boolean; options: ForkOpt[] };
-  checkin?: { firstOpenToday: boolean; bond: number; streakDays: number; milestoneExp: number; greet: string } | null;
+  checkin?: { firstOpenToday: boolean; bond: number; streakDays: number; dailyExp: number; milestoneExp: number; milestoneBond: number; milestoneLabel: string | null; nextMilestoneDay: number | null; greet: string } | null;
   equipped?: { hat: string | null };
 };
 type ActionResp = PetView & { ok: boolean; line: string; fx: string; animation: string; woke: boolean; promoted: string | null; promoteLine: string | null; needReward: { kind: string; exp: number; bond: number } | null; gainExp?: number; gainBond?: number };
@@ -203,11 +203,12 @@ Page({
       this.apply(pet);
       if (pet.recap) this.setData({ recap: pet.recap });
       else if (pet.checkin && pet.checkin.firstOpenToday) {
-        // celebrate the daily return (otherwise +8 bond / milestone EXP land silently). Gated on
-        // !recap so we don't stack a toast on top of the grew-while-away modal.
+        // celebrate the daily return (otherwise the streak gift lands silently). Gated on !recap so
+        // we don't stack a toast on top of the grew-while-away modal. V2 §6: surface the milestone
+        // label on a milestone day, else the escalating daily streak gift.
         const c = pet.checkin;
-        if (c.milestoneExp > 0) wx.showToast({ title: `连续 ${c.streakDays} 天！+${c.milestoneExp} ✨`, icon: "none", duration: 2400 });
-        else wx.showToast({ title: c.greet || `今天也来啦 +${c.bond}♥ · 连续 ${c.streakDays} 天`, icon: "none", duration: 1800 });
+        if (c.milestoneLabel) wx.showToast({ title: `🎖️ ${c.milestoneLabel}！+${c.milestoneExp + c.dailyExp}✨ +${c.bond}♥`, icon: "none", duration: 2600 });
+        else wx.showToast({ title: c.greet || `连续 ${c.streakDays} 天 · 今日礼 +${c.dailyExp}✨ +${c.bond}♥`, icon: "none", duration: 1900 });
       } else this.comebackNudge(700); // opened to an all-done pet → gentle come-back nudge (once/day)
       this.setData({ loading: false, error: "" });
     } catch (e) {

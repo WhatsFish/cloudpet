@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { withTx } from "@/lib/db";
 import { getUserId } from "@/lib/auth";
 import { buildContext, buildPetView, ensureDailyVoice, loadRows, tickAndPersistTz } from "@/lib/pet";
-import { CHECKIN_BOND, RECAP_MIN_AWAY_MS, SOFT_RECAP_EXP, STREAK_EXP } from "@/lib/game/constants";
+import { CHECKIN_BOND, RECAP_MIN_AWAY_MS, SOFT_RECAP_EXP, streakDailyExp, streakDailyBond, newlyCrossedMilestone, nextStreakMilestone } from "@/lib/game/constants";
 import { levelFromExp } from "@/lib/game/levels";
 import { speciesName } from "@/lib/game/evolve";
 import { localDateStr } from "@/lib/game/time";
@@ -99,7 +99,7 @@ export async function GET(req: NextRequest) {
     );
     // signalled back so the client can CELEBRATE the return (toast) — otherwise +8 bond and the
     // day7/day30 milestone EXP happen silently and the comeback feels like nothing happened.
-    let checkin: { firstOpenToday: boolean; bond: number; streakDays: number; milestoneExp: number; greet: string } | null = null;
+    let checkin: { firstOpenToday: boolean; bond: number; streakDays: number; dailyExp: number; milestoneExp: number; milestoneBond: number; milestoneLabel: string | null; nextMilestoneDay: number | null; greet: string } | null = null;
     if (ins[0]) {
       const cd = rows.cooldown;
       let streak: number;
@@ -112,25 +112,29 @@ export async function GET(req: NextRequest) {
           : gap === 1 ? cd.streak_days + 1
           : Math.max(1, Math.floor(cd.streak_days / 2) + 1);
       }
-      // milestone EXP pays once per milestone EVER — gate on a per-pet high-water mark so a
-      // halve-and-reclimb past an already-passed 7/30 doesn't re-grant. `>=` (not `===`) also
-      // covers a long-absence catch-up that lands past the exact value.
+      // V2 §6 daily gift (every check-in on a streak) + a one-time milestone (paid ONCE EVER via the
+      // max-streak high-water mark, so a halve-and-reclimb past an already-passed day never re-grants).
       const prevMax = cd.max_streak_reached ?? 0;
-      const streakExp =
-        streak >= 30 && prevMax < 30 ? STREAK_EXP.day30 :
-        streak >= 7 && prevMax < 7 ? STREAK_EXP.day7 : 0;
+      const mile = newlyCrossedMilestone(streak, prevMax);
+      const dailyExp = streakDailyExp(streak);
+      const dailyBond = streakDailyBond(streak);
+      const milestoneExp = mile?.exp ?? 0;
+      const milestoneBond = mile?.bond ?? 0;
+      const giftExp = dailyExp + milestoneExp;
+      const giftBond = CHECKIN_BOND + dailyBond + milestoneBond;
       const newMax = Math.max(prevMax, streak);
       // never move last_active_date backward on a gap<=0 (tz travel) read
       const newActiveDate = !cd.last_active_date || localDate >= cd.last_active_date ? localDate : cd.last_active_date;
       await q(`UPDATE pet_state SET bond = LEAST(1000, bond + $2), exp = exp + $3 WHERE pet_id=$1`,
-        [rows.pet.id, CHECKIN_BOND, streakExp]);
+        [rows.pet.id, giftBond, giftExp]);
       await q(`UPDATE pet_cooldown SET streak_days=$2, streak_state='active', last_active_date=$3, max_streak_reached=$4 WHERE pet_id=$1`,
         [rows.pet.id, streak, newActiveDate, newMax]);
-      rows.state.bond = Math.min(1000, rows.state.bond + CHECKIN_BOND);
-      rows.state.exp += streakExp;
+      rows.state.bond = Math.min(1000, rows.state.bond + giftBond);
+      rows.state.exp += giftExp;
       rows.cooldown.streak_days = streak;
       rows.cooldown.max_streak_reached = newMax;
-      checkin = { firstOpenToday: true, bond: CHECKIN_BOND, streakDays: streak, milestoneExp: streakExp, greet: "" };
+      checkin = { firstOpenToday: true, bond: giftBond, streakDays: streak, dailyExp, milestoneExp, milestoneBond,
+        milestoneLabel: mile?.label ?? null, nextMilestoneDay: nextStreakMilestone(streak)?.day ?? null, greet: "" };
     }
 
     // today's 心声
