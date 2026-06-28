@@ -192,6 +192,7 @@ export type PetView = {
   actions: ActionAvailability[];
   fork: Fork; // V8: the child→teen fork — pending flag + the 4 player-choosable forms
   equipped: { hat: string | null; aura: string | null }; // V8.8/V2§5 可装饰: equipped per slot (client overlays on the sprite)
+  title: { name: string | null; awakening: boolean; nextName: string | null; nextHint: string | null }; // V2§7 称号
 };
 
 // V2: 3 home buttons. care (battery) = feed/clean/doctor; affection (free) = play/pet/sleep.

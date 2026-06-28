@@ -12,6 +12,7 @@
         <view class="lvbar"><view class="lvfill" style="width:{{levelPct}}%"></view></view>
         <text class="roadtxt">{{roadmapLine}}</text>
       </view>
+      <view wx:if="{{titleName}}" class="titlechip {{titleAwaken ? 'titlechip--awaken' : ''}}" catchtap="openEpoch">{{titleAwaken ? '✦' : '🏅'}} {{titleName}}</view>
 
       <view class="stage-wrap" bindtap="onPet">
         <view class="sprite-scale" style="transform:scale({{spriteScale}})">
@@ -64,6 +65,7 @@
       <view class="dnav-lab">— 查看与设置 —</view>
       <view class="dnav">
         <view class="dnav-item" bindtap="openWardrobe"><text class="dnav-i">🎩</text><text class="dnav-t">衣柜</text></view>
+        <view class="dnav-item" bindtap="openEpoch"><text class="dnav-i">🏅</text><text class="dnav-t">纪元</text></view>
         <view class="dnav-item" bindtap="openStatus"><text class="dnav-i">📊</text><text class="dnav-t">状态</text></view>
         <view class="dnav-item" bindtap="goDiary"><text class="dnav-i">📓</text><text class="dnav-t">心声</text></view>
         <view class="dnav-item" bindtap="goCodex"><text class="dnav-i">📖</text><text class="dnav-t">图鉴</text></view>
@@ -227,6 +229,31 @@
             <view wx:if="{{item.unlocked}}" class="ward-tag">{{item.equipped ? '已亮 ✓' : '点亮'}}</view>
             <view wx:else class="ward-lock">🔒 {{item.lockHint}}</view>
           </view>
+        </view>
+      </scroll-view>
+      <view class="pbtn" bindtap="closeModals">关闭</view>
+    </view>
+  </view>
+
+  <view wx:if="{{showEpoch}}" class="mask" bindtap="closeModals">
+    <view class="panel panel--ward" catchtap="noop">
+      <view class="panel-title">纪元 · 称号与旅程</view>
+      <view class="ward-sub">已获得 {{epochCount}} / {{epochTotal}} 个称号 🏅 每一个都是你们一起走过的路</view>
+      <view wx:if="{{epochLoading}}" class="ward-loading">翻开纪元中…</view>
+      <scroll-view wx:else scroll-y class="ward-scroll">
+        <view class="ward-cat">🏅 称号</view>
+        <view class="title-list">
+          <view wx:for="{{epochTitles}}" wx:key="id" class="title-row {{item.earned ? 'title-row--on' : ''}} {{item.awakening ? 'title-row--awaken' : ''}}">
+            <view class="title-mark">{{item.earned ? (item.awakening ? '✦' : '✓') : '🔒'}}</view>
+            <view class="title-mid">
+              <view class="title-nm">{{item.name}}</view>
+              <view class="title-bl">{{item.earned ? item.blurb : item.hint}}</view>
+            </view>
+          </view>
+        </view>
+        <view wx:if="{{epochJourney.length}}" class="ward-cat">🌳 成长旅程</view>
+        <view wx:if="{{epochJourney.length}}" class="journey">
+          <view wx:for="{{epochJourney}}" wx:key="*this" class="journey-row"><text class="journey-d">{{item.date}}</text><text class="journey-t">{{item.text}}</text></view>
         </view>
       </scroll-view>
       <view class="pbtn" bindtap="closeModals">关闭</view>

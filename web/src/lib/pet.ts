@@ -16,6 +16,7 @@ import { forkOptions, speciesName } from "@/lib/game/evolve";
 import { deriveDueKinds, deriveNeeds, passiveRatePerHour, VERB_NEED, type NeedTimes } from "@/lib/game/needs";
 import { expToReach, levelFromExp, levelProgress } from "@/lib/game/levels";
 import { badges, dominant, moodBand } from "@/lib/game/state";
+import { bestTitle, nextTitle, titleHint } from "@/data/titles";
 import { STATE } from "@/lib/types";
 import { daysBetween, localDateStr, localHour, timeBand } from "@/lib/game/time";
 import type { CooldownRow } from "@/lib/game/actions";
@@ -337,6 +338,12 @@ export function buildPetView(rows: Rows, o: ViewOpts): PetView {
       options: forkOptions(pet.archetype_key),
     },
     equipped: { hat: rows.equippedHat, aura: rows.equippedAura },
+    title: (() => {
+      const ctx = decoContext(rows, o.nowMs);
+      const best = bestTitle(ctx); const next = nextTitle(ctx);
+      return { name: best?.name ?? null, awakening: best?.awakening ?? false,
+        nextName: next?.name ?? null, nextHint: next ? titleHint(next.cond) : null };
+    })(),
   };
 }
 

@@ -30,6 +30,7 @@ type PetView = {
   fork?: { pending: boolean; options: ForkOpt[] };
   checkin?: { firstOpenToday: boolean; bond: number; streakDays: number; dailyExp: number; milestoneExp: number; milestoneBond: number; milestoneLabel: string | null; nextMilestoneDay: number | null; greet: string } | null;
   equipped?: { hat: string | null; aura?: string | null };
+  title?: { name: string | null; awakening: boolean; nextName: string | null; nextHint: string | null };
 };
 type ActionResp = PetView & { ok: boolean; line: string; fx: string; animation: string; woke: boolean; revived?: boolean; promoted: string | null; promoteLine: string | null; needReward: { kind: string; exp: number; bond: number } | null; gainExp?: number; gainBond?: number };
 
@@ -80,6 +81,10 @@ Page({
     showFork: false, forkDismissed: false,
     showWardrobe: false, decoItems: [] as DecoItem[], hatItems: [] as DecoItem[], auraItems: [] as DecoItem[], decoLoading: false,
     auraOn: false, auraSrc: "",
+    titleName: "", titleAwaken: false,
+    showEpoch: false, epochLoading: false,
+    epochTitles: [] as { id: string; name: string; blurb: string; awakening: boolean; earned: boolean; hint: string }[],
+    epochJourney: [] as { date: string; text: string }[], epochCount: 0, epochTotal: 0,
     decoOn: false, decoSrc: "", decoStyle: "",
     forkOptions: [] as (ForkOpt & { sprite: string })[],
     recap: null as Recap | null,
@@ -308,6 +313,7 @@ Page({
       growthPerDay: pet.growthPerDay, hearts: [0, 1, 2, 3, 4].map((i) => (i < pet.bondHearts ? 1 : 0)),
       bondNextPct: pet.bondNextPct ?? 0, bondNextRemaining: pet.bondNextRemaining ?? 0,
       spriteScale: pet.sizeScale ?? 1, weightKg: ((pet.weight ?? 100) / 100).toFixed(1),
+      titleName: pet.title?.name ?? "", titleAwaken: pet.title?.awakening ?? false,
       sparkN, sparkEta, sparkText: this.sparkTextFor(sparkN, sparkEta),
       careActs, funActs,
       statBars, nameInput: pet.pet.name,
@@ -400,9 +406,17 @@ Page({
   openSettings() { this.setData({ showSettings: true, showDrawer: false }); },
   goDiary() { wx.navigateTo({ url: "/pages/diary/diary" }); },
   goCodex() { wx.navigateTo({ url: "/pages/codex/codex" }); },
-  closeModals() { this.setData({ showStatus: false, showSettings: false, showRoadmap: false, showWardrobe: false }); },
+  closeModals() { this.setData({ showStatus: false, showSettings: false, showRoadmap: false, showWardrobe: false, showEpoch: false }); },
 
   // 衣柜: list hats with unlock state; tap an unlocked one to equip/unequip (toggles).
+  // 纪元 (V2 §7): the title collection + journey feed. A plain read.
+  async openEpoch() {
+    this.setData({ showEpoch: true, showRoadmap: false, showDrawer: false, epochLoading: true });
+    try {
+      const r = await request<{ titles: { id: string; name: string; blurb: string; awakening: boolean; earned: boolean; hint: string }[]; earnedCount: number; total: number; journey: { date: string; text: string }[] }>({ path: "/pet/titles" });
+      this.setData({ epochTitles: r.titles || [], epochJourney: r.journey || [], epochCount: r.earnedCount || 0, epochTotal: r.total || 0, epochLoading: false });
+    } catch { this.setData({ epochLoading: false }); wx.showToast({ title: "纪元打不开，再试一次", icon: "none" }); }
+  },
   async openWardrobe() {
     this.setData({ showWardrobe: true, showDrawer: false, decoLoading: true });
     try {
