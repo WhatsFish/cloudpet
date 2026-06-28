@@ -85,8 +85,41 @@ function actProp(b, box, act) {
   else if (act === "play") { rrect(b, 32, cy + hh + 3, 7, 3, 2, [86, 90, 104]); px(b, 32 - 3, cy + hh + 3, [232, 96, 96]); px(b, 32 + 3, cy + hh + 2, [96, 164, 232]); }
 }
 
-const SCALE = [0, 0.74, 0.86, 0.96, 1.06];
+const SCALE = [0, 0.74, 0.86, 0.96, 1.06, 1.12, 1.18];
 const stub = (b, x, y, c) => rrect(b, x, y, 2, 3, 1, c);
+
+// ---- V3 post-adult ascension overlays: 成熟体(node5) / 觉醒体(node6) + 三气(qi) ----
+// Drawn centrally in renderBuf (not per-creature) so the production loop (egg→adult) is
+// untouched. mature = a per-line signature mark; awakened = a back aura ring + forehead star;
+// qi = a light tint + particle colour. Uses the same raster primitives as the body engine.
+const QI = {
+  flame:   { aura: hx("#F0A074"), tint: hx("#E2603C"), spark: hx("#F0894F") },
+  frost:   { aura: hx("#AFD2E6"), tint: hx("#5B8FB0"), spark: hx("#DCEFFA") },
+  radiant: { aura: hx("#F2D98C"), tint: hx("#D7A93C"), spark: hx("#FBEFC4") },
+};
+const QI_DEFAULT = { aura: hx("#E2D2F0"), tint: null, spark: hx("#F2E4C8") };
+function auraRing(b, cx, cy, rr, col) {
+  for (let a = 0; a < 360; a += 9) {
+    const rad = a * Math.PI / 180;
+    px(b, cx + Math.cos(rad) * rr, cy + Math.sin(rad) * rr, col, 170);
+    px(b, cx + Math.cos(rad) * (rr - 2), cy + Math.sin(rad) * (rr - 2), col, 95);
+  }
+}
+function star4(b, x, y, col) {
+  px(b, x, y, col); px(b, x - 1, y, col); px(b, x + 1, y, col); px(b, x, y - 1, col); px(b, x, y + 1, col);
+  px(b, x - 2, y, col, 150); px(b, x + 2, y, col, 150); px(b, x, y - 2, col, 150); px(b, x, y + 2, col, 150);
+}
+function matureMark(b, lineId, box) {
+  const { cy, hw, hh } = box, top = cy - hh;
+  if (lineId === "puff") { const pink = hx("#F2A0B4"), yel = hx("#F7D86B"); for (const [dx, dy] of [[-3, -1], [3, -1], [-3, 3], [3, 3], [0, -3], [0, 5]]) disc(b, 32 + dx, top - 2 + dy, 2, pink); disc(b, 32, top, 2, yel); }
+  else if (lineId === "claude") { stroke(b, 32, top + 1, 32 + 5, top - 8, 1, PAL.claude.body); disc(b, 32 + 5, top - 8, 2, hx("#7FBE9E")); const g = hx("#A6ACB2"); disc(b, 32 - hw + 1, cy + 3, 2, g); for (const [dx, dy] of [[-2, 0], [2, 0], [0, -2], [0, 2]]) px(b, 32 - hw + 1 + dx, cy + 3 + dy, g); }
+  else if (lineId === "blocky") { const c = hx("#C8E0A0"); for (let yy = -3; yy <= 3; yy += 2) for (let xx = -4; xx <= 4; xx++) px(b, 32 + xx, cy + yy, c, 130); stroke(b, 32, top, 32, top - 6, 1, PAL.blocky.ink); disc(b, 32, top - 7, 2, hx("#E8845B")); }
+  else if (lineId === "penguin") { const yel = hx("#F7D86B"); for (let s = -1; s <= 1; s += 2) stroke(b, 32 + s * 1, cy + 2, 32 + s * (hw - 2), cy + 5, 0, yel); ell(b, 32, cy + 6, Math.max(2, hw - 4), 2, yel); }
+  else if (lineId === "bear") { tri(b, 32, cy + hh - 1, 32 - 5, cy + hh - 6, 32 + 5, cy + hh - 6, hx("#F2E8D8")); disc(b, 32, cy + hh - 4, 1, hx("#E23838")); }
+  else if (lineId === "seal") { const sh = hx("#F3C77A"); ell(b, 32, cy + hh - 3, 5, 2, sh); disc(b, 32, cy + hh - 3, 1, hx("#E89A4A")); }
+}
+function applyTint(b, col) { if (!col) return; for (let i = 0; i < b.length; i += 4) if (b[i + 3] > 0) { b[i] = Math.round(b[i] * 0.86 + col[0] * 0.14); b[i + 1] = Math.round(b[i + 1] * 0.86 + col[1] * 0.14); b[i + 2] = Math.round(b[i + 2] * 0.86 + col[2] * 0.14); } }
+function qiParticles(b, box, q) { const { cy, hw } = box; for (const [dx, dy] of [[-hw - 4, -6], [hw + 3, -9], [-hw - 2, 5], [hw + 4, 1]]) disc(b, 32 + dx, cy + dy, 1, q.spark); }
 
 // =================== 5 CREATURES ===================
 // each returns the face box { cy, hw, hh, ex }
@@ -238,23 +271,30 @@ function drawEgg(b, body) {
   outline(b, mix(body, [0, 0, 0], 0.4));
 }
 
-const NODE = { egg: 0, baby: 1, child: 2, teen: 3, adult: 4 };
+const NODE = { egg: 0, baby: 1, child: 2, teen: 3, adult: 4, mature: 5, awakened: 6 };
 const MOODS = ["idle", "happy", "sad", "sleeping", "sulk", "hide", "eating"];
 const ACTS = ["feed", "clean", "play"];
 const EMOTION = new Set(MOODS);
 
-function renderBuf(lineId, variant, stage, mood) {
+function renderBuf(lineId, variant, stage, mood, qi) {
   const b = canvas();
   if (stage === "egg") { drawEgg(b, PAL[lineId].body); return b; }
   shadow(b);
   if (mood === "hide") { drawHide(b, PAL[lineId]); return b; }
+  const node = NODE[stage];
+  const q = (qi && QI[qi]) || QI_DEFAULT;
+  if (node >= 6) auraRing(b, 32, 34, R(15 * SCALE[node] + 6), q.aura); // behind sprite
   const eyeMood = EMOTION.has(mood) ? mood : "idle"; // act poses use idle eyes
-  const box = DRAW[lineId](b, variant, NODE[stage], eyeMood);
+  const box = DRAW[lineId](b, variant, node, eyeMood);
+  if (node >= 5) matureMark(b, lineId, box);          // 成熟体 signature
+  if (node >= 6) star4(b, 32, box.cy - box.hh - 1, q.aura); // 觉醒体 forehead star
   floatExtras(b, box, eyeMood);
   if (ACTS.includes(mood)) actProp(b, box, mood);
+  if (node >= 6 && qi) applyTint(b, q.tint);          // 三气 tint
+  if (node >= 6) qiParticles(b, box, q);
   return b;
 }
-function render(lineId, variant, stage, mood) { return encode(renderBuf(lineId, variant, stage, mood)); }
+function render(lineId, variant, stage, mood, qi) { return encode(renderBuf(lineId, variant, stage, mood, qi)); }
 
 export { renderBuf, encode, LINES, W, H };
 // raster toolkit + head anchors — reused by the decoration engine (scripts/gen-deco.mjs) so

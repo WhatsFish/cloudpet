@@ -116,6 +116,16 @@
   .devcap b{display:block;font-size:13px;color:var(--accent)}
   .devcap small{color:var(--mut);font-size:11px}
   .devcap.future b{color:#9B6FC9}
+  /* real-sprite gallery */
+  .gwrap{overflow-x:auto;padding-bottom:6px}
+  .gtable{border-collapse:collapse;margin:6px auto 0;min-width:660px}
+  .gtable th{font-size:11.5px;color:var(--mut);font-weight:700;padding:4px 4px 8px}
+  .gtable td{padding:4px;text-align:center}
+  .gname{font-size:12.5px;color:var(--ink);font-weight:700;white-space:nowrap;padding-right:8px;text-align:right}
+  .gname small{display:block;color:var(--mut);font-weight:400;font-size:10.5px}
+  .gsprite{width:74px;height:74px;image-rendering:pixelated;image-rendering:crisp-edges;
+    background:linear-gradient(180deg,#F7FAF0,#ECF1E0);border:1px solid var(--line);border-radius:9px}
+  .gcol-new{background:#FBF8EF}
 </style>
 </head>
 <body>
@@ -126,12 +136,89 @@
   <div class="goal">🎯 <b>本版目标</b>：把养成的「可见进化」从 <b>5 段拉到 7 段</b>（成熟体 Lv15 / 觉醒体 Lv20），覆盖到 <b>第 32+ 天</b>。让一个每天上 1–2 次的玩家，<b>每隔约一周就能亲眼看到宠物再变一次形态</b>，并在 Lv20 亲手做一次新的成长抉择（三气觉醒）。同时<b>掌机画框随进化适度放大、但留出上限余量</b>——不一次做到头，纪元体及以后还能继续长。<br>
   <span class="kv" style="margin-top:6px;display:inline-block">现状基线：成体 = 终点；Lv15「羁绊渐深」/ Lv20「本命觉醒」两个称号<b>早已存在但没有任何形态变化</b> → 本版给它们配上真实的身体进化。纪元体「纪元守护者」的形态留作下一版。</span></div>
   <nav class="toc">
+    <a href="#preview" style="background:var(--accent);color:#fff;border-color:var(--accent)">★真实效果预览</a>
     <a href="#why">①为什么</a><a href="#tree">②完整进化树</a><a href="#tiers">③两段成体进化</a>
     <a href="#frame">④掌机画框放大</a><a href="#qi">⑤三气觉醒分支</a><a href="#gate">⑥门槛与时机</a>
     <a href="#art">⑦每只怪的特化</a><a href="#reward">⑧奖励整合</a><a href="#journey">⑨体感曲线</a><a href="#impl">⑩落地与迁移</a>
   </nav>
 </header>
 <div class="wrap">
+
+<!-- REAL SPRITE GALLERY (engine-rendered, not mockups) -->
+<section id="preview" style="border-color:var(--accent);box-shadow:0 2px 0 #EAD9BC,0 10px 30px rgba(232,132,91,.16)">
+  <div class="sec-h"><div class="num" style="background:var(--accent2);box-shadow:0 2px 0 #5E8A4A">★</div><div><h2>真实渲染效果预览（美术引擎实出，非示意图）</h2></div></div>
+  <p>下面每一只都是 <code>scripts/gen-art.mjs</code> 美术引擎<b>真正渲染出来的像素图</b>（放大 4×），不是占位方块。展示 6 只本命从<b>成体 → 成熟体 → 觉醒体</b>，以及觉醒后<b>三气（焰/霜/辉）</b>的实际样子。带浅色底的列＝本版新增形态。</p>
+  <div class="gwrap">
+  <table class="gtable">
+    <thead><tr>
+      <th class="gname">本命</th>
+      <th>成体<br><small style="font-weight:400;color:var(--mut)">现状</small></th>
+      <th class="gcol-new" style="color:var(--gold)">成熟体<br><small style="font-weight:400">Lv15</small></th>
+      <th class="gcol-new" style="color:var(--blue)">觉醒体<br><small style="font-weight:400">Lv20·基</small></th>
+      <th class="gcol-new" style="color:var(--flame)">🔥焰</th>
+      <th class="gcol-new" style="color:var(--frost)">❄️霜</th>
+      <th class="gcol-new" style="color:#B98A1E">✨辉</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td class="gname">奶团<small>软团子·樱花</small></td>
+        <td><img class="gsprite" src="v3-preview/puff_adult.png" alt="奶团 adult"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/puff_mature.png" alt="奶团 mature"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/puff_awaken.png" alt="奶团 awaken"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/puff_flame.png" alt="奶团 flame"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/puff_frost.png" alt="奶团 frost"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/puff_radiant.png" alt="奶团 radiant"></td>
+      </tr>
+      <tr>
+        <td class="gname">克劳德<small>好奇匠心</small></td>
+        <td><img class="gsprite" src="v3-preview/claude_adult.png" alt="克劳德 adult"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/claude_mature.png" alt="克劳德 mature"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/claude_awaken.png" alt="克劳德 awaken"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/claude_flame.png" alt="克劳德 flame"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/claude_frost.png" alt="克劳德 frost"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/claude_radiant.png" alt="克劳德 radiant"></td>
+      </tr>
+      <tr>
+        <td class="gname">方头崽<small>复古像素</small></td>
+        <td><img class="gsprite" src="v3-preview/blocky_adult.png" alt="方头崽 adult"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/blocky_mature.png" alt="方头崽 mature"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/blocky_awaken.png" alt="方头崽 awaken"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/blocky_flame.png" alt="方头崽 flame"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/blocky_frost.png" alt="方头崽 frost"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/blocky_radiant.png" alt="方头崽 radiant"></td>
+      </tr>
+      <tr>
+        <td class="gname">波波企鹅<small>高冷优雅</small></td>
+        <td><img class="gsprite" src="v3-preview/penguin_adult.png" alt="波波企鹅 adult"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/penguin_mature.png" alt="波波企鹅 mature"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/penguin_awaken.png" alt="波波企鹅 awaken"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/penguin_flame.png" alt="波波企鹅 flame"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/penguin_frost.png" alt="波波企鹅 frost"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/penguin_radiant.png" alt="波波企鹅 radiant"></td>
+      </tr>
+      <tr>
+        <td class="gname">墩墩熊<small>憨厚大乐</small></td>
+        <td><img class="gsprite" src="v3-preview/bear_adult.png" alt="墩墩熊 adult"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/bear_mature.png" alt="墩墩熊 mature"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/bear_awaken.png" alt="墩墩熊 awaken"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/bear_flame.png" alt="墩墩熊 flame"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/bear_frost.png" alt="墩墩熊 frost"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/bear_radiant.png" alt="墩墩熊 radiant"></td>
+      </tr>
+      <tr>
+        <td class="gname">团团海豹<small>黏人圆滚</small></td>
+        <td><img class="gsprite" src="v3-preview/seal_adult.png" alt="团团海豹 adult"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/seal_mature.png" alt="团团海豹 mature"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/seal_awaken.png" alt="团团海豹 awaken"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/seal_flame.png" alt="团团海豹 flame"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/seal_frost.png" alt="团团海豹 frost"></td>
+        <td class="gcol-new"><img class="gsprite" src="v3-preview/seal_radiant.png" alt="团团海豹 radiant"></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="mini">看点：成熟体在头顶/身上多了<b>本命签名特征</b>（奶团开花、克劳德齿轮卷须、方头崽屏幕扫描纹+天线、企鹅金颈、墩墩熊围兜、海豹贝壳项圈）；觉醒体加了<b>身后内置光环 + 额心星辉</b>；三气则给整只染上暖/冷/金的气色并撒上对应粒子。这些都已经能跑，确认方向后即可接进游戏。</p>
+</section>
 
 <!-- WHY -->
 <section id="why">
