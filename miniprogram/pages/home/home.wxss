@@ -178,6 +178,20 @@ page { font-family: "Zpix", "PingFang SC", -apple-system, "Microsoft YaHei", san
 .ninput { flex:1; background:#FBF4E8; border-radius:14rpx; padding:16rpx 20rpx; font-size:28rpx; }
 .nbtn { background:#E8845B; color:#fff; border-radius:14rpx; padding:16rpx 30rpx; font-size:26rpx; }
 .pbtn { margin-top:26rpx; text-align:center; background:#EFE6D8; color:#6A5E50; border-radius:999rpx; padding:18rpx; font-size:26rpx; }
+/* V2 §7.1 解锁庆祝 */
+.panel--unlock { text-align:center; padding-bottom:24rpx; }
+.unlock-burst { font-size:80rpx; animation:unlockpop 0.6s ease-out; }
+@keyframes unlockpop { 0%{transform:scale(0.3) rotate(-12deg);opacity:0;} 60%{transform:scale(1.25) rotate(6deg);} 100%{transform:scale(1) rotate(0);opacity:1;} }
+.unlock-title { font-size:30rpx; font-weight:700; color:#B07A1E; margin:6rpx 0 14rpx; }
+.unlock-grid { display:flex; flex-wrap:wrap; justify-content:center; gap:14rpx; }
+.unlock-card { width:180rpx; background:#FBF3DE; border:3rpx solid #E8C97A; border-radius:16rpx; padding:12rpx 8rpx; display:flex; flex-direction:column; align-items:center; gap:3rpx; }
+.unlock-img { width:120rpx; height:100rpx; image-rendering:pixelated; -ms-interpolation-mode:nearest-neighbor; }
+.unlock-emoji { font-size:84rpx; line-height:100rpx; }
+.unlock-kind { font-size:19rpx; color:#A89B86; }
+.unlock-nm { font-size:25rpx; font-weight:700; color:#5A4A36; }
+.unlock-btns { display:flex; gap:14rpx; margin-top:8rpx; }
+.unlock-btns .pbtn { flex:1; }
+.pbtn--ghost { background:#F3ECDD; color:#9A8A74; }
 
 /* ===== roadmap panel (info structure + tips + 灵感 explainer) ===== */
 .panel--road { max-height:84vh; overflow-y:auto; }

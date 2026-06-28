@@ -33,7 +33,7 @@ type PetView = {
   equipped?: { hat: string | null; aura?: string | null };
   title?: { name: string | null; awakening: boolean; nextName: string | null; nextHint: string | null };
 };
-type ActionResp = PetView & { ok: boolean; line: string; fx: string; animation: string; woke: boolean; revived?: boolean; promoted: string | null; promoteLine: string | null; needReward: { kind: string; exp: number; bond: number } | null; gainExp?: number; gainBond?: number };
+type ActionResp = PetView & { ok: boolean; line: string; fx: string; animation: string; woke: boolean; revived?: boolean; promoted: string | null; promoteLine: string | null; newUnlocks?: { kind: string; kindLabel: string; id: string; name: string }[]; needReward: { kind: string; exp: number; bond: number } | null; gainExp?: number; gainBond?: number };
 
 const VERB_META: Record<string, { emoji: string; label: string; stat: string }> = {
   feed: { emoji: "🍙", label: "喂喂它", stat: "satiety" },
@@ -83,6 +83,7 @@ Page({
     showWardrobe: false, decoItems: [] as DecoItem[], hatItems: [] as DecoItem[], auraItems: [] as DecoItem[], decoLoading: false,
     auraOn: false, auraSrc: "",
     titleName: "", titleAwaken: false, nextUnlockText: "",
+    showUnlock: false, unlockItems: [] as { kind: string; kindLabel: string; id: string; name: string }[], unlockHasWearable: false,
     showEpoch: false, epochLoading: false,
     epochTitles: [] as { id: string; name: string; blurb: string; awakening: boolean; earned: boolean; hint: string }[],
     epochJourney: [] as { date: string; text: string }[], epochCount: 0, epochTotal: 0,
@@ -353,7 +354,15 @@ Page({
       if (tag) { this.setData({ floatTag: tag }); setTimeout(() => this.setData({ floatTag: "" }), 1100); }
       if (resp.line) wx.showToast({ title: resp.line, icon: "none", duration: 1800 });
       if (resp.promoted) setTimeout(() => wx.showToast({ title: resp.promoteLine || "它长大啦！", icon: "none", duration: 2200 }), 900);
-      else this.comebackNudge(1900); // just finished caring → if nothing's left to do, nudge a return (once/day)
+      // V2 §7.1: this action unlocked a cosmetic/title — celebrate it so earning a reward is FELT.
+      if (resp.newUnlocks && resp.newUnlocks.length) {
+        const u = resp.newUnlocks;
+        const hasWearable = u.some((x) => x.kind === "hat" || x.kind === "aura");
+        setTimeout(() => {
+          this.burst("🎁", "pet");
+          this.setData({ showUnlock: true, unlockItems: u, unlockHasWearable: hasWearable });
+        }, resp.promoted ? 1400 : 700);
+      } else if (!resp.promoted) this.comebackNudge(1900); // nothing new → maybe nudge a return (once/day)
     } catch (e) {
       const err = e as ApiError;
       const d = (err.data ?? {}) as { line?: string };
@@ -466,6 +475,14 @@ Page({
     } finally { this.setData({ reacting: false }); }
   },
   noop() {},
+
+  // V2 §7.1 解锁庆祝
+  dismissUnlock() { this.setData({ showUnlock: false, unlockItems: [] }); },
+  unlockToCloset() {
+    const wearable = this.data.unlockHasWearable;
+    this.setData({ showUnlock: false, unlockItems: [] });
+    if (wearable) this.openWardrobe(); else this.openEpoch();
+  },
 
   // richer reaction: a burst of particles + a per-action sprite reaction
   burst(emoji: string, verb: string) {

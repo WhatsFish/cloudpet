@@ -102,3 +102,18 @@ export function nextUnlock(ctx: DecoCtx): { name: string; kindLabel: string; req
   const pick = levels[0] ?? locked[0];
   return { name: pick.name, kindLabel: pick.kindLabel, reqLabel: pick.reqLabel, hint: pick.hint, remaining: pick.remaining, isLevel: pick.cond.type === "level" };
 }
+
+// Items that became unlocked between two life-fact snapshots (before → after a care action / check-in).
+// Drives the "🎁 解锁了X！" celebration so earning a reward is a FELT moment, not a silent state change.
+export function newlyUnlocked(before: DecoCtx, after: DecoCtx): { kind: UnlockKind; kindLabel: string; id: string; name: string }[] {
+  const out: { kind: UnlockKind; kindLabel: string; id: string; name: string }[] = [];
+  for (const e of buildUnlockTimeline(after)) {
+    if (!e.earned) continue;
+    const wasEarned =
+      e.kind === "title"
+        ? TITLES.some((t) => t.id === e.id && titleEarned(t.cond, before))
+        : DECO.some((d) => d.id === e.id && isUnlocked(d.unlock, before));
+    if (!wasEarned) out.push({ kind: e.kind, kindLabel: e.kindLabel, id: e.id, name: e.name });
+  }
+  return out;
+}

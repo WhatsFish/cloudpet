@@ -268,6 +268,25 @@
       <view class="pbtn" bindtap="closeModals">关闭</view>
     </view>
   </view>
+
+  <view wx:if="{{showUnlock}}" class="mask" bindtap="dismissUnlock">
+    <view class="panel panel--unlock" catchtap="noop">
+      <view class="unlock-burst">🎁</view>
+      <view class="unlock-title">解锁新奖励！</view>
+      <view class="unlock-grid">
+        <view wx:for="{{unlockItems}}" wx:key="id" class="unlock-card">
+          <image wx:if="{{item.kind !== 'title'}}" class="unlock-img" src="/assets/deco/{{item.id}}.png" mode="aspectFit" />
+          <view wx:else class="unlock-emoji">🏅</view>
+          <view class="unlock-kind">{{item.kindLabel}}</view>
+          <view class="unlock-nm">{{item.name}}</view>
+        </view>
+      </view>
+      <view class="unlock-btns">
+        <view class="pbtn pbtn--ghost" bindtap="dismissUnlock">知道了</view>
+        <view class="pbtn" bindtap="unlockToCloset">{{unlockHasWearable ? '去衣柜戴上' : '去纪元看看'}}</view>
+      </view>
+    </view>
+  </view>
 </view>
 
 <view class="screen theme-cream center-screen" wx:elif="{{error}}">

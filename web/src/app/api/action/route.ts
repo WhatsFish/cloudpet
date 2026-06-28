@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withTx, query } from "@/lib/db";
 import { getUserId } from "@/lib/auth";
-import { buildContext, buildPetView, loadRows, tickAndPersistTz } from "@/lib/pet";
+import { buildContext, buildPetView, decoContext, loadRows, tickAndPersistTz } from "@/lib/pet";
+import { newlyUnlocked } from "@/data/unlocks";
 import { planAction } from "@/lib/game/actions";
 import { ACTIONS, AFFECTION_NEED_BOND, CARE_NEEDS, CRITICAL, NEED_REWARD, PET_BOND_SOFTCAP, WEIGHT_FEED, WEIGHT_STAGE_MAX } from "@/lib/game/constants";
 import { deriveDueKinds, NEED_EVENT, VERB_NEED } from "@/lib/game/needs";
@@ -69,6 +70,10 @@ export async function POST(req: NextRequest) {
 
     const s = plan.state;
     let bondGain = plan.bondGain;
+
+    // V2 §7.1: snapshot the unlock-relevant facts BEFORE applying gains, so we can detect what this
+    // action newly unlocks and celebrate it. (decoContext reads exp/bond as numbers → captured now.)
+    const beforeCtx = decoContext(rows, now);
 
     // pet-bond soft cap (only an AWAKE pet; the gentle sleep-pet is fixed at +1)
     let tapsToday = rows.tapsToday, tapsDay = rows.tapsDay;
@@ -142,11 +147,13 @@ export async function POST(req: NextRequest) {
 
     const needLine = (kind: NeedKind) => selectCopy(pack, NEED_EVENT[kind], ctx, `need.${kind}.${now}`).text;
     const view = buildPetView(rows2, { nowMs: now, tz, theme, voice: null, recap: null, needLine });
+    // V2 §7.1: which cosmetics/titles this action just unlocked (compare before→after life facts).
+    const newUnlocks = newlyUnlocked(beforeCtx, decoContext(rows2, now));
     return {
       http: 200,
       body: {
         ok: true, ...view, line, fx: revived ? "hearts" : plan.fx, animation: revived ? "react_happy" : plan.animation, woke: plan.woke, promoted, promoteLine,
-        revived,
+        revived, newUnlocks,
         needReward: fulfilled ? { kind: fulfilledKind, exp: needBonusExp, bond: needBonusBond } : null,
         // TOTAL granted by this tap (raw careExp + any need bonus), so the float popup matches the
         // A-button chip's predicted value instead of showing only the need-bonus component.
