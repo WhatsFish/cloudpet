@@ -190,6 +190,17 @@ page { font-family: "Zpix", "PingFang SC", -apple-system, "Microsoft YaHei", san
 /* V2 §7 称号 chip on home + 纪元 panel */
 .titlechip { align-self:center; margin-top:6rpx; font-size:21rpx; color:#9A7340; background:rgba(255,255,255,0.66); border:2rpx solid #EAD9BC; border-radius:999rpx; padding:3rpx 16rpx; z-index:2; }
 .titlechip--awaken { color:#B07A1E; background:#FBF3DE; border-color:#E8C97A; font-weight:700; }
+.unlockchip { align-self:center; margin-top:5rpx; font-size:20rpx; color:#7A6A52; background:rgba(255,247,230,0.92); border:2rpx solid #ECDFC4; border-radius:999rpx; padding:3rpx 16rpx; max-width:640rpx; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; z-index:2; }
+/* 解锁路线 timeline */
+.tl-list { display:flex; flex-direction:column; gap:5rpx; }
+.tl-row { display:flex; align-items:center; gap:12rpx; background:#FBF6EC; border:2rpx solid #F0E7D6; border-radius:12rpx; padding:8rpx 12rpx; opacity:0.66; }
+.tl-row--on { opacity:1; background:#FFF; }
+.tl-req { flex:none; min-width:96rpx; text-align:center; font-size:22rpx; font-weight:700; color:#B07A1E; background:#FBF3DE; border-radius:8rpx; padding:2rpx 8rpx; }
+.tl-mid { flex:1; display:flex; align-items:center; gap:8rpx; }
+.tl-kind { font-size:19rpx; color:#A89B86; }
+.tl-nm { font-size:24rpx; color:#5A4A36; }
+.tl-state { flex:none; font-size:20rpx; color:#9A8A74; }
+.tl-row--on .tl-state { color:#4F9A52; font-weight:700; }
 .title-list { display:flex; flex-direction:column; gap:8rpx; }
 .title-row { display:flex; align-items:center; gap:12rpx; background:#FBF6EC; border:2rpx solid #F0E7D6; border-radius:14rpx; padding:10rpx 14rpx; opacity:0.6; }
 .title-row--on { opacity:1; background:#FFF; }

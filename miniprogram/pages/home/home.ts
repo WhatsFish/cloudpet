@@ -29,6 +29,7 @@ type PetView = {
   dominantState?: string; badges?: string[];
   fork?: { pending: boolean; options: ForkOpt[] };
   checkin?: { firstOpenToday: boolean; bond: number; streakDays: number; dailyExp: number; milestoneExp: number; milestoneBond: number; milestoneLabel: string | null; nextMilestoneDay: number | null; greet: string } | null;
+  nextUnlock?: { name: string; kindLabel: string; reqLabel: string; remaining: string; isLevel: boolean } | null;
   equipped?: { hat: string | null; aura?: string | null };
   title?: { name: string | null; awakening: boolean; nextName: string | null; nextHint: string | null };
 };
@@ -81,10 +82,11 @@ Page({
     showFork: false, forkDismissed: false,
     showWardrobe: false, decoItems: [] as DecoItem[], hatItems: [] as DecoItem[], auraItems: [] as DecoItem[], decoLoading: false,
     auraOn: false, auraSrc: "",
-    titleName: "", titleAwaken: false,
+    titleName: "", titleAwaken: false, nextUnlockText: "",
     showEpoch: false, epochLoading: false,
     epochTitles: [] as { id: string; name: string; blurb: string; awakening: boolean; earned: boolean; hint: string }[],
     epochJourney: [] as { date: string; text: string }[], epochCount: 0, epochTotal: 0,
+    epochTimeline: [] as { kind: string; kindLabel: string; id: string; name: string; reqLabel: string; earned: boolean; remaining: string }[],
     decoOn: false, decoSrc: "", decoStyle: "",
     forkOptions: [] as (ForkOpt & { sprite: string })[],
     recap: null as Recap | null,
@@ -314,6 +316,7 @@ Page({
       bondNextPct: pet.bondNextPct ?? 0, bondNextRemaining: pet.bondNextRemaining ?? 0,
       spriteScale: pet.sizeScale ?? 1, weightKg: ((pet.weight ?? 100) / 100).toFixed(1),
       titleName: pet.title?.name ?? "", titleAwaken: pet.title?.awakening ?? false,
+      nextUnlockText: pet.nextUnlock ? `${pet.nextUnlock.reqLabel} 解锁${pet.nextUnlock.kindLabel}「${pet.nextUnlock.name}」· ${pet.nextUnlock.remaining}` : "",
       sparkN, sparkEta, sparkText: this.sparkTextFor(sparkN, sparkEta),
       careActs, funActs,
       statBars, nameInput: pet.pet.name,
@@ -413,8 +416,8 @@ Page({
   async openEpoch() {
     this.setData({ showEpoch: true, showRoadmap: false, showDrawer: false, epochLoading: true });
     try {
-      const r = await request<{ titles: { id: string; name: string; blurb: string; awakening: boolean; earned: boolean; hint: string }[]; earnedCount: number; total: number; journey: { date: string; text: string }[] }>({ path: "/pet/titles" });
-      this.setData({ epochTitles: r.titles || [], epochJourney: r.journey || [], epochCount: r.earnedCount || 0, epochTotal: r.total || 0, epochLoading: false });
+      const r = await request<{ titles: { id: string; name: string; blurb: string; awakening: boolean; earned: boolean; hint: string }[]; earnedCount: number; total: number; journey: { date: string; text: string }[]; timeline: { kind: string; kindLabel: string; id: string; name: string; reqLabel: string; earned: boolean; remaining: string }[] }>({ path: "/pet/titles" });
+      this.setData({ epochTitles: r.titles || [], epochJourney: r.journey || [], epochCount: r.earnedCount || 0, epochTotal: r.total || 0, epochTimeline: r.timeline || [], epochLoading: false });
     } catch { this.setData({ epochLoading: false }); wx.showToast({ title: "纪元打不开，再试一次", icon: "none" }); }
   },
   async openWardrobe() {

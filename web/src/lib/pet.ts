@@ -17,6 +17,7 @@ import { deriveDueKinds, deriveNeeds, passiveRatePerHour, VERB_NEED, type NeedTi
 import { expToReach, levelFromExp, levelProgress } from "@/lib/game/levels";
 import { badges, dominant, moodBand } from "@/lib/game/state";
 import { bestTitle, nextTitle, titleHint } from "@/data/titles";
+import { nextUnlock } from "@/data/unlocks";
 import { STATE } from "@/lib/types";
 import { daysBetween, localDateStr, localHour, timeBand } from "@/lib/game/time";
 import type { CooldownRow } from "@/lib/game/actions";
@@ -206,7 +207,12 @@ export function buildRoadmap(rows: Rows, nowMs: number): Roadmap {
   const level = { level: lvl, expInto: Math.round(state.exp - lo), expSpan: Math.max(1, hi - lo), expRemaining: Math.max(0, Math.round(hi - state.exp)) };
 
   const nxt = nextStage(pet.stage);
-  if (!nxt) return { level, stage: null, line: "已经长成大成宠啦 🌟 和你的羁绊还在一天天加深" };
+  if (!nxt) {
+    // Adult is the terminal STAGE, but LEVEL is uncapped — so never imply "满级". Keep showing the
+    // climb to the next level so there's always a visible goal past day~21. (V2 fix: the old line
+    // only mentioned the bond, which read as "topped out" and killed the reason to keep leveling.)
+    return { level, stage: null, line: `距 Lv${lvl + 1} 还差 ${level.expRemaining} 经验 · 等级无上限，继续陪它变强 🌟` };
+  }
 
   const days = daysBetween(Date.parse(pet.created_at), nowMs);
   const expRemaining = Math.max(0, Math.round(nxt.expReq - state.exp));
@@ -343,6 +349,10 @@ export function buildPetView(rows: Rows, o: ViewOpts): PetView {
       const best = bestTitle(ctx); const next = nextTitle(ctx);
       return { name: best?.name ?? null, awakening: best?.awakening ?? false,
         nextName: next?.name ?? null, nextHint: next ? titleHint(next.cond) : null };
+    })(),
+    nextUnlock: (() => {
+      const nu = nextUnlock(decoContext(rows, o.nowMs));
+      return nu ? { name: nu.name, kindLabel: nu.kindLabel, reqLabel: nu.reqLabel, remaining: nu.remaining, isLevel: nu.isLevel } : null;
     })(),
   };
 }

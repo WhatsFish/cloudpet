@@ -3,6 +3,7 @@ import { query } from "@/lib/db";
 import { getUserId } from "@/lib/auth";
 import { loadRows, decoContext } from "@/lib/pet";
 import { TITLES, titleEarned, titleHint } from "@/data/titles";
+import { buildUnlockTimeline } from "@/data/unlocks";
 import { speciesName } from "@/lib/game/evolve";
 
 export const dynamic = "force-dynamic";
@@ -38,5 +39,12 @@ export async function GET(req: NextRequest) {
       : `升到 Lv${g.level_to}`,
   }));
 
-  return NextResponse.json({ titles, earnedCount, total: titles.length, journey });
+  // V2 §7.1 解锁路线: the full Lv→reward timeline (cosmetics + titles), so the player can SEE what
+  // each level/milestone unlocks — directly answering "到多少级能拿什么".
+  const timeline = buildUnlockTimeline(ctx).map((e) => ({
+    kind: e.kind, kindLabel: e.kindLabel, id: e.id, name: e.name,
+    reqLabel: e.reqLabel, earned: e.earned, remaining: e.remaining,
+  }));
+
+  return NextResponse.json({ titles, earnedCount, total: titles.length, journey, timeline });
 }

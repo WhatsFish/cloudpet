@@ -13,6 +13,7 @@
         <text class="roadtxt">{{roadmapLine}}</text>
       </view>
       <view wx:if="{{titleName}}" class="titlechip {{titleAwaken ? 'titlechip--awaken' : ''}}" catchtap="openEpoch">{{titleAwaken ? '✦' : '🏅'}} {{titleName}}</view>
+      <view wx:if="{{nextUnlockText}}" class="unlockchip" catchtap="openEpoch">🎁 下个解锁 · {{nextUnlockText}}</view>
 
       <view class="stage-wrap" bindtap="onPet">
         <view class="sprite-scale" style="transform:scale({{spriteScale}})">
@@ -241,6 +242,14 @@
       <view class="ward-sub">已获得 {{epochCount}} / {{epochTotal}} 个称号 🏅 每一个都是你们一起走过的路</view>
       <view wx:if="{{epochLoading}}" class="ward-loading">翻开纪元中…</view>
       <scroll-view wx:else scroll-y class="ward-scroll">
+        <view class="ward-cat">🎁 解锁路线（到多少级 / 多久能拿什么）</view>
+        <view class="tl-list">
+          <view wx:for="{{epochTimeline}}" wx:key="id" class="tl-row {{item.earned ? 'tl-row--on' : ''}}">
+            <view class="tl-req">{{item.reqLabel}}</view>
+            <view class="tl-mid"><text class="tl-kind">{{item.kindLabel}}</text><text class="tl-nm">{{item.name}}</text></view>
+            <view class="tl-state">{{item.earned ? '已获得 ✓' : item.remaining}}</view>
+          </view>
+        </view>
         <view class="ward-cat">🏅 称号</view>
         <view class="title-list">
           <view wx:for="{{epochTitles}}" wx:key="id" class="title-row {{item.earned ? 'title-row--on' : ''}} {{item.awakening ? 'title-row--awaken' : ''}}">
