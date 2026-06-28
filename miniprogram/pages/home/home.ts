@@ -29,7 +29,7 @@ type PetView = {
   dominantState?: string; badges?: string[];
   fork?: { pending: boolean; options: ForkOpt[] };
   checkin?: { firstOpenToday: boolean; bond: number; streakDays: number; dailyExp: number; milestoneExp: number; milestoneBond: number; milestoneLabel: string | null; nextMilestoneDay: number | null; greet: string } | null;
-  equipped?: { hat: string | null };
+  equipped?: { hat: string | null; aura?: string | null };
 };
 type ActionResp = PetView & { ok: boolean; line: string; fx: string; animation: string; woke: boolean; revived?: boolean; promoted: string | null; promoteLine: string | null; needReward: { kind: string; exp: number; bond: number } | null; gainExp?: number; gainBond?: number };
 
@@ -78,7 +78,8 @@ Page({
     spriteScale: 1, weightKg: "1.0", sparkN: 0, sparkEta: 0, sparkText: "",
     showDrawer: false, showRoadmap: false, showStatus: false, showSettings: false,
     showFork: false, forkDismissed: false,
-    showWardrobe: false, decoItems: [] as DecoItem[], decoLoading: false,
+    showWardrobe: false, decoItems: [] as DecoItem[], hatItems: [] as DecoItem[], auraItems: [] as DecoItem[], decoLoading: false,
+    auraOn: false, auraSrc: "",
     decoOn: false, decoSrc: "", decoStyle: "",
     forkOptions: [] as (ForkOpt & { sprite: string })[],
     recap: null as Recap | null,
@@ -121,6 +122,13 @@ Page({
     return IDLE_ANIM[pet.pet.archetypeKey] || "anim-bob";
   },
   // 可装饰: overlay the equipped hat on the sprite. Same 64-canvas as the sprite, translated so the
+  // 可装饰 aura (V2 §5): a full-sprite halo overlay, centered, BEHIND the creature. No anchor math —
+  // it shares the .sprite-scale box so it grows with 体型. Shown even while hiding (it's ambient light).
+  auraFor(pet: PetView): { on: boolean; src: string } {
+    const aura = pet.equipped && pet.equipped.aura;
+    if (!aura) return { on: false, src: "" };
+    return { on: true, src: `/assets/deco/${aura}.png` };
+  },
   // hat's contact row lands on this creature/stage's head-top (HEAD_ANCHORS, verified via QA montage).
   // Hidden while the pet is hiding (it's curled away). Lives inside .sprite-scale so it scales with 体型.
   decoFor(pet: PetView): { on: boolean; src: string; style: string } {
@@ -293,6 +301,7 @@ Page({
       statusFx: this.statusFxFor(pet),
       critical: pet.dominantState === "CRITICAL" || (pet.badges || []).indexOf("濒危") >= 0, // V2 §4 暗角 vignette
       ...(() => { const d = this.decoFor(pet); return { decoOn: d.on, decoSrc: d.src, decoStyle: d.style }; })(),
+      ...(() => { const a = this.auraFor(pet); return { auraOn: a.on, auraSrc: a.src }; })(),
       stageLabel: STAGE_CN[pet.pet.stage] || pet.pet.stage,
       needCard, aVerb, aEmoji, aLabel, aReward, aGlow, bVerb, bEmoji, bLabel,
       roadmapLine: pet.roadmap?.line ?? "", levelPct: Math.max(3, pet.evolveProgress), levelNum: pet.level,
@@ -398,22 +407,42 @@ Page({
     this.setData({ showWardrobe: true, showDrawer: false, decoLoading: true });
     try {
       const r = await request<{ items: DecoItem[] }>({ path: "/deco" });
-      this.setData({ decoItems: r.items || [], decoLoading: false });
+      const items = r.items || [];
+      this.setData({
+        decoItems: items,
+        hatItems: items.filter((d) => (d.slot || "hat") === "hat"),
+        auraItems: items.filter((d) => d.slot === "aura"),
+        decoLoading: false,
+      });
     } catch { this.setData({ decoLoading: false }); wx.showToast({ title: "衣柜没打开，再试一次", icon: "none" }); }
   },
   async equipHat(e: WechatMiniprogram.TouchEvent) {
     if (this.data.reacting) return;
     const item = e.currentTarget.dataset.item as DecoItem;
     if (!item.unlocked) { wx.showToast({ title: item.lockHint || "还没解锁哦", icon: "none" }); return; }
-    const hatId = item.equipped ? null : item.id; // tapping the equipped one takes it off
+    const slot = (item.slot as "hat" | "aura") || "hat";
+    const itemId = item.equipped ? null : item.id; // tapping the equipped one takes it off
     this.haptic();
     this.setData({ reacting: true });
     try {
-      await request({ path: "/deco/equip", method: "POST", body: { hatId } });
+      await request({ path: "/deco/equip", method: "POST", body: { slot, itemId } });
       const pet = this.data.pet;
-      if (pet) { pet.equipped = { hat: hatId }; this.apply(pet); } // re-render the sprite overlay
-      this.setData({ decoItems: this.data.decoItems.map((d) => ({ ...d, equipped: d.id === hatId })) });
-      wx.showToast({ title: hatId ? "戴上啦～" : "摘下来啦", icon: "none" });
+      if (pet) {
+        // update only this slot; keep the other slot's equipped item intact
+        const eq = { hat: pet.equipped?.hat ?? null, aura: pet.equipped?.aura ?? null };
+        eq[slot] = itemId;
+        pet.equipped = eq;
+        this.apply(pet); // re-render the sprite overlays
+      }
+      // only items in the SAME slot toggle equipped state
+      const decoItems = this.data.decoItems.map((d) => (d.slot === slot ? { ...d, equipped: d.id === itemId } : d));
+      this.setData({
+        decoItems,
+        hatItems: decoItems.filter((d) => (d.slot || "hat") === "hat"),
+        auraItems: decoItems.filter((d) => d.slot === "aura"),
+      });
+      const verb = slot === "aura" ? (itemId ? "点亮啦～" : "收起来啦") : (itemId ? "戴上啦～" : "摘下来啦");
+      wx.showToast({ title: verb, icon: "none" });
     } catch (err) {
       const d = ((err as ApiError).data ?? {}) as { line?: string };
       wx.showToast({ title: d.line || "戴不上,再试试", icon: "none" });

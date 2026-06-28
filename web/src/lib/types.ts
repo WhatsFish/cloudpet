@@ -191,7 +191,7 @@ export type PetView = {
   voice: { line: string; lineId: string } | null; // today's 心声
   actions: ActionAvailability[];
   fork: Fork; // V8: the child→teen fork — pending flag + the 4 player-choosable forms
-  equipped: { hat: string | null }; // V8.8 可装饰: the equipped head deco id (client overlays it on the sprite)
+  equipped: { hat: string | null; aura: string | null }; // V8.8/V2§5 可装饰: equipped per slot (client overlays on the sprite)
 };
 
 // V2: 3 home buttons. care (battery) = feed/clean/doctor; affection (free) = play/pet/sleep.

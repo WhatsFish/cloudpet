@@ -95,13 +95,78 @@ export const HATS = {
   },
 };
 
+// —— V2 §5 新增帽子（level-gated）——，与既有 HATS 同样的 64-canvas、contact 行在 (32, B)。
+const ORANGE = [232, 150, 90], ORANGE_D = [196, 116, 64], GREEN = [120, 176, 96], BROWN = [150, 110, 70];
+const HATS2 = {
+  // 鸭舌帽 cap — round dome + flat brim to one side
+  cap(b) {
+    rrect(b, 32, B - 5, 11, 6, 5, BLUE);            // dome
+    ell(b, 38, B - 1, 11, 2, BLUE);                  // brim (offset right)
+    ell(b, 38, B, 11, 1, [80, 116, 168], 160);
+    disc(b, 32, B - 10, 2, MINT);                    // top button
+  },
+  // 缎带花环 ribbon — a ring of small petals
+  ribbon(b) {
+    for (let i = 0; i < 8; i++) { const a = (i / 8) * Math.PI * 2; disc(b, 32 + Math.cos(a) * 12, (B - 3) + Math.sin(a) * 3, 2, i % 2 ? PINK : MINT); }
+    ell(b, 32, B - 2, 13, 3, PINK_D, 90);
+  },
+  // 鹿角枝 antlers — two branching prongs
+  antlers(b) {
+    for (const s of [-1, 1]) {
+      stroke(b, 32 + s * 4, B - 2, 32 + s * 9, B - 12, 1, BROWN);
+      stroke(b, 32 + s * 9, B - 12, 32 + s * 6, B - 16, 0, BROWN);
+      stroke(b, 32 + s * 9, B - 12, 32 + s * 13, B - 15, 0, BROWN);
+    }
+    disc(b, 32, B - 3, 2, BROWN);
+  },
+  // 天使环 halo_hat — a floating golden ring above the head
+  halo_hat(b) {
+    for (let i = 0; i < 22; i++) { const a = (i / 22) * Math.PI * 2; px(b, 32 + Math.cos(a) * 11, (B - 12) + Math.sin(a) * 3, GOLD); px(b, 32 + Math.cos(a) * 10, (B - 12) + Math.sin(a) * 3, [255, 240, 180], 200); }
+  },
+};
+
+// —— V2 §5 光环 auras —— full 64-canvas overlay, centered on the body (~32,38). NO anchor math:
+// the client paints it in the same .sprite-scale box as the sprite, behind it. Soft alpha glow.
+const AC = 32, ACY = 38; // aura center (body center on a 64-sprite)
+function arcDots(b, r, n, c, a, ry = null, phase = 0) {
+  for (let i = 0; i < n; i++) { const t = phase + (i / n) * Math.PI * 2; px(b, AC + Math.cos(t) * r, ACY + Math.sin(t) * (ry ?? r), c, a); }
+}
+function spark4(b, x, y, c, a) { px(b, x, y, c, a); px(b, x - 1, y, c, a * 0.7); px(b, x + 1, y, c, a * 0.7); px(b, x, y - 1, c, a * 0.7); px(b, x, y + 1, c, a * 0.7); }
+const AURAS = {
+  // 微光环 — a faint dotted ellipse + a few sparkles
+  aura_spark(b) {
+    arcDots(b, 22, 30, [255, 248, 210], 150, 9);
+    for (const [x, y] of [[12, 26], [52, 30], [20, 52], [46, 50]]) spark4(b, x, y, [255, 255, 230], 200);
+  },
+  // 春樱环 — pink petals orbiting
+  aura_leaf(b) {
+    for (let i = 0; i < 10; i++) { const t = (i / 10) * Math.PI * 2; const x = AC + Math.cos(t) * 23, y = ACY + Math.sin(t) * 11; disc(b, x, y, 1, i % 2 ? PINK : [250, 200, 220]); px(b, x + 1, y, PINK_D, 150); }
+  },
+  // 星辉环 — a ring of stars (觉醒)
+  aura_star(b) {
+    arcDots(b, 24, 40, [180, 200, 255], 110, 11);
+    for (let i = 0; i < 6; i++) { const t = (i / 6) * Math.PI * 2; spark4(b, AC + Math.cos(t) * 24, ACY + Math.sin(t) * 11, STAR, 230); }
+  },
+  // 潮汐环 — twin flowing rings, teal
+  aura_tide(b) {
+    arcDots(b, 24, 44, [120, 210, 220], 130, 11, 0);
+    arcDots(b, 20, 40, [180, 240, 245], 110, 8, 0.5);
+  },
+  // 本命环 — golden double halo, the rarest (bond 1000)
+  aura_crown(b) {
+    arcDots(b, 25, 48, GOLD, 150, 12);
+    arcDots(b, 21, 40, [255, 240, 180], 120, 9, 0.4);
+    for (let i = 0; i < 8; i++) { const t = (i / 8) * Math.PI * 2; spark4(b, AC + Math.cos(t) * 25, ACY + Math.sin(t) * 12, [255, 250, 210], 240); }
+  },
+};
+
 const isMain = process.argv[1] && import.meta.url === `file://${process.argv[1]}`;
 if (isMain) {
-  // ---- write hat PNGs ----
+  // ---- write hat + aura PNGs ----
   mkdirSync(DECO_MP, { recursive: true });
   mkdirSync(DECO_WEB, { recursive: true });
   let n = 0;
-  for (const [id, draw] of Object.entries(HATS)) {
+  for (const [id, draw] of [...Object.entries(HATS), ...Object.entries(HATS2), ...Object.entries(AURAS)]) {
     const b = canvas();
     draw(b);
     const png = encode(b);
@@ -122,5 +187,5 @@ if (isMain) {
   writeFileSync(join(ROOT, "miniprogram/utils/anchors.ts"),
     `${tsHeader}export const HAT_BASE = ${HAT_BASE};\nexport const HAT_DROP = ${HAT_DROP};\nexport const HEAD_ANCHORS: Record<string, Record<string, { x: number; y: number }>> = ${JSON.stringify(anchors, null, 0)};\n`);
 
-  console.log(`rendered ${n} hats; anchors for ${Object.keys(anchors).length} species written.`);
+  console.log(`rendered ${n} deco (hats+auras); anchors for ${Object.keys(anchors).length} species written.`);
 }

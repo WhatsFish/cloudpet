@@ -184,6 +184,8 @@ ALTER TABLE pet_state ADD COLUMN IF NOT EXISTS sparks_at TIMESTAMPTZ;
 -- V8.8 可装饰: the equipped head decoration (deco catalog id), or NULL for bare-headed. Ownership
 -- is compute-on-read (unlock conditions); only the equipped choice persists.
 ALTER TABLE pet_state ADD COLUMN IF NOT EXISTS equipped_hat TEXT;
+-- pet_state: V2 §5 可装饰 multi-slot — a second cosmetic slot (光环 aura). Additive nullable, safe.
+ALTER TABLE pet_state ADD COLUMN IF NOT EXISTS equipped_aura TEXT;
 -- bond: newborns start warm (INITIAL_BOND ≈ 2 hearts) — retrofit the default for old DBs.
 ALTER TABLE pet_state ALTER COLUMN bond SET DEFAULT 300;
 

@@ -15,6 +15,7 @@
 
       <view class="stage-wrap" bindtap="onPet">
         <view class="sprite-scale" style="transform:scale({{spriteScale}})">
+          <image wx:if="{{auraOn}}" class="deco-aura {{critical ? 'is-dim' : ''}}" src="{{auraSrc}}" mode="aspectFit" />
           <image class="sprite {{animClass}}" src="{{spriteSrc}}" mode="aspectFit" binderror="onSpriteError" />
           <image wx:if="{{decoOn}}" class="deco-hat" src="{{decoSrc}}" style="{{decoStyle}}" mode="aspectFit" />
         </view>
@@ -205,17 +206,29 @@
 
   <view wx:if="{{showWardrobe}}" class="mask" bindtap="closeModals">
     <view class="panel panel--ward" catchtap="noop">
-      <view class="panel-title">衣柜 · 头顶装扮</view>
-      <view class="ward-sub">陪它长大、常来看它，会解锁更多帽子 🎀</view>
+      <view class="panel-title">衣柜 · 装扮</view>
+      <view class="ward-sub">陪它长大、常来看它、慢慢升级，会解锁更多装扮 🎀</view>
       <view wx:if="{{decoLoading}}" class="ward-loading">打开衣柜中…</view>
-      <view wx:else class="ward-grid">
-        <view wx:for="{{decoItems}}" wx:key="id" class="ward-card {{item.equipped ? 'ward-card--on' : ''}} {{item.unlocked ? '' : 'ward-card--lock'}}" data-item="{{item}}" bindtap="equipHat">
-          <image class="ward-img" src="/assets/deco/{{item.id}}.png" mode="aspectFit" />
-          <view class="ward-name">{{item.name}}</view>
-          <view wx:if="{{item.unlocked}}" class="ward-tag">{{item.equipped ? '已戴 ✓' : '戴上'}}</view>
-          <view wx:else class="ward-lock">🔒 {{item.lockHint}}</view>
+      <scroll-view wx:else scroll-y class="ward-scroll">
+        <view class="ward-cat">🎩 头顶</view>
+        <view class="ward-grid">
+          <view wx:for="{{hatItems}}" wx:key="id" class="ward-card {{item.equipped ? 'ward-card--on' : ''}} {{item.unlocked ? '' : 'ward-card--lock'}}" data-item="{{item}}" bindtap="equipHat">
+            <image class="ward-img" src="/assets/deco/{{item.id}}.png" mode="aspectFit" />
+            <view class="ward-name">{{item.name}}</view>
+            <view wx:if="{{item.unlocked}}" class="ward-tag">{{item.equipped ? '已戴 ✓' : '戴上'}}</view>
+            <view wx:else class="ward-lock">🔒 {{item.lockHint}}</view>
+          </view>
         </view>
-      </view>
+        <view class="ward-cat">✨ 光环</view>
+        <view class="ward-grid">
+          <view wx:for="{{auraItems}}" wx:key="id" class="ward-card ward-card--aura {{item.equipped ? 'ward-card--on' : ''}} {{item.unlocked ? '' : 'ward-card--lock'}}" data-item="{{item}}" bindtap="equipHat">
+            <image class="ward-img" src="/assets/deco/{{item.id}}.png" mode="aspectFit" />
+            <view class="ward-name">{{item.name}}</view>
+            <view wx:if="{{item.unlocked}}" class="ward-tag">{{item.equipped ? '已亮 ✓' : '点亮'}}</view>
+            <view wx:else class="ward-lock">🔒 {{item.lockHint}}</view>
+          </view>
+        </view>
+      </scroll-view>
       <view class="pbtn" bindtap="closeModals">关闭</view>
     </view>
   </view>

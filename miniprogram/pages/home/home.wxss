@@ -107,6 +107,11 @@ page { font-family: "Zpix", "PingFang SC", -apple-system, "Microsoft YaHei", san
 /* 可装饰 head overlay: same 208rpx box as the sprite, bottom-aligned; per-render translateY (inline
    style) lifts the hat's contact row onto the creature/stage head-top. Scales with .sprite-scale. */
 .deco-hat { position:absolute; left:50%; bottom:0; width:208rpx; height:208rpx; margin-left:-104rpx; image-rendering:pixelated; -ms-interpolation-mode:nearest-neighbor; pointer-events:none; z-index:3; }
+/* V2 §5 光环: full-sprite overlay BEHIND the creature (z below the sprite). Same 208rpx box, centered,
+   scales with .sprite-scale. Soft additive-ish glow via a gentle pulse. Dimmed while 濒危. */
+.deco-aura { position:absolute; left:50%; bottom:0; width:208rpx; height:208rpx; margin-left:-104rpx; image-rendering:pixelated; -ms-interpolation-mode:nearest-neighbor; pointer-events:none; z-index:-1; opacity:0.9; animation:aurapulse 3s ease-in-out infinite; }
+.deco-aura.is-dim { opacity:0.25; }
+@keyframes aurapulse { 0%,100%{opacity:0.72; transform:scale(1);} 50%{opacity:1; transform:scale(1.05);} }
 
 /* ===== 灵感火花 spark bar (tap for EXP; regen countdown when empty) ===== */
 .sparkbar { display:flex; align-items:center; justify-content:center; gap:12rpx; margin-top:14rpx; height:66rpx; border-radius:18rpx; background:var(--hi); border:2rpx solid var(--rim); }
@@ -179,6 +184,9 @@ page { font-family: "Zpix", "PingFang SC", -apple-system, "Microsoft YaHei", san
 
 /* 衣柜 / wardrobe */
 .panel--ward { max-height:84vh; overflow-y:auto; }
+.ward-scroll { max-height:64vh; }
+.ward-cat { font-size:24rpx; font-weight:700; color:#9A7340; margin:14rpx 2rpx 8rpx; }
+.ward-card--aura.ward-card--on { border-color:#D9A93A; background:#FBF3DE; }
 .ward-sub { font-size:21rpx; color:#8A7D6E; margin:-8rpx 0 18rpx; line-height:1.5; }
 .ward-loading { text-align:center; color:#8A7D6E; font-size:24rpx; padding:40rpx 0; }
 .ward-grid { display:flex; flex-wrap:wrap; gap:14rpx; }

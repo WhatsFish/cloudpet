@@ -19,11 +19,12 @@ export async function GET(req: NextRequest) {
   const ctx = decoContext(rows, Date.now());
   const items = DECO.map((d) => {
     const unlocked = isUnlocked(d.unlock, ctx);
+    const equipped = d.slot === "hat" ? rows.equippedHat === d.id : rows.equippedAura === d.id;
     return {
       id: d.id, slot: d.slot, name: d.name, blurb: d.blurb,
       unlocked, lockHint: unlocked ? "" : lockHint(d.unlock),
-      equipped: rows.equippedHat === d.id,
+      equipped,
     };
   });
-  return NextResponse.json({ items, equipped: rows.equippedHat });
+  return NextResponse.json({ items, equipped: { hat: rows.equippedHat, aura: rows.equippedAura } });
 }
