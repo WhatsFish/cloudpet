@@ -31,6 +31,21 @@ export const DH_CAP = 720;
 export const LIVE_FLOOR = 5;
 export const HEALTH_FLOOR = 15;
 
+// V2 §4 濒危召回. CRITICAL is a soft-fail假警报 — it manufactures concern + a reason to come back,
+// but the pet NEVER dies/loses progress: a single care/affection tap on return instantly heals it.
+// Compute-on-read off (health, noInteractionH); no new DB column needed. Anti-anxiety保险:
+//   - only fires when BOTH health is at the floor AND the player has been away afterH+ hours, so an
+//     actively-returning (streak) player never sees it (their noInteractionH stays small);
+//   - revival heals to reviveHealth and grants a short immunity (recompute can't re-floor health
+//     that high within afterH again);
+//   - the push (when enabled) is throttled to once / pushThrottleH via last_reunion_gift.
+export const CRITICAL = {
+  health: 18,        // at/below this (HEALTH_FLOOR is 15, so this is "basically bottomed out")
+  afterH: 24,        // ...AND no interaction for this many hours → 濒危
+  reviveHealth: 62,  // a return tap heals to here (≥ sickClearAt 60 so SICK clears too)
+  pushThrottleH: 72, // never push more than once / 3 days
+};
+
 export const STATE_THRESH = {
   hungry: 30, dirty: 30, sleepy: 25,
   sulkMoodLt: 25, sulkAfterH: 2,

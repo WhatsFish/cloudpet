@@ -7,10 +7,10 @@ export type LiveStat = "satiety" | "mood" | "cleanliness" | "energy" | "health";
 export type NeedKind = "unwell" | "sleepy" | "hungry" | "dirty" | "bored";
 export type MoodBand = "极好" | "好" | "平" | "低" | "极低";
 export type TimeBand = "清晨" | "白天" | "傍晚" | "深夜";
-export type StateFlagName = "SICK" | "SULKING" | "HIDING" | "LONELY";
+export type StateFlagName = "SICK" | "SULKING" | "HIDING" | "LONELY" | "CRITICAL";
 
 // state_flags bitmask (matches schema comment)
-export const STATE = { SICK: 1, SULKING: 2, HIDING: 4, LONELY: 8 } as const;
+export const STATE = { SICK: 1, SULKING: 2, HIDING: 4, LONELY: 8, CRITICAL: 16 } as const;
 
 export type AxisVector = { attach: number; curio: number; express: number };
 

@@ -31,7 +31,7 @@ type PetView = {
   checkin?: { firstOpenToday: boolean; bond: number; streakDays: number; dailyExp: number; milestoneExp: number; milestoneBond: number; milestoneLabel: string | null; nextMilestoneDay: number | null; greet: string } | null;
   equipped?: { hat: string | null };
 };
-type ActionResp = PetView & { ok: boolean; line: string; fx: string; animation: string; woke: boolean; promoted: string | null; promoteLine: string | null; needReward: { kind: string; exp: number; bond: number } | null; gainExp?: number; gainBond?: number };
+type ActionResp = PetView & { ok: boolean; line: string; fx: string; animation: string; woke: boolean; revived?: boolean; promoted: string | null; promoteLine: string | null; needReward: { kind: string; exp: number; bond: number } | null; gainExp?: number; gainBond?: number };
 
 const VERB_META: Record<string, { emoji: string; label: string; stat: string }> = {
   feed: { emoji: "🍙", label: "喂喂它", stat: "satiety" },
@@ -86,7 +86,7 @@ Page({
     funActs: [] as { verb: string; emoji: string; label: string; enabled: boolean }[],
     statBars: [] as { label: string; color: string; value: number; pct: number }[],
     particles: [] as { key: number; emoji: string; x: number; rot: number; delay: number }[],
-    floatTag: "", fxKey: 0, reacting: false, nameInput: "", statusFx: "", comeback: "",
+    floatTag: "", fxKey: 0, reacting: false, nameInput: "", statusFx: "", critical: false, comeback: "",
   },
 
   // "today's care is done" = awake, no need is due, and the 灵感 are spent — i.e. nothing
@@ -114,6 +114,7 @@ Page({
   idleAnimFor(pet: PetView): string {
     if (pet.asleepNow) return "";
     const b = pet.badges || [];
+    if (pet.dominantState === "CRITICAL" || b.indexOf("濒危") >= 0) return "anim-weak"; // V2 §4 虚弱瘫软
     if (pet.dominantState === "SICK" || b.indexOf("生病") >= 0) return "anim-sick";
     if (b.indexOf("饿") >= 0) return "anim-weak";
     if (b.indexOf("脏") >= 0) return "anim-itch";
@@ -137,6 +138,7 @@ Page({
   statusFxFor(pet: PetView): string {
     if (pet.asleepNow) return "";
     const b = pet.badges || [];
+    if (pet.dominantState === "CRITICAL" || b.indexOf("濒危") >= 0) return "🆘"; // V2 §4
     if (pet.dominantState === "SICK" || b.indexOf("生病") >= 0) return "💢";
     if (b.indexOf("饿") >= 0) return "💫";
     if (b.indexOf("脏") >= 0) return "🪰";
@@ -289,6 +291,7 @@ Page({
       bgSrc: this.chooseBg(pet),
       animClass: this.idleAnimFor(pet),
       statusFx: this.statusFxFor(pet),
+      critical: pet.dominantState === "CRITICAL" || (pet.badges || []).indexOf("濒危") >= 0, // V2 §4 暗角 vignette
       ...(() => { const d = this.decoFor(pet); return { decoOn: d.on, decoSrc: d.src, decoStyle: d.style }; })(),
       stageLabel: STAGE_CN[pet.pet.stage] || pet.pet.stage,
       needCard, aVerb, aEmoji, aLabel, aReward, aGlow, bVerb, bEmoji, bLabel,
@@ -319,6 +322,13 @@ Page({
       this.burst(PARTICLE[resp.fx] || "✨", verb);
       this.apply(resp);
       this.activityPose(verb, resp); // briefly show it DOING the action (颠锅/泡泡/手柄)
+      // V2 §4: a return tap revived a 濒危 pet — celebrate the rescue (hearts burst + emotional line).
+      if (resp.revived) {
+        this.burst("💖", "pet");
+        wx.showToast({ title: resp.line || "还好你回来了，它一下子就有精神了！", icon: "none", duration: 2600 });
+        this.setData({ reacting: false });
+        return;
+      }
       // exp case → show the TOTAL gained (gainExp = careExp + need bonus) so it matches the chip;
       // bond-only needs (sleepy/bored) → show the bond gained.
       const tag = resp.needReward ? (resp.needReward.exp ? `+${resp.gainExp ?? resp.needReward.exp} 正好需要!` : `+${resp.needReward.bond}♥ 懂它!`) : "";

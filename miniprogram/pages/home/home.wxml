@@ -5,6 +5,7 @@
     <view class="lcd">
       <image class="bg" src="{{bgSrc}}" mode="aspectFill" />
       <view class="lcd-grid"></view>
+      <view wx:if="{{critical}}" class="vignette"></view>
 
       <view class="road" bindtap="onC">
         <text class="lvchip">Lv{{levelNum}}</text>

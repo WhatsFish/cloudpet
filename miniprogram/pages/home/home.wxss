@@ -30,7 +30,13 @@ page { font-family: "Zpix", "PingFang SC", -apple-system, "Microsoft YaHei", san
     repeating-linear-gradient(90deg, rgba(40,50,30,0.06) 0, rgba(40,50,30,0.06) 1rpx, transparent 1rpx, transparent 10rpx);
 }
 
-/* roadmap strip */
+/* V2 §4 濒危 暗角: a dark radial vignette over the LCD signals 虚弱/濒危 at a glance (派生占位 —
+   no new art; the weak sprite + slump animation + this overlay convey it). Sits above bg/grid,
+   below the pet (z-index 2) so the creature stays visible at the dim center. */
+.vignette { position:absolute; left:0; top:0; right:0; bottom:0; z-index:1; pointer-events:none;
+  background:radial-gradient(ellipse at 50% 58%, transparent 28%, rgba(20,16,30,0.30) 72%, rgba(15,10,24,0.52) 100%);
+  animation:vigpulse 3.2s ease-in-out infinite; }
+@keyframes vigpulse { 0%,100%{opacity:0.78;} 50%{opacity:1;} }
 .road { position:relative; z-index:2; display:flex; align-items:center; gap:10rpx; margin-bottom:4rpx; }
 .lvchip { font-size:22rpx; font-weight:700; color:#fff; background:var(--accent); border-radius:8rpx; padding:2rpx 10rpx; }
 .lvbar { width:120rpx; height:10rpx; background:rgba(60,70,40,0.22); border-radius:999rpx; overflow:hidden; }

@@ -7,7 +7,7 @@ import type { CopyContext, CopyLine, CopyRequires, CreatureCopyPack, DiaryPart }
 import { STATE } from "@/lib/types";
 
 const FLAG_BIT: Record<string, number> = {
-  SICK: STATE.SICK, SULKING: STATE.SULKING, HIDING: STATE.HIDING, LONELY: STATE.LONELY,
+  SICK: STATE.SICK, SULKING: STATE.SULKING, HIDING: STATE.HIDING, LONELY: STATE.LONELY, CRITICAL: STATE.CRITICAL,
 };
 
 function hashStr(s: string): number {
@@ -82,6 +82,8 @@ const FALLBACK: Record<string, string[]> = {
   "feed.dislike": ["feed.neutral", "feed.love"],
   "feed.overfed": ["feed.neutral", "feed.love"],
   "feed.sick_refuse": ["state.sick", "idle.mutter"],
+  "state.critical": ["state.sick", "state.lonely", "idle.mutter"], // V2 §4: 濒危心声回退到生病/想你
+  "reunion.revive": ["greet.return_long", "reunion.gift", "greet.return"], // V2 §4: 复活回归
   "snack": ["feed.love"],
   "state.bored": ["beg.want", "play.declined", "idle.mutter"], // V4: bored → wants to play, in persona
   "play.declined": ["idle.mutter"],

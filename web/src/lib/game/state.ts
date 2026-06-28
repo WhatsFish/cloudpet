@@ -3,7 +3,7 @@
 
 import type { MoodBand, Snapshot, StateFlagName } from "@/lib/types";
 import { STATE } from "@/lib/types";
-import { HEALTH, STATE_THRESH } from "./constants";
+import { CRITICAL, HEALTH, STATE_THRESH } from "./constants";
 
 export function moodBand(mood: number): MoodBand {
   if (mood >= 90) return "极好";
@@ -28,6 +28,11 @@ export function resolveStateFlags(
   const sick = wasSick ? s.health < HEALTH.sickClearAt : s.health < HEALTH.sickBelow;
   if (sick) flags |= STATE.SICK;
 
+  // V2 §4 濒危: health bottomed out AND away long enough. An actively-returning player keeps
+  // noInteractionH small, so they never see it (anti-anxiety). Revival (action route) heals back
+  // above this, so it can't immediately re-fire.
+  if (s.health <= CRITICAL.health && ctx.noInteractionH > CRITICAL.afterH) flags |= STATE.CRITICAL;
+
   if (s.mood < STATE_THRESH.sulkMoodLt) flags |= STATE.SULKING;
 
   if (s.mood < STATE_THRESH.hideMoodLt && ctx.noInteractionH > STATE_THRESH.hideAfterH) {
@@ -42,16 +47,19 @@ export function resolveStateFlags(
 export type SpriteMood = "idle" | "happy" | "sad" | "sleeping" | "sulk" | "hide";
 
 export type Dominant = {
-  kind: "SICK" | "HIDING" | "SULKING" | "SLEEPY" | "HUNGRY" | "DIRTY" | "LONELY" | "NORMAL";
+  kind: "CRITICAL" | "SICK" | "HIDING" | "SULKING" | "SLEEPY" | "HUNGRY" | "DIRTY" | "LONELY" | "NORMAL";
   spriteMood: SpriteMood;
   animation: string;
   copyStateEvent: string | null; // a state.* event when a negative state dominates
   stateName: StateFlagName | "none";
 };
 
-/** Dominant-state precedence (PLAN §5.6): SICK > HIDING > SULKING > 困 > 饿 > 脏 > LONELY > 正常. */
+/** Dominant-state precedence (PLAN §5.6; V2 §4 adds CRITICAL on top): CRITICAL > SICK > HIDING > SULKING > 困 > 饿 > 脏 > LONELY > 正常. */
 export function dominant(s: Snapshot, asleep: boolean): Dominant {
   const f = s.state_flags;
+  if (f & STATE.CRITICAL)
+    // 派生占位美术: reuse the sad sprite + a weak slump; the client darkens the screen (vignette).
+    return { kind: "CRITICAL", spriteMood: "sad", animation: "weak", copyStateEvent: "state.critical", stateName: "CRITICAL" };
   if (f & STATE.SICK)
     return { kind: "SICK", spriteMood: "sad", animation: "sick", copyStateEvent: "state.sick", stateName: "SICK" };
   if (f & STATE.HIDING)
@@ -78,6 +86,7 @@ export function dominant(s: Snapshot, asleep: boolean): Dominant {
 /** Small UI badges (all active minor states), in display order. */
 export function badges(s: Snapshot, asleep: boolean): string[] {
   const b: string[] = [];
+  if (s.state_flags & STATE.CRITICAL) b.push("濒危");
   if (s.state_flags & STATE.SICK) b.push("生病");
   if (s.satiety < STATE_THRESH.hungry) b.push("饿");
   if (s.cleanliness < STATE_THRESH.dirty) b.push("脏");
