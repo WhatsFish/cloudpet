@@ -109,6 +109,12 @@ export function newlyUnlocked(before: DecoCtx, after: DecoCtx): { kind: UnlockKi
   const out: { kind: UnlockKind; kindLabel: string; id: string; name: string }[] = [];
   for (const e of buildUnlockTimeline(after)) {
     if (!e.earned) continue;
+    // BOND is the only non-monotonic gate: bond decays every tick and a care action tops it back up,
+    // so a pet sitting at/above a bond threshold (e.g. bond 1000) crosses it again on EVERY action —
+    // which would re-fire the "unlocked!" celebration forever. Skip bond gates here (they stay
+    // visible in the 解锁路线 table / 衣柜); only the monotonic gates (level/stage — the values a care
+    // action actually pushes UP, and never back down) drive the celebration.
+    if (e.cond.type === "bond") continue;
     const wasEarned =
       e.kind === "title"
         ? TITLES.some((t) => t.id === e.id && titleEarned(t.cond, before))
