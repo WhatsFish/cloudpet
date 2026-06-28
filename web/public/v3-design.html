@@ -99,19 +99,36 @@
   details{background:#FFFDF7;border:1px solid var(--line);border-radius:12px;padding:4px 14px;margin:10px 0}
   summary{cursor:pointer;font-weight:700;font-size:14px;padding:8px 0}
   .mini{font-size:12.5px;color:var(--mut)}
+  /* growing-frame mockup */
+  .devrow{display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;justify-content:center;margin:18px 0 6px}
+  .dev{flex:none;width:150px}
+  .phone{width:150px;height:220px;border-radius:24px;background:linear-gradient(180deg,#3C3C48,#22222B);
+    padding:13px;display:flex;align-items:flex-end;justify-content:center;
+    box-shadow:inset 0 2px 4px rgba(255,255,255,.10),0 8px 20px rgba(60,45,20,.18)}
+  .phone.ghost{background:repeating-linear-gradient(135deg,#EFE7D6,#EFE7D6 6px,#F7F1E3 6px,#F7F1E3 12px);border:2px dashed #C8B68C}
+  .lcd2{width:100%;background:linear-gradient(180deg,#F3F7E9,#E1EACE);border:2px solid #C9B68E;border-radius:9px;
+    position:relative;display:grid;place-items:end center;overflow:hidden}
+  .lcd2 .reserve{position:absolute;left:0;right:0;top:0;border-bottom:1px dashed #C19A4E;
+    color:#B07E2A;font-size:9px;text-align:center;line-height:1.4;background:rgba(217,169,58,.08)}
+  .pet2{background:var(--accent);border-radius:50% 50% 46% 46%;margin-bottom:10%}
+  .pet2.q{background:#B98BD9;opacity:.5}
+  .devcap{text-align:center;font-size:12px;margin-top:9px}
+  .devcap b{display:block;font-size:13px;color:var(--accent)}
+  .devcap small{color:var(--mut);font-size:11px}
+  .devcap.future b{color:#9B6FC9}
 </style>
 </head>
 <body>
 <header class="hero">
   <span class="badge">V3 · 成体进化大版本 · REVIEW</span>
   <h1>纪元进化树 — 成体之后，旅程才刚到一半</h1>
-  <p class="sub">现在的进化在<strong>成体（Lv11 / 第21天）就定格</strong>了，往后只有数字在涨、形态不再变 → 这是「Lv20 之后没动力」的根因。V3 把进化沿着已有路线<strong>继续往后长三段</strong>，并让它们正好落在你早就埋好、却还没有真实形态的三个里程碑上。</p>
-  <div class="goal">🎯 <b>本版目标</b>：把养成的「可见进化」从 <b>5 段拉到 8 段</b>，覆盖到 <b>第 50+ 天 / Lv30</b>。让一个每天上 1–2 次的玩家，<b>每隔约一周就能亲眼看到宠物再变一次形态</b>，并在 Lv20 亲手做一次新的成长抉择（三气觉醒），把「等级数字没意义了」彻底解决。<br>
-  <span class="kv" style="margin-top:6px;display:inline-block">现状基线：成体 = 终点；Lv15「羁绊渐深」/ Lv20「本命觉醒」/ Lv30「纪元守护者」三个称号<b>早已存在但没有任何形态变化</b> → V3 给它们配上真实的身体进化。</span></div>
+  <p class="sub">现在的进化在<strong>成体（Lv11 / 第21天）就定格</strong>了，往后只有数字在涨、形态不再变 → 这是「Lv20 之后没动力」的根因。本版沿着已有路线<strong>再往后长两段（成熟体 / 觉醒体）</strong>，正好落在你早就埋好、却还没有真实形态的两个里程碑上。<strong>纪元体本版先不做、作为预留</strong>，给以后留足升级空间。</p>
+  <div class="goal">🎯 <b>本版目标</b>：把养成的「可见进化」从 <b>5 段拉到 7 段</b>（成熟体 Lv15 / 觉醒体 Lv20），覆盖到 <b>第 32+ 天</b>。让一个每天上 1–2 次的玩家，<b>每隔约一周就能亲眼看到宠物再变一次形态</b>，并在 Lv20 亲手做一次新的成长抉择（三气觉醒）。同时<b>掌机画框随进化适度放大、但留出上限余量</b>——不一次做到头，纪元体及以后还能继续长。<br>
+  <span class="kv" style="margin-top:6px;display:inline-block">现状基线：成体 = 终点；Lv15「羁绊渐深」/ Lv20「本命觉醒」两个称号<b>早已存在但没有任何形态变化</b> → 本版给它们配上真实的身体进化。纪元体「纪元守护者」的形态留作下一版。</span></div>
   <nav class="toc">
-    <a href="#why">①为什么</a><a href="#tree">②完整进化树</a><a href="#tiers">③三段成体进化</a>
-    <a href="#qi">④三气觉醒分支</a><a href="#gate">⑤进化门槛与时机</a><a href="#art">⑥每只怪的特化</a>
-    <a href="#reward">⑦奖励整合</a><a href="#journey">⑧50天体感曲线</a><a href="#impl">⑨落地与迁移</a>
+    <a href="#why">①为什么</a><a href="#tree">②完整进化树</a><a href="#tiers">③两段成体进化</a>
+    <a href="#frame">④掌机画框放大</a><a href="#qi">⑤三气觉醒分支</a><a href="#gate">⑥门槛与时机</a>
+    <a href="#art">⑦每只怪的特化</a><a href="#reward">⑧奖励整合</a><a href="#journey">⑨体感曲线</a><a href="#impl">⑩落地与迁移</a>
   </nav>
 </header>
 <div class="wrap">
@@ -123,16 +140,16 @@
   <p class="now"><b>现状（代码）：</b><code>web/src/data/stage-table.ts</code> 的 <code>STAGES</code> 终止于 <code>adult</code>（<code>order:4 / expReq:1100 / minDays:21</code>），<code>MAX_STAGE_V1 = "adult"</code>。等级本身<b>无上限</b>（<code>levels.ts</code> 由 EXP 派生），但成体之后<b>身体不再变</b>、roadmap 也只剩数字 → 玩家把「形态不变」误读成「满级了」。</p>
   <ul>
     <li><span class="tag t-keep">已有</span> <code>titles.ts</code> 里 <code>lv15 羁绊渐深 / awaken 本命觉醒(Lv20) / lv30 纪元守护者</code> 三个里程碑<b>已埋点</b>，<code>awaken</code> 甚至已标 <code>awakening:true</code> 并在文案里承诺「点亮星辉光环」——但<b>从没有对应的身体进化</b>。</li>
-    <li><span class="tag t-keep">已有</span> 美术引擎 <code>scripts/gen-art.mjs</code> 用 <code>NODE = {egg:0,baby:1,child:2,teen:3,adult:4}</code> + <code>SCALE = [0,0.74,0.86,0.96,1.06]</code> 逐阶段程序化绘制，每只怪的 <code>draw(variant,node,mood)</code> 已支持「按 node 加特征」。<b>往后加 3 个 node 是这套引擎天然能扩的</b>，不需要逐帧手绘。</li>
+    <li><span class="tag t-keep">已有</span> 美术引擎 <code>scripts/gen-art.mjs</code> 用 <code>NODE = {egg:0,baby:1,child:2,teen:3,adult:4}</code> + <code>SCALE = [0,0.74,0.86,0.96,1.06]</code> 逐阶段程序化绘制，每只怪的 <code>draw(variant,node,mood)</code> 已支持「按 node 加特征」。<b>本版加 2 个 node（5/6），并预留 node 7 给纪元体</b>，不需要逐帧手绘。</li>
     <li><span class="tag t-keep">已有</span> 少年期 4 形态分叉（真形 + 丰裕/敏捷/守护）已经跑通玩家亲手选形的交互（<code>POST /api/pet/evolve</code>）。<b>成体后的「三气觉醒」可以复用这套分叉 UI</b>。</li>
   </ul>
-  <div class="callout">💡 <b>核心思路</b>：不新增物种、不推翻已选形态。沿着玩家已经养出来的那只<strong>继续往上「飞升」三段</strong>，每段都是真实可见的身体变化 + 一次里程碑庆祝 + 一份专属奖励，并在中段插入一次新的<strong>玩家抉择（三气）</strong>，把「亲手决定它长成什么样」的爽点从少年期延续到终局。</div>
+  <div class="callout">💡 <b>核心思路</b>：不新增物种、不推翻已选形态。沿着玩家已经养出来的那只<strong>继续往上「飞升」两段（成熟体 → 觉醒体）</strong>，每段都是真实可见的身体变化 + 一次里程碑庆祝 + 一份专属奖励，并在觉醒插入一次新的<strong>玩家抉择（三气）</strong>。<strong>纪元体作为预留形态</strong>，等本版稳定、美术与画框都还有余量时再开——这就是「不一次做到头」。</div>
 </section>
 
 <!-- TREE -->
 <section id="tree">
-  <div class="sec-h"><div class="num">2</div><div><h2>完整进化树（V3 · 8 段）</h2></div></div>
-  <p>蓝色为本版<b>新增的三段成体进化</b>。前五段（蛋→成体）保持不变，所有线上宠物无缝衔接。</p>
+  <div class="sec-h"><div class="num">2</div><div><h2>完整进化树（本版 7 段 + 纪元体预留）</h2></div></div>
+  <p>金/蓝两段为本版<b>新增的两段成体进化（成熟体 / 觉醒体）</b>。前五段（蛋→成体）保持不变，所有线上宠物无缝衔接。最右<b>纪元体为预留</b>，本版不实装。</p>
   <div class="tree">
     <div class="stages">
       <div class="stagecol">
@@ -166,56 +183,98 @@
         <div class="node awaken"><b>焰 / 霜 / 辉</b><small>内置光环 + 额心星辉<br>= 称号「本命觉醒」</small></div>
       </div>
       <div class="stagecol">
-        <div class="stagecap" style="color:#9B6FC9">纪元体 epoch</div><div class="stageday">第50+天 · Lv30+</div>
-        <div class="node epoch"><b>纪元形态</b><small>光冠 + 粒子 + 三气增幅<br>= 称号「纪元守护者」</small></div>
+        <div class="stagecap" style="color:#9B6FC9;opacity:.6">纪元体 epoch</div><div class="stageday" style="opacity:.6">预留 · 本版不做</div>
+        <div class="node epoch" style="opacity:.5;border-style:dashed"><b>纪元形态</b><small>留作下一版<br>（Lv30 / 第50+天）</small></div>
       </div>
     </div>
   </div>
   <div class="legend">
     <span><span class="dot" style="background:#FFF6EE;border:2px solid var(--accent)"></span>真形/成体（已有）</span>
     <span><span class="dot" style="background:#F4FAEE;border:2px solid var(--accent2)"></span>玩家分叉</span>
-    <span><span class="dot" style="background:#FBF3DE;border:2px solid var(--gold)"></span>成熟体（新）</span>
-    <span><span class="dot" style="background:#EFF4F8;border:2px solid var(--blue)"></span>觉醒体（新）</span>
-    <span><span class="dot" style="background:#F4EEFA;border:2px solid #B98BD9"></span>纪元体（新）</span>
+    <span><span class="dot" style="background:#FBF3DE;border:2px solid var(--gold)"></span>成熟体（本版新增）</span>
+    <span><span class="dot" style="background:#EFF4F8;border:2px solid var(--blue)"></span>觉醒体（本版新增）</span>
+    <span><span class="dot" style="background:#F4EEFA;border:2px dashed #B98BD9"></span>纪元体（预留）</span>
   </div>
-  <p class="mini">⑂ 一共两次玩家抉择：少年期选「样貌分支」（已有），觉醒期选「三气」（新增）。两次抉择相互独立、都不可逆但可被纪元体继承 → 终局的那只是你两次亲手选择的结果，独一无二。</p>
+  <p class="mini">⑂ 本版一共两次玩家抉择：少年期选「样貌分支」（已有），觉醒期选「三气」（新增）。两次抉择相互独立、不可逆，将来纪元体会继承它们 → 终局那只是你亲手选择的结果，独一无二。</p>
 </section>
 
 <!-- TIERS -->
 <section id="tiers">
-  <div class="sec-h"><div class="num">3</div><div><h2>三段成体进化 — 各自的「事件感」</h2></div></div>
-  <p>三段不是简单放大像素，每段都有<b>明确的主题、一次专属变化、一次庆祝、一份只此一档能拿的奖励</b>，让「又变了一次」成为持续上号的诱因。</p>
+  <div class="sec-h"><div class="num">3</div><div><h2>两段成体进化 — 各自的「事件感」</h2></div></div>
+  <p>两段都不是简单放大像素，每段都有<b>明确主题、一次专属变化、一次庆祝、一份只此一档能拿的奖励</b>，让「又变了一次」成为持续上号的诱因。</p>
 
   <h3>① 成熟体 · 特化定型（Lv15 / 第26天）</h3>
   <ul>
-    <li><b>主题</b>：少年期你选的那条分支，到这里<b>真正「定型」</b>——本命特征被放大锐化（樱桃绽成花、卷须更灵动、方头亮起像素纹……见 §6）。</li>
-    <li><b>变化</b>：体型 <code>SCALE 1.06→1.14</code>、姿态更挺、加一处签名特征。</li>
+    <li><b>主题</b>：少年期你选的那条分支，到这里<b>真正「定型」</b>——本命特征被放大锐化（樱桃绽成花、卷须更灵动、方头亮起像素纹……见 §7）。</li>
+    <li><b>变化</b>：体型 <code>SCALE 1.06→1.12</code>、姿态更挺、加一处签名特征；画框同步放大一档（见 §4）。</li>
     <li><b>奖励</b>：解锁专属头饰 <code>antlers 鹿角枝(Lv16)</code> 的同档位伙伴件 + 称号「羁绊渐深」点亮。</li>
     <li><b>庆祝</b>：复用现有升级解锁庆祝 modal（「✨ 它定型了！」），一次性。</li>
   </ul>
 
-  <h3>② 觉醒体 · 本命觉醒（Lv20 / 第32天）<span class="tag t-new" style="margin-left:8px">大事件</span></h3>
+  <h3>② 觉醒体 · 本命觉醒（Lv20 / 第32天）<span class="tag t-new" style="margin-left:8px">大事件 · 本版终点</span></h3>
   <ul>
-    <li><b>主题</b>：兑现 <code>titles.ts</code> 早就承诺的「点亮星辉光环」。这是整条线<b>最大的一次视觉跃迁</b>：身后浮现<b>内置柔光环</b>（不占装饰槽）、额前点亮一颗星辉、姿态站定。</li>
-    <li><b>玩家抉择</b>：在这里弹出<b>三气觉醒</b>选择（见 §4）——焰 / 霜 / 辉，决定觉醒体与纪元体的整体气质与光色。这是少年分叉之后第二次、也是终局前最后一次亲手塑形。</li>
+    <li><b>主题</b>：兑现 <code>titles.ts</code> 早就承诺的「点亮星辉光环」。这是本版<b>最大的一次视觉跃迁</b>：身后浮现<b>内置柔光环</b>（不占装饰槽）、额前点亮一颗星辉、姿态站定。</li>
+    <li><b>玩家抉择</b>：在这里弹出<b>三气觉醒</b>选择（见 §5）——焰 / 霜 / 辉，决定觉醒体的整体气质与光色（将来也会被纪元体继承）。这是少年分叉之后第二次亲手塑形。</li>
+    <li><b>变化</b>：体型 <code>SCALE 1.12→1.18</code>；画框再放大一档，但<b>仍留有上限余量</b>（见 §4）。</li>
     <li><b>奖励</b>：解锁专属光环 <code>aura_star 星辉环(Lv20)</code> 的「觉醒」强化版 + 称号「本命觉醒」（headline）。</li>
     <li><b>庆祝</b>：升级为<b>整屏觉醒动画</b>（淡入光环 + 星辉粒子，约 1.5s），区别于普通解锁 toast，强调「这是大事」。</li>
   </ul>
 
-  <h3>③ 纪元体 · 纪元守护者（Lv30 / 第50+天）<span class="tag t-new" style="margin-left:8px">capstone</span></h3>
-  <ul>
-    <li><b>主题</b>：旅程的<b>封顶形态</b>。头顶光冠、持续轻粒子、三气之力增幅到最盛——是「我陪它走完了 50 天」的勋章。</li>
-    <li><b>变化</b>：体型 <code>SCALE →1.26</code>（仍受 §1 取景框 ≤229rpx 钳制，绝不溢出）、光冠 + 常驻粒子 FX。</li>
-    <li><b>奖励</b>：解锁全游<b>最高光环</b> <code>aura_tide 潮汐环(Lv28)→纪元环</code> + 称号「纪元守护者」+ 可选的纪元专属<b>背景</b>（见 §7 新槽位）。</li>
-    <li><b>庆祝</b>：纪元加冕动画 + 永久在主页显示「纪元 · 第N天」徽记。</li>
-  </ul>
+  <details>
+    <summary>③ 纪元体 · 纪元守护者（Lv30）— 本版预留，下一版再做</summary>
+    <p class="mini">按你的意见<b>本版先不实装</b>。骨架已为它留好：阶段表预留 <code>order 7</code>、美术引擎预留 <code>node 7</code>、画框预留到上限那一档（见 §4 的虚线预留框）、三气已设计成可被它继承。等本版稳定、且画框/美术仍有余量时再开——头顶光冠、常驻粒子、三气增幅到最盛、解锁纪元环与（可选）纪元背景。</p>
+  </details>
 
-  <div class="callout purple">🔒 <b>不可逆但温柔</b>：三段进化只升不降；即使宠物进入濒危（§现有系统）也只掉状态、不掉形态。形态是「成就」，不会被惩罚机制夺走，保护玩家的长期投入感。</div>
+  <div class="callout purple">🔒 <b>不可逆但温柔</b>：成体进化只升不降；即使宠物进入濒危（现有系统）也只掉状态、不掉形态。形态是「成就」，不会被惩罚机制夺走，保护玩家的长期投入感。</div>
+</section>
+
+<!-- FRAME -->
+<section id="frame">
+  <div class="sec-h"><div class="num">4</div><div><h2>掌机画框随进化适度放大（留足未来空间）</h2></div></div>
+  <div class="pain"><b>你的诉求：</b>升级以后模拟掌机的屏幕画框可以适量增大一点；但不要一次做到头，要给以后的进化留空间。</div>
+  <p class="now"><b>现状（代码）：</b>§1（V2）已把舞台固定成一块 LCD，画框约 <code>252rpx</code>、宠物 bound 钳到 <code>≤229rpx</code>。画框大小<b>不随阶段变化</b> → 越到后面、宠物越大只是更贴边，「世界」没跟着它一起长。</p>
+  <h3>设计：画框与宠物一起长，比例恒定 ~85%、上限留白</h3>
+  <ul>
+    <li><b>同步放大</b>：每进一阶，<b>画框 + 宠物一起放大</b>，但两者比例恒定在 ~85%（永不溢出、永不顶满）。「它长大了」被「精灵更大」+「掌机屏幕更大」两层一起表达，体感更强。</li>
+    <li><b>小步走、留上限</b>：成体 <code>252</code> → 成熟体 <code>268(+6%)</code> → 觉醒体 <code>284(+13%)</code>；硬上限预留到 <code>~312rpx</code>（仍在手机机身边框内）。<b>本版只用到 284，顶部那截留白专门留给以后的纪元体等新阶段</b>——这就是「不一次做到头」。</li>
+    <li><b>机身不变、只长屏幕</b>：手机外壳尺寸固定，只放大里面的 LCD 取景区；放大同时相机轻微 zoom-out，过渡不突兀。</li>
+  </ul>
+  <p style="text-align:center;color:var(--mut);font-size:13px;margin-top:16px">效果图（同一台掌机，屏幕逐阶变大，宠物始终落在框内、顶部留余量）</p>
+  <div class="devrow">
+    <div class="dev">
+      <div class="phone"><div class="lcd2" style="height:118px"><div class="pet2" style="width:64px;height:50px"></div></div></div>
+      <div class="devcap"><b>成体</b>画框 252 · 宠物≤214<small>≤Lv14（基线）</small></div>
+    </div>
+    <div class="dev">
+      <div class="phone"><div class="lcd2" style="height:134px"><div class="pet2" style="width:74px;height:58px;background:var(--gold)"></div></div></div>
+      <div class="devcap"><b style="color:var(--gold)">成熟体</b>画框 268 · 宠物≤228<small>Lv15（+6%）</small></div>
+    </div>
+    <div class="dev">
+      <div class="phone"><div class="lcd2" style="height:150px"><div class="pet2" style="width:84px;height:66px;background:var(--blue)"></div></div></div>
+      <div class="devcap"><b style="color:var(--blue)">觉醒体</b>画框 284 · 宠物≤241<small>Lv20 · 本版终点（+13%）</small></div>
+    </div>
+    <div class="dev">
+      <div class="phone ghost"><div class="lcd2" style="height:172px;background:linear-gradient(180deg,#F1EAF8,#E6DAF3);border-color:#C9B0E0">
+        <div class="reserve" style="height:30px;line-height:30px">↑ 预留余量</div>
+        <div class="pet2 q" style="width:92px;height:72px"></div></div></div>
+      <div class="devcap future"><b>纪元体（预留）</b>画框上限 ~312<small>本版不画，留给以后</small></div>
+    </div>
+  </div>
+  <table>
+    <thead><tr><th class="l">阶段</th><th>画框高 (rpx)</th><th>宠物 bound (≤rpx)</th><th>占框比</th><th>较成体</th></tr></thead>
+    <tbody>
+      <tr><td class="l">成体（≤Lv14）<span class="tag t-keep">基线</span></td><td>252</td><td>214</td><td>~85%</td><td>—</td></tr>
+      <tr><td class="l">成熟体（Lv15）<span class="tag t-new">本版</span></td><td>268</td><td>228</td><td>~85%</td><td>+6%</td></tr>
+      <tr><td class="l">觉醒体（Lv20）<span class="tag t-new">本版</span></td><td>284</td><td>241</td><td>~85%</td><td>+13%</td></tr>
+      <tr><td class="l">纪元体（预留）<span class="tag t-keep">future</span></td><td>≤312</td><td>≤265</td><td>~85%</td><td>≤+24%</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn">📐 <b>验收</b>：① 成熟体/觉醒体 + 满 weight + 戴最高帽子 + 顶部心情 FX 全部落在屏内、顶部仍有空隙；② child→觉醒体肉眼能感到「它和它的掌机屏幕都一起变大了一圈」；③ 画框最大不超过 <code>284rpx</code>，<code>284→312</code> 这段始终空着，纪元体上线时正好填进去。<br><span class="mini">实现：把 §1 的固定 <code>frame</code> 改成按 stage 取值的 <code>STAGE_FRAME[stage]</code>，bound 仍 = frame×0.85；手机外壳容器固定，LCD 高度随 stage 变。</span></div>
 </section>
 
 <!-- QI -->
 <section id="qi">
-  <div class="sec-h"><div class="num">4</div><div><h2>三气觉醒 — 终局的新分叉（art 友好）</h2></div></div>
+  <div class="sec-h"><div class="num">5</div><div><h2>三气觉醒 — 终局的新分叉（art 友好）</h2></div></div>
   <p>少年期分叉是「选样貌」，觉醒期分叉是「选气质」。三气是一层<b>调色 + 光环 overlay</b>，叠在你已选好的那只形态上 → <b>不需要新画 16 套精灵</b>，却让每只觉醒体/纪元体都长得不一样。Lv20 弹窗一次性选定，继承到纪元体。</p>
   <div class="qi">
     <div class="qicard flame">
@@ -239,32 +298,32 @@
 
 <!-- GATE -->
 <section id="gate">
-  <div class="sec-h"><div class="num">5</div><div><h2>进化门槛与时机（沿用现有三重门）</h2></div></div>
-  <p>新三段照搬 <code>stage-table.ts</code> 的设计哲学：<b>EXP 门 ∧ 真实天数门 ∧ 羁绊门</b>三者同时满足才进化（不能靠单次刷 EXP 抢阶段）。觉醒/纪元再加一道<b>「曾达成连登」软门</b>，把「持续上号」直接写进进化条件——这是回答「为什么要上线」的硬钩子。天数按新经验曲线（<code>gap(n)=round(90+20n+1.1n²)</code>）反推。</p>
+  <div class="sec-h"><div class="num">6</div><div><h2>进化门槛与时机（沿用现有三重门）</h2></div></div>
+  <p>新两段照搬 <code>stage-table.ts</code> 的设计哲学：<b>EXP 门 ∧ 真实天数门 ∧ 羁绊门</b>三者同时满足才进化（不能靠单次刷 EXP 抢阶段）。觉醒再加一道<b>「曾达成连登」软门</b>，把「持续上号」直接写进进化条件——这是回答「为什么要上线」的硬钩子。天数按新经验曲线（<code>gap(n)=round(90+20n+1.1n²)</code>）反推。纪元体一行为预留参数（本版不实装）。</p>
   <table>
     <thead><tr><th class="l">阶段</th><th>order</th><th>等级门</th><th>累计EXP</th><th>真实天数门</th><th>羁绊门</th><th>额外软门（新）</th><th>体型scale</th></tr></thead>
     <tbody>
       <tr><td class="l">成体 adult <span class="tag t-keep">已有</span></td><td>4</td><td>Lv11</td><td>2424</td><td>21</td><td>400</td><td>—</td><td>1.06</td></tr>
-      <tr><td class="l">成熟体 mature <span class="tag t-new">新</span></td><td>5</td><td>Lv15</td><td>4477</td><td>26</td><td>550</td><td>—</td><td>1.14</td></tr>
-      <tr><td class="l">觉醒体 awakened <span class="tag t-new">新</span></td><td>6</td><td>Lv20</td><td>8228</td><td>32</td><td>700</td><td>曾达成 7 日连登</td><td>1.20</td></tr>
-      <tr><td class="l">纪元体 epoch <span class="tag t-new">新</span></td><td>7</td><td>Lv30</td><td>20722</td><td>50</td><td>850</td><td>曾达成 30 日连登</td><td>1.26</td></tr>
+      <tr><td class="l">成熟体 mature <span class="tag t-new">本版</span></td><td>5</td><td>Lv15</td><td>4477</td><td>26</td><td>550</td><td>—</td><td>1.12</td></tr>
+      <tr><td class="l">觉醒体 awakened <span class="tag t-new">本版</span></td><td>6</td><td>Lv20</td><td>8228</td><td>32</td><td>700</td><td>曾达成 7 日连登</td><td>1.18</td></tr>
+      <tr style="opacity:.55"><td class="l">纪元体 epoch <span class="tag t-keep">预留</span></td><td>7</td><td>Lv30</td><td>20722</td><td>50</td><td>850</td><td>曾达成 30 日连登</td><td>1.26</td></tr>
     </tbody>
   </table>
   <ul>
     <li><b>天数门为主、EXP 门贴边</b>：和现有阶段一样，正常照顾下 EXP 门≈天数门同时到达，避免「明明 Lv 够了却卡住」的困惑。</li>
-    <li><b>「曾达成」软门用高水位</b>：读已有的 <code>max_streak</code>（一生最高连登），<b>掉签也不会回退</b> → 鼓励连登但不惩罚偶尔断签。觉醒只要历史上连过 7 天、纪元要连过 30 天（直接服务「连续登录奖励」这条诉求）。</li>
-    <li><b>羁绊门递增</b>：<code>bondGate 400→550→700→850</code>，并作为进化后的羁绊保底（不跌破），保护长期玩家。</li>
-    <li><b>cap 维持 100</b>：活力/饱食等实时数值仍是 0–100，新阶段<b>不做数值膨胀</b>，奖励集中在形态/称号/光环/背景，避免破坏现有 UI 与平衡。</li>
+    <li><b>「曾达成」软门用高水位</b>：读已有的 <code>max_streak</code>（一生最高连登），<b>掉签也不会回退</b> → 鼓励连登但不惩罚偶尔断签。觉醒只要历史上连过 7 天即可（直接服务「连续登录奖励」这条诉求）。</li>
+    <li><b>羁绊门递增</b>：<code>bondGate 400→550→700</code>，并作为进化后的羁绊保底（不跌破），保护长期玩家。</li>
+    <li><b>cap 维持 100</b>：活力/饱食等实时数值仍是 0–100，新阶段<b>不做数值膨胀</b>，奖励集中在形态/称号/光环，避免破坏现有 UI 与平衡。</li>
   </ul>
-  <div class="callout warn">⏱️ <b>节奏校准</b>：成体(21)→成熟(26)→觉醒(32)→纪元(50)，间隔约 <b>5 / 6 / 18 天</b>。前两段贴着「每周一变」给短期目标；纪元体故意拉长成<b>终极长线目标</b>，配合 §8 中间穿插的称号/光环解锁，把第 32–50 天的空窗填满。</div>
+  <div class="callout warn">⏱️ <b>节奏校准</b>：成体(21)→成熟(26)→觉醒(32)，间隔约 <b>5 / 6 天</b>，贴着「每周一变」给短期目标。觉醒之后到纪元体（预留）之间，由 §8 的称号/光环解锁继续填充，等纪元体上线再封顶。</div>
 </section>
 
 <!-- ART -->
 <section id="art">
-  <div class="sec-h"><div class="num">6</div><div><h2>每只怪的特化签名（6 × 3 段）</h2></div></div>
-  <p>美术引擎是程序化绘制，下面每格 = 在已有 <code>draw(variant,node,mood)</code> 里按 <code>node≥5/6/7</code> 加的<b>附加特征</b>（叠在玩家已选的变体之上），保证与渲染精灵一致、与既有 6 只怪图谱风格统一。</p>
+  <div class="sec-h"><div class="num">7</div><div><h2>每只怪的特化签名（6 × 2 段，纪元列预留）</h2></div></div>
+  <p>美术引擎是程序化绘制，下面每格 = 在已有 <code>draw(variant,node,mood)</code> 里按 <code>node≥5/6</code> 加的<b>附加特征</b>（叠在玩家已选的变体之上），保证与渲染精灵一致、与既有 6 只怪图谱风格统一。最右「纪元体」列为预留方向，本版不画。</p>
   <table>
-    <thead><tr><th class="l">本命</th><th class="l">成熟体（特征锐化）</th><th class="l">觉醒体（内置光环+额星）</th><th class="l">纪元体（光冠+粒子）</th></tr></thead>
+    <thead><tr><th class="l">本命</th><th class="l">成熟体（特征锐化）</th><th class="l">觉醒体（内置光环+额星）</th><th class="l" style="opacity:.6">纪元体（预留）</th></tr></thead>
     <tbody>
       <tr><td class="l">奶团 puff</td><td class="l">头顶樱桃绽成小花、茸毛更蓬</td><td class="l">花心亮起、身后暖光环</td><td class="l">花冠加冕、花瓣粒子</td></tr>
       <tr><td class="l">克劳德 claude</td><td class="l">卷须加长、挂一枚小齿轮</td><td class="l">齿轮微亮、额前星点</td><td class="l">齿轮光冠、灵巧光屑</td></tr>
@@ -279,75 +338,76 @@
 
 <!-- REWARD -->
 <section id="reward">
-  <div class="sec-h"><div class="num">7</div><div><h2>奖励整合 — 让进化「看得见、拿得到」</h2></div></div>
-  <p>每段进化都<b>同时</b>点亮：① 一次身体形态变化 ② 一个称号 ③ 一件专属光环 ④（纪元）一张专属背景。全部并入现有 <code>unlocks.ts</code> 解锁路线时间线，主页「下个解锁」chip 与纪元面板的路线表会自动显示「Lv20 觉醒体 → 星辉觉醒环」这种<b>可预告的台阶</b>。</p>
+  <div class="sec-h"><div class="num">8</div><div><h2>奖励整合 — 让进化「看得见、拿得到」</h2></div></div>
+  <p>每段进化都<b>同时</b>点亮：① 一次身体形态变化 ② 一个称号 ③ 一件专属光环。全部并入现有 <code>unlocks.ts</code> 解锁路线时间线，主页「下个解锁」chip 与纪元面板的路线表会自动显示「Lv20 觉醒体 → 星辉觉醒环」这种<b>可预告的台阶</b>。</p>
   <table>
-    <thead><tr><th class="l">阶段</th><th class="l">形态</th><th class="l">称号（已有）</th><th class="l">光环</th><th class="l">背景（新槽位）</th></tr></thead>
+    <thead><tr><th class="l">阶段</th><th class="l">形态</th><th class="l">称号（已有）</th><th class="l">光环</th></tr></thead>
     <tbody>
-      <tr><td class="l">成熟体 Lv15</td><td class="l">特化定型</td><td class="l">羁绊渐深</td><td class="l">—（接 antlers 同档头饰）</td><td class="l">—</td></tr>
-      <tr><td class="l">觉醒体 Lv20</td><td class="l">焰/霜/辉觉醒</td><td class="l">本命觉醒 ★</td><td class="l">星辉觉醒环（aura_star 强化）</td><td class="l">—</td></tr>
-      <tr><td class="l">纪元体 Lv30</td><td class="l">纪元形态</td><td class="l">纪元守护者</td><td class="l">纪元环（aura_tide 强化）</td><td class="l">纪元星domain（新）</td></tr>
+      <tr><td class="l">成熟体 Lv15</td><td class="l">特化定型</td><td class="l">羁绊渐深</td><td class="l">—（接 antlers 同档头饰）</td></tr>
+      <tr><td class="l">觉醒体 Lv20</td><td class="l">焰/霜/辉觉醒</td><td class="l">本命觉醒 ★</td><td class="l">星辉觉醒环（aura_star 强化）</td></tr>
+      <tr style="opacity:.55"><td class="l">纪元体 Lv30 <span class="tag t-keep">预留</span></td><td class="l">纪元形态</td><td class="l">纪元守护者</td><td class="l">纪元环（aura_tide 强化）+ 专属背景</td></tr>
     </tbody>
   </table>
-  <div class="callout">🆕 <b>可选新槽位「背景 background」</b>：现有装饰只有 <code>hat / aura</code> 两槽。纪元体值得一张专属<b>舞台背景</b>作为终极视觉奖励。实现成本中等（加 <code>equipped_bg</code> 列 + 1 个槽 + 几张程序化背景），<b>可作为 V3 的 stretch，先标记、视你意见决定是否纳入本版</b>。</div>
+  <div class="callout">🆕 <b>「背景 background」新槽位也一并预留</b>：现有装饰只有 <code>hat / aura</code> 两槽，纪元体值得一张专属<b>舞台背景</b>作为终极奖励。<b>本版不做</b>，与纪元体一起留到下一版（加 <code>equipped_bg</code> 列 + 1 槽 + 程序化背景）。</div>
 </section>
 
 <!-- JOURNEY -->
 <section id="journey">
-  <div class="sec-h"><div class="num">8</div><div><h2>50 天体感曲线 — 每周都有盼头</h2></div></div>
-  <p>把进化、称号、光环、连登里程碑铺在同一条时间轴上，确认没有「空窗周」。</p>
+  <div class="sec-h"><div class="num">9</div><div><h2>体感曲线 — 每周都有盼头</h2></div></div>
+  <p>把进化、称号、光环、连登里程碑铺在同一条时间轴上，确认没有「空窗周」。本版终点在觉醒体（约第32天），其后由解锁台阶续上，等纪元体上线再封顶。</p>
   <div class="stepbar">
     <div class="step"><b>第1周</b><br>蛋→幼体→幼年，学会照顾循环</div>
     <div class="step"><b>第2周</b><br>少年分叉（亲手选形）→ 接近成体</div>
-    <div class="step"><b>第3周</b><br>成体 Lv11 → <b>成熟体 Lv15</b> 特化定型</div>
-    <div class="step"><b>第4–5周</b><br><b>觉醒体 Lv20</b> 三气抉择（大事件）+ 中途 Lv16/Lv24 头饰、Lv28 光环</div>
-    <div class="step"><b>第6–7周+</b><br>冲刺 <b>纪元体 Lv30</b> 封顶 + 连登 30/60/100 里程碑</div>
+    <div class="step"><b>第3周</b><br>成体 Lv11 → <b>成熟体 Lv15</b> 特化定型 + 画框放大一档</div>
+    <div class="step"><b>第4–5周</b><br><b>觉醒体 Lv20</b> 三气抉择（大事件）+ 画框再放大 + Lv16/Lv24 头饰、Lv28 光环</div>
+    <div class="step" style="opacity:.6"><b>第6周+（预留）</b><br>连登 30/60/100 里程碑续航；纪元体上线后封顶</div>
   </div>
   <ul>
-    <li><b>短期钩子</b>（&lt;1周可达）：每日连登礼、单级解锁 chip、成熟体特征。</li>
+    <li><b>短期钩子</b>（&lt;1周可达）：每日连登礼、单级解锁 chip、成熟体特征 + 画框变大。</li>
     <li><b>中期钩子</b>（1–2周）：觉醒大事件 + 三气抉择 = 第 4 周的高潮，正好接住「Lv20 没动力」的断点。</li>
-    <li><b>长期钩子</b>（终局）：纪元体 + 纪元背景 + 连登百日，给重度玩家一个值得炫耀的终点。</li>
+    <li><b>长期钩子</b>（预留）：纪元体 + 纪元背景 + 连登百日，下一版给重度玩家一个炫耀的终点。</li>
   </ul>
 </section>
 
 <!-- IMPL -->
 <section id="impl">
-  <div class="sec-h"><div class="num">9</div><div><h2>落地、改动量与迁移安全</h2></div></div>
+  <div class="sec-h"><div class="num">10</div><div><h2>落地、改动量与迁移安全</h2></div></div>
   <h3>改动清单（按依赖顺序）</h3>
   <table>
     <thead><tr><th class="l">文件</th><th class="l">改动</th><th>量</th></tr></thead>
     <tbody>
-      <tr><td class="l"><code>web/src/lib/types.ts</code></td><td class="l"><code>Stage</code> 增 <code>"mature"|"awakened"|"epoch"</code>；新增 <code>aura_qi</code> 类型</td><td>小</td></tr>
-      <tr><td class="l"><code>web/src/data/stage-table.ts</code></td><td class="l"><code>STAGES</code> 追加 3 行 + <code>MAX_STAGE</code> 升级；<code>pendingTeenFork</code> 同构出 <code>pendingAwakenFork</code></td><td>小</td></tr>
-      <tr><td class="l"><code>web/src/lib/game/constants.ts</code></td><td class="l"><code>STAGE_SIZE_BASE</code> 加 3 段；体型仍走 §1 的 ≤229rpx 钳制</td><td>小</td></tr>
-      <tr><td class="l"><code>scripts/gen-art.mjs</code></td><td class="l"><code>NODE</code>/<code>SCALE</code> 加 5/6/7；每只怪 <code>draw</code> 加 <code>node≥5/6/7</code> 特征 + qi overlay；重生成 PNG</td><td><b>中</b></td></tr>
+      <tr><td class="l"><code>web/src/lib/types.ts</code></td><td class="l"><code>Stage</code> 增 <code>"mature"|"awakened"</code>（<code>epoch</code> 暂留类型不实装）；新增 <code>aura_qi</code> 类型</td><td>小</td></tr>
+      <tr><td class="l"><code>web/src/data/stage-table.ts</code></td><td class="l"><code>STAGES</code> 追加 2 行（order 5/6）+ <code>MAX_STAGE</code> 升到 awakened；<code>pendingTeenFork</code> 同构出 <code>pendingAwakenFork</code></td><td>小</td></tr>
+      <tr><td class="l"><code>web/src/lib/game/constants.ts</code></td><td class="l"><b>画框改成按 stage 取值</b> <code>STAGE_FRAME</code>（252/268/284，预留 312）；bound = frame×0.85；<code>STAGE_SIZE_BASE</code> 加 2 段</td><td>小</td></tr>
+      <tr><td class="l">客户端舞台 <code>home.wxss/.ts</code></td><td class="l">LCD 高度随 stage 变（机身容器固定）；相机轻微 zoom-out</td><td>小</td></tr>
+      <tr><td class="l"><code>scripts/gen-art.mjs</code></td><td class="l"><code>NODE</code>/<code>SCALE</code> 加 5/6（预留 7）；每只怪 <code>draw</code> 加 <code>node≥5/6</code> 特征 + qi overlay；重生成 PNG</td><td><b>中</b></td></tr>
       <tr><td class="l"><code>web/src/app/api/pet/evolve/route.ts</code></td><td class="l">复用少年分叉，新增觉醒期三气选择落库</td><td>中</td></tr>
-      <tr><td class="l"><code>web/src/data/titles.ts / deco.ts / unlocks.ts</code></td><td class="l">把三段进化接进解锁路线；光环强化档</td><td>小</td></tr>
-      <tr><td class="l"><code>miniprogram/*</code></td><td class="l">觉醒动画、三气选择 modal、纪元徽记；qi tint 渲染</td><td>中</td></tr>
-      <tr><td class="l">DB</td><td class="l">加 <code>aura_qi</code> 列（+ stretch: <code>equipped_bg</code>）</td><td>小</td></tr>
+      <tr><td class="l"><code>web/src/data/titles.ts / deco.ts / unlocks.ts</code></td><td class="l">把两段进化接进解锁路线；光环强化档</td><td>小</td></tr>
+      <tr><td class="l"><code>miniprogram/*</code></td><td class="l">觉醒动画、三气选择 modal；qi tint 渲染；画框分档</td><td>中</td></tr>
+      <tr><td class="l">DB</td><td class="l">加 <code>aura_qi</code> 列（背景/纪元相关列留到下一版）</td><td>小</td></tr>
     </tbody>
   </table>
 
   <h3>线上 24 只宠物的迁移安全</h3>
   <ul>
-    <li><span class="tag t-keep">零回退</span> 新三段只往 <code>adult</code> 之后<b>追加</b>，不动前五段的 expReq/天数。所有现存宠物的当前阶段、等级、形态完全不变。</li>
-    <li><span class="tag t-keep">自然衔接</span> 已经 Lv15+/Lv20+ 的宠物（如你的大熊 Lv20）在下一次 tick 时，会按新表<b>自动补进化</b>到它等级/天数/羁绊已满足的最高新阶段——并触发一次（仅一次）觉醒庆祝；觉醒分叉则在首次进入觉醒体时弹一次三气选择（在补进化场景给个温和默认 = 辉，可改）。</li>
+    <li><span class="tag t-keep">零回退</span> 新两段只往 <code>adult</code> 之后<b>追加</b>，不动前五段的 expReq/天数。所有现存宠物的当前阶段、等级、形态完全不变。</li>
+    <li><span class="tag t-keep">自然衔接</span> 已经 Lv15+/Lv20+ 的宠物（如你的大熊 Lv20）在下一次 tick 时，会按新表<b>自动补进化</b>到它已满足的最高新阶段（最高到觉醒体）——并触发一次（仅一次）觉醒庆祝；觉醒分叉在首次进入觉醒体时弹一次三气选择（补进化场景给温和默认 = 辉，可改）。</li>
     <li><span class="tag t-keep">幂等</span> 沿用 <code>migration_marker</code> 模式；<code>aura_qi</code> 默认 NULL，渲染时 NULL 视作「未觉醒/无气」。</li>
     <li><span class="tag t-new">部署</span> 后端：<code>docker compose up -d --build --force-recreate web</code> + 跑列迁移；客户端：你在微信开发者工具上传新版本后对真实用户生效。</li>
   </ul>
 
   <div class="callout">✅ <b>请你 review 的关键决策点</b>（确认后我就开始逐项实施）：
     <ol style="margin:8px 0 0">
-      <li>三段命名：<b>成熟体 / 觉醒体 / 纪元体</b> 是否 OK？还是想换字（如「特化体/觉醒体/纪元体」或别的）？</li>
-      <li>等级/天数门（Lv15·26天 / Lv20·32天 / Lv30·50天）节奏是否合适？纪元体要不要更早一点（如 Lv28）以免太肝？</li>
+      <li>两段命名：<b>成熟体 / 觉醒体</b> 是否 OK？</li>
+      <li>等级/天数门（成熟 Lv15·26天 / 觉醒 Lv20·32天）节奏是否合适？</li>
+      <li>画框放大幅度（252→268→284、上限预留 312）是否合你「适量增大、留空间」的预期？还是想更大/更小一点？</li>
       <li>三气觉醒分叉（焰/霜/辉）要不要做？还是成体后纯线性飞升、不再让玩家选？</li>
-      <li>「曾达成连登」软门要不要加进进化条件？（加 = 强登录钩子，但对断签玩家略劝退）</li>
-      <li>纪元体「背景槽位」是纳入本版，还是先留作后续？</li>
+      <li>「曾达成 7 日连登」软门要不要加进觉醒条件？（加 = 强登录钩子，但对断签玩家略劝退）</li>
     </ol>
   </div>
 </section>
 
-<div class="foot">本命小宠 · V3 成体进化大版本设计稿 — 待 @WhatsFish review。确认方向后逐项实施 + 部署 + push。</div>
+<div class="foot">本命小宠 · V3 成体进化大版本设计稿（成熟体 + 觉醒体，纪元体预留）— 待 @WhatsFish review。确认方向后逐项实施 + 部署 + push。</div>
 </div>
 </body>
 </html>
