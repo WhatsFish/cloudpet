@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>本命小宠 · V3 成体进化大版本（纪元进化树）</title>
+<style>
+  :root{
+    --bg:#FFF7E6; --card:#FFFDF7; --line:#F0E2CC; --ink:#4A4034; --mut:#8B7E6A;
+    --accent:#E8845B; --accent2:#7FA86B; --pink:#E8607A; --blue:#6F8DA9; --gold:#D9A93A;
+    --flame:#E2603C; --frost:#5B8FB0; --radiant:#D7A93C;
+    --shadow:0 2px 0 #EAD9BC, 0 8px 24px rgba(120,90,40,.10);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:
+      radial-gradient(1200px 500px at 50% -10%, #FFF0D6 0%, transparent 60%),
+      var(--bg);
+    color:var(--ink);font:16px/1.7 -apple-system,"Segoe UI",system-ui,"PingFang SC","Microsoft Yahei",sans-serif;
+    -webkit-font-smoothing:antialiased;padding:0 0 80px}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+  header.hero{text-align:center;padding:54px 20px 30px}
+  .badge{display:inline-block;font-size:12px;letter-spacing:.18em;color:var(--accent);
+    background:#FFEFE2;border:1px solid #FBD9C4;border-radius:999px;padding:5px 14px;font-weight:700}
+  h1{font-size:34px;margin:16px 0 8px;letter-spacing:.02em}
+  .sub{color:var(--mut);max-width:680px;margin:0 auto;font-size:15px}
+  .goal{margin:20px auto 0;max-width:720px;background:linear-gradient(180deg,#FFFDF7,#FFF6E6);
+    border:1px solid var(--line);border-radius:16px;padding:14px 18px;box-shadow:var(--shadow);font-size:15px;text-align:left}
+  .goal b{color:var(--accent)}
+  nav.toc{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:26px 0 8px}
+  nav.toc a{font-size:13px;color:var(--ink);text-decoration:none;background:var(--card);
+    border:1px solid var(--line);border-radius:999px;padding:6px 12px}
+  nav.toc a:hover{border-color:var(--accent);color:var(--accent)}
+  section{background:var(--card);border:1px solid var(--line);border-radius:18px;
+    padding:26px 26px 28px;margin:26px 0;box-shadow:var(--shadow)}
+  .sec-h{display:flex;align-items:flex-start;gap:14px;margin:0 0 6px}
+  .num{flex:none;width:34px;height:34px;border-radius:10px;background:var(--accent);color:#fff;
+    font-weight:800;display:grid;place-items:center;font-size:16px;box-shadow:0 2px 0 #C96A45}
+  h2{font-size:22px;margin:2px 0 2px}
+  .pain{color:var(--pink);font-size:13.5px;background:#FFEDF1;border:1px solid #F8CEDA;
+    border-radius:10px;padding:8px 12px;margin:10px 0 16px}
+  .pain b{color:#C8395A}
+  h3{font-size:16px;margin:20px 0 8px;color:var(--accent)}
+  p{margin:8px 0}
+  ul{margin:8px 0 8px;padding-left:20px}
+  li{margin:5px 0}
+  code{background:#F4ECDC;border:1px solid #ECE0C9;border-radius:6px;padding:1px 6px;font-size:13px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#7A5B33}
+  .now{color:var(--mut);font-size:13.5px;border-left:3px solid #E6D6B6;padding-left:12px;margin:8px 0}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+  th,td{border:1px solid var(--line);padding:7px 10px;text-align:center}
+  th{background:#FBF1DD;font-weight:700}
+  td.l,th.l{text-align:left}
+  .tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:999px;font-weight:700}
+  .t-new{background:#E9F4E2;color:#4F7A38;border:1px solid #CDE6BC}
+  .t-keep{background:#EEF2F6;color:#5B7186;border:1px solid #D2DEE8}
+  .t-fix{background:#FFEFE2;color:#C96A45;border:1px solid #FBD9C4}
+  /* evolution tree */
+  .tree{overflow-x:auto;padding:6px 2px 14px}
+  .stages{display:flex;gap:0;min-width:1040px;align-items:stretch}
+  .stagecol{flex:1;min-width:124px;position:relative;padding:0 6px}
+  .stagecap{text-align:center;font-weight:800;font-size:13px;color:var(--accent);margin-bottom:4px}
+  .stageday{text-align:center;font-size:11px;color:var(--mut);margin-bottom:10px;min-height:30px}
+  .node{background:#FFF;border:2px solid var(--line);border-radius:12px;padding:9px 8px;margin:7px 0;
+    text-align:center;font-size:12.5px;position:relative}
+  .node b{display:block;font-size:13px}
+  .node small{color:var(--mut);font-size:11px}
+  .node.true{border-color:var(--accent);background:#FFF6EE}
+  .node.fork{border-color:var(--accent2);background:#F4FAEE}
+  .node.mature{border-color:var(--gold);background:#FBF3DE}
+  .node.awaken{border-color:var(--blue);background:#EFF4F8}
+  .node.epoch{border-color:#B98BD9;background:#F4EEFA}
+  .forklabel{text-align:center;font-size:11px;color:var(--accent2);font-weight:700;margin:2px 0}
+  .arrowrow{display:flex;justify-content:center;color:#D9C7A4;font-size:18px;margin:-2px 0}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--mut);margin-top:8px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:12px;height:12px;border-radius:4px;display:inline-block}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:680px){.cols{grid-template-columns:1fr}}
+  .foot{text-align:center;color:var(--mut);font-size:13px;margin-top:30px}
+  .callout{background:#F4FAEE;border:1px solid #CDE6BC;border-radius:12px;padding:12px 16px;margin:12px 0;font-size:14px}
+  .callout.warn{background:#FFF4EC;border-color:#FBD9C4}
+  .callout.purple{background:#F4EEFA;border-color:#E0CFF0}
+  .kv{font-size:13px;color:var(--mut)}
+  .kv b{color:var(--ink)}
+  /* 三气 cards */
+  .qi{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
+  @media(max-width:680px){.qi{grid-template-columns:1fr}}
+  .qicard{border-radius:14px;padding:14px;border:2px solid;position:relative}
+  .qicard.flame{border-color:#F0BBA6;background:linear-gradient(180deg,#FFF3EE,#FFE7DC)}
+  .qicard.frost{border-color:#B7D2E2;background:linear-gradient(180deg,#EFF6FB,#DFEDF5)}
+  .qicard.radiant{border-color:#E8D29A;background:linear-gradient(180deg,#FFF8E6,#FBEFCB)}
+  .qicard h4{margin:0 0 4px;font-size:15px}
+  .qicard.flame h4{color:var(--flame)} .qicard.frost h4{color:var(--frost)} .qicard.radiant h4{color:#B98A1E}
+  .qicard small{color:var(--mut);font-size:12px}
+  .swatch{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:4px}
+  .stepbar{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+  .step{flex:1;min-width:150px;background:#FFF;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12.5px}
+  .step b{color:var(--accent)}
+  details{background:#FFFDF7;border:1px solid var(--line);border-radius:12px;padding:4px 14px;margin:10px 0}
+  summary{cursor:pointer;font-weight:700;font-size:14px;padding:8px 0}
+  .mini{font-size:12.5px;color:var(--mut)}
+</style>
+</head>
+<body>
+<header class="hero">
+  <span class="badge">V3 · 成体进化大版本 · REVIEW</span>
+  <h1>纪元进化树 — 成体之后，旅程才刚到一半</h1>
+  <p class="sub">现在的进化在<strong>成体（Lv11 / 第21天）就定格</strong>了，往后只有数字在涨、形态不再变 → 这是「Lv20 之后没动力」的根因。V3 把进化沿着已有路线<strong>继续往后长三段</strong>，并让它们正好落在你早就埋好、却还没有真实形态的三个里程碑上。</p>
+  <div class="goal">🎯 <b>本版目标</b>：把养成的「可见进化」从 <b>5 段拉到 8 段</b>，覆盖到 <b>第 50+ 天 / Lv30</b>。让一个每天上 1–2 次的玩家，<b>每隔约一周就能亲眼看到宠物再变一次形态</b>，并在 Lv20 亲手做一次新的成长抉择（三气觉醒），把「等级数字没意义了」彻底解决。<br>
+  <span class="kv" style="margin-top:6px;display:inline-block">现状基线：成体 = 终点；Lv15「羁绊渐深」/ Lv20「本命觉醒」/ Lv30「纪元守护者」三个称号<b>早已存在但没有任何形态变化</b> → V3 给它们配上真实的身体进化。</span></div>
+  <nav class="toc">
+    <a href="#why">①为什么</a><a href="#tree">②完整进化树</a><a href="#tiers">③三段成体进化</a>
+    <a href="#qi">④三气觉醒分支</a><a href="#gate">⑤进化门槛与时机</a><a href="#art">⑥每只怪的特化</a>
+    <a href="#reward">⑦奖励整合</a><a href="#journey">⑧50天体感曲线</a><a href="#impl">⑨落地与迁移</a>
+  </nav>
+</header>
+<div class="wrap">
+
+<!-- WHY -->
+<section id="why">
+  <div class="sec-h"><div class="num">1</div><div><h2>为什么要做（结合代码现状）</h2></div></div>
+  <div class="pain"><b>痛点：</b>「宠物只变形一次还是有些单调」「玩到 20 级以后缺乏登录动力，不知道为什么要上线」「我的宠物好像升到 20 级就满级了」。</div>
+  <p class="now"><b>现状（代码）：</b><code>web/src/data/stage-table.ts</code> 的 <code>STAGES</code> 终止于 <code>adult</code>（<code>order:4 / expReq:1100 / minDays:21</code>），<code>MAX_STAGE_V1 = "adult"</code>。等级本身<b>无上限</b>（<code>levels.ts</code> 由 EXP 派生），但成体之后<b>身体不再变</b>、roadmap 也只剩数字 → 玩家把「形态不变」误读成「满级了」。</p>
+  <ul>
+    <li><span class="tag t-keep">已有</span> <code>titles.ts</code> 里 <code>lv15 羁绊渐深 / awaken 本命觉醒(Lv20) / lv30 纪元守护者</code> 三个里程碑<b>已埋点</b>，<code>awaken</code> 甚至已标 <code>awakening:true</code> 并在文案里承诺「点亮星辉光环」——但<b>从没有对应的身体进化</b>。</li>
+    <li><span class="tag t-keep">已有</span> 美术引擎 <code>scripts/gen-art.mjs</code> 用 <code>NODE = {egg:0,baby:1,child:2,teen:3,adult:4}</code> + <code>SCALE = [0,0.74,0.86,0.96,1.06]</code> 逐阶段程序化绘制，每只怪的 <code>draw(variant,node,mood)</code> 已支持「按 node 加特征」。<b>往后加 3 个 node 是这套引擎天然能扩的</b>，不需要逐帧手绘。</li>
+    <li><span class="tag t-keep">已有</span> 少年期 4 形态分叉（真形 + 丰裕/敏捷/守护）已经跑通玩家亲手选形的交互（<code>POST /api/pet/evolve</code>）。<b>成体后的「三气觉醒」可以复用这套分叉 UI</b>。</li>
+  </ul>
+  <div class="callout">💡 <b>核心思路</b>：不新增物种、不推翻已选形态。沿着玩家已经养出来的那只<strong>继续往上「飞升」三段</strong>，每段都是真实可见的身体变化 + 一次里程碑庆祝 + 一份专属奖励，并在中段插入一次新的<strong>玩家抉择（三气）</strong>，把「亲手决定它长成什么样」的爽点从少年期延续到终局。</div>
+</section>
+
+<!-- TREE -->
+<section id="tree">
+  <div class="sec-h"><div class="num">2</div><div><h2>完整进化树（V3 · 8 段）</h2></div></div>
+  <p>蓝色为本版<b>新增的三段成体进化</b>。前五段（蛋→成体）保持不变，所有线上宠物无缝衔接。</p>
+  <div class="tree">
+    <div class="stages">
+      <div class="stagecol">
+        <div class="stagecap">蛋 egg</div><div class="stageday">第0天</div>
+        <div class="node"><b>本命蛋</b><small>未孵化</small></div>
+      </div>
+      <div class="stagecol">
+        <div class="stagecap">幼体 baby</div><div class="stageday">第1天 · Lv1+</div>
+        <div class="node"><b>奶呼呼</b><small>软乎乎一团</small></div>
+      </div>
+      <div class="stagecol">
+        <div class="stagecap">幼年 child</div><div class="stageday">第5天 · Lv4+</div>
+        <div class="node"><b>小不点</b><small>开始有性格</small></div>
+      </div>
+      <div class="stagecol">
+        <div class="stagecap">少年 teen</div><div class="stageday">第12天 · Lv7+</div>
+        <div class="forklabel">⑂ 玩家选形（已有）</div>
+        <div class="node fork"><b>真形 / 丰裕 / 敏捷 / 守护</b><small>4 选 1，亲手决定样貌</small></div>
+      </div>
+      <div class="stagecol">
+        <div class="stagecap">成体 adult</div><div class="stageday">第21天 · Lv11+</div>
+        <div class="node true"><b>成体</b><small>当前终点</small></div>
+      </div>
+      <div class="stagecol">
+        <div class="stagecap" style="color:var(--gold)">成熟体 mature</div><div class="stageday">第26天 · Lv15+</div>
+        <div class="node mature"><b>特化定型</b><small>本命特征锐化<br>= 称号「羁绊渐深」</small></div>
+      </div>
+      <div class="stagecol">
+        <div class="stagecap" style="color:var(--blue)">觉醒体 awakened</div><div class="stageday">第32天 · Lv20+</div>
+        <div class="forklabel" style="color:var(--blue)">⑂ 三气觉醒（新分叉）</div>
+        <div class="node awaken"><b>焰 / 霜 / 辉</b><small>内置光环 + 额心星辉<br>= 称号「本命觉醒」</small></div>
+      </div>
+      <div class="stagecol">
+        <div class="stagecap" style="color:#9B6FC9">纪元体 epoch</div><div class="stageday">第50+天 · Lv30+</div>
+        <div class="node epoch"><b>纪元形态</b><small>光冠 + 粒子 + 三气增幅<br>= 称号「纪元守护者」</small></div>
+      </div>
+    </div>
+  </div>
+  <div class="legend">
+    <span><span class="dot" style="background:#FFF6EE;border:2px solid var(--accent)"></span>真形/成体（已有）</span>
+    <span><span class="dot" style="background:#F4FAEE;border:2px solid var(--accent2)"></span>玩家分叉</span>
+    <span><span class="dot" style="background:#FBF3DE;border:2px solid var(--gold)"></span>成熟体（新）</span>
+    <span><span class="dot" style="background:#EFF4F8;border:2px solid var(--blue)"></span>觉醒体（新）</span>
+    <span><span class="dot" style="background:#F4EEFA;border:2px solid #B98BD9"></span>纪元体（新）</span>
+  </div>
+  <p class="mini">⑂ 一共两次玩家抉择：少年期选「样貌分支」（已有），觉醒期选「三气」（新增）。两次抉择相互独立、都不可逆但可被纪元体继承 → 终局的那只是你两次亲手选择的结果，独一无二。</p>
+</section>
+
+<!-- TIERS -->
+<section id="tiers">
+  <div class="sec-h"><div class="num">3</div><div><h2>三段成体进化 — 各自的「事件感」</h2></div></div>
+  <p>三段不是简单放大像素，每段都有<b>明确的主题、一次专属变化、一次庆祝、一份只此一档能拿的奖励</b>，让「又变了一次」成为持续上号的诱因。</p>
+
+  <h3>① 成熟体 · 特化定型（Lv15 / 第26天）</h3>
+  <ul>
+    <li><b>主题</b>：少年期你选的那条分支，到这里<b>真正「定型」</b>——本命特征被放大锐化（樱桃绽成花、卷须更灵动、方头亮起像素纹……见 §6）。</li>
+    <li><b>变化</b>：体型 <code>SCALE 1.06→1.14</code>、姿态更挺、加一处签名特征。</li>
+    <li><b>奖励</b>：解锁专属头饰 <code>antlers 鹿角枝(Lv16)</code> 的同档位伙伴件 + 称号「羁绊渐深」点亮。</li>
+    <li><b>庆祝</b>：复用现有升级解锁庆祝 modal（「✨ 它定型了！」），一次性。</li>
+  </ul>
+
+  <h3>② 觉醒体 · 本命觉醒（Lv20 / 第32天）<span class="tag t-new" style="margin-left:8px">大事件</span></h3>
+  <ul>
+    <li><b>主题</b>：兑现 <code>titles.ts</code> 早就承诺的「点亮星辉光环」。这是整条线<b>最大的一次视觉跃迁</b>：身后浮现<b>内置柔光环</b>（不占装饰槽）、额前点亮一颗星辉、姿态站定。</li>
+    <li><b>玩家抉择</b>：在这里弹出<b>三气觉醒</b>选择（见 §4）——焰 / 霜 / 辉，决定觉醒体与纪元体的整体气质与光色。这是少年分叉之后第二次、也是终局前最后一次亲手塑形。</li>
+    <li><b>奖励</b>：解锁专属光环 <code>aura_star 星辉环(Lv20)</code> 的「觉醒」强化版 + 称号「本命觉醒」（headline）。</li>
+    <li><b>庆祝</b>：升级为<b>整屏觉醒动画</b>（淡入光环 + 星辉粒子，约 1.5s），区别于普通解锁 toast，强调「这是大事」。</li>
+  </ul>
+
+  <h3>③ 纪元体 · 纪元守护者（Lv30 / 第50+天）<span class="tag t-new" style="margin-left:8px">capstone</span></h3>
+  <ul>
+    <li><b>主题</b>：旅程的<b>封顶形态</b>。头顶光冠、持续轻粒子、三气之力增幅到最盛——是「我陪它走完了 50 天」的勋章。</li>
+    <li><b>变化</b>：体型 <code>SCALE →1.26</code>（仍受 §1 取景框 ≤229rpx 钳制，绝不溢出）、光冠 + 常驻粒子 FX。</li>
+    <li><b>奖励</b>：解锁全游<b>最高光环</b> <code>aura_tide 潮汐环(Lv28)→纪元环</code> + 称号「纪元守护者」+ 可选的纪元专属<b>背景</b>（见 §7 新槽位）。</li>
+    <li><b>庆祝</b>：纪元加冕动画 + 永久在主页显示「纪元 · 第N天」徽记。</li>
+  </ul>
+
+  <div class="callout purple">🔒 <b>不可逆但温柔</b>：三段进化只升不降；即使宠物进入濒危（§现有系统）也只掉状态、不掉形态。形态是「成就」，不会被惩罚机制夺走，保护玩家的长期投入感。</div>
+</section>
+
+<!-- QI -->
+<section id="qi">
+  <div class="sec-h"><div class="num">4</div><div><h2>三气觉醒 — 终局的新分叉（art 友好）</h2></div></div>
+  <p>少年期分叉是「选样貌」，觉醒期分叉是「选气质」。三气是一层<b>调色 + 光环 overlay</b>，叠在你已选好的那只形态上 → <b>不需要新画 16 套精灵</b>，却让每只觉醒体/纪元体都长得不一样。Lv20 弹窗一次性选定，继承到纪元体。</p>
+  <div class="qi">
+    <div class="qicard flame">
+      <h4>🔥 焰 · 炽心</h4>
+      <small><span class="swatch" style="background:#E2603C"></span>暖橙红调 · 火花粒子</small>
+      <p style="font-size:13px;margin:8px 0 0">活泼热烈的气质。光环偏暖橙，偶尔迸出小火星。适合常陪玩、互动多的玩家。</p>
+    </div>
+    <div class="qicard frost">
+      <h4>❄️ 霜 · 静月</h4>
+      <small><span class="swatch" style="background:#5B8FB0"></span>冷蓝白调 · 雪花粒子</small>
+      <p style="font-size:13px;margin:8px 0 0">沉静优雅的气质。光环偏冷蓝，飘落细小雪花。适合稳定打卡、细水长流的玩家。</p>
+    </div>
+    <div class="qicard radiant">
+      <h4>✨ 辉 · 暖阳</h4>
+      <small><span class="swatch" style="background:#D7A93C"></span>金白调 · 星点粒子</small>
+      <p style="font-size:13px;margin:8px 0 0">温柔明亮的气质。光环偏金白，环绕细碎星点。中庸耐看，selecting-by-default 的安全选项。</p>
+    </div>
+  </div>
+  <p class="mini">实现上：三气 = 一个 <code>aura_qi</code> 字段（<code>flame|frost|radiant</code>），渲染时给精灵叠一层 <b>tint（轻度混色）</b> + 切换 <b>粒子贴图</b>。美术引擎只需在 <code>renderBuf</code> 末尾按 qi 走一个 overlay 分支，复用已有 <code>floatExtras</code> 粒子原语。可像少年分叉一样给「推荐气」提示（按 care/互动统计），但最终由玩家定。</p>
+</section>
+
+<!-- GATE -->
+<section id="gate">
+  <div class="sec-h"><div class="num">5</div><div><h2>进化门槛与时机（沿用现有三重门）</h2></div></div>
+  <p>新三段照搬 <code>stage-table.ts</code> 的设计哲学：<b>EXP 门 ∧ 真实天数门 ∧ 羁绊门</b>三者同时满足才进化（不能靠单次刷 EXP 抢阶段）。觉醒/纪元再加一道<b>「曾达成连登」软门</b>，把「持续上号」直接写进进化条件——这是回答「为什么要上线」的硬钩子。天数按新经验曲线（<code>gap(n)=round(90+20n+1.1n²)</code>）反推。</p>
+  <table>
+    <thead><tr><th class="l">阶段</th><th>order</th><th>等级门</th><th>累计EXP</th><th>真实天数门</th><th>羁绊门</th><th>额外软门（新）</th><th>体型scale</th></tr></thead>
+    <tbody>
+      <tr><td class="l">成体 adult <span class="tag t-keep">已有</span></td><td>4</td><td>Lv11</td><td>2424</td><td>21</td><td>400</td><td>—</td><td>1.06</td></tr>
+      <tr><td class="l">成熟体 mature <span class="tag t-new">新</span></td><td>5</td><td>Lv15</td><td>4477</td><td>26</td><td>550</td><td>—</td><td>1.14</td></tr>
+      <tr><td class="l">觉醒体 awakened <span class="tag t-new">新</span></td><td>6</td><td>Lv20</td><td>8228</td><td>32</td><td>700</td><td>曾达成 7 日连登</td><td>1.20</td></tr>
+      <tr><td class="l">纪元体 epoch <span class="tag t-new">新</span></td><td>7</td><td>Lv30</td><td>20722</td><td>50</td><td>850</td><td>曾达成 30 日连登</td><td>1.26</td></tr>
+    </tbody>
+  </table>
+  <ul>
+    <li><b>天数门为主、EXP 门贴边</b>：和现有阶段一样，正常照顾下 EXP 门≈天数门同时到达，避免「明明 Lv 够了却卡住」的困惑。</li>
+    <li><b>「曾达成」软门用高水位</b>：读已有的 <code>max_streak</code>（一生最高连登），<b>掉签也不会回退</b> → 鼓励连登但不惩罚偶尔断签。觉醒只要历史上连过 7 天、纪元要连过 30 天（直接服务「连续登录奖励」这条诉求）。</li>
+    <li><b>羁绊门递增</b>：<code>bondGate 400→550→700→850</code>，并作为进化后的羁绊保底（不跌破），保护长期玩家。</li>
+    <li><b>cap 维持 100</b>：活力/饱食等实时数值仍是 0–100，新阶段<b>不做数值膨胀</b>，奖励集中在形态/称号/光环/背景，避免破坏现有 UI 与平衡。</li>
+  </ul>
+  <div class="callout warn">⏱️ <b>节奏校准</b>：成体(21)→成熟(26)→觉醒(32)→纪元(50)，间隔约 <b>5 / 6 / 18 天</b>。前两段贴着「每周一变」给短期目标；纪元体故意拉长成<b>终极长线目标</b>，配合 §8 中间穿插的称号/光环解锁，把第 32–50 天的空窗填满。</div>
+</section>
+
+<!-- ART -->
+<section id="art">
+  <div class="sec-h"><div class="num">6</div><div><h2>每只怪的特化签名（6 × 3 段）</h2></div></div>
+  <p>美术引擎是程序化绘制，下面每格 = 在已有 <code>draw(variant,node,mood)</code> 里按 <code>node≥5/6/7</code> 加的<b>附加特征</b>（叠在玩家已选的变体之上），保证与渲染精灵一致、与既有 6 只怪图谱风格统一。</p>
+  <table>
+    <thead><tr><th class="l">本命</th><th class="l">成熟体（特征锐化）</th><th class="l">觉醒体（内置光环+额星）</th><th class="l">纪元体（光冠+粒子）</th></tr></thead>
+    <tbody>
+      <tr><td class="l">奶团 puff</td><td class="l">头顶樱桃绽成小花、茸毛更蓬</td><td class="l">花心亮起、身后暖光环</td><td class="l">花冠加冕、花瓣粒子</td></tr>
+      <tr><td class="l">克劳德 claude</td><td class="l">卷须加长、挂一枚小齿轮</td><td class="l">齿轮微亮、额前星点</td><td class="l">齿轮光冠、灵巧光屑</td></tr>
+      <tr><td class="l">方头崽 blocky</td><td class="l">屏幕脸亮起像素纹、天线信号点</td><td class="l">屏面流光、扫描线光环</td><td class="l">像素皇冠、数据粒子</td></tr>
+      <tr><td class="l">波波企鹅 penguin</td><td class="l">颈部金羽更盛、立领姿态</td><td class="l">金颈发光、霜辉光环</td><td class="l">羽冠、雪/光粒子</td></tr>
+      <tr><td class="l">墩墩熊 bear</td><td class="l">红脸更亮、系上小围兜</td><td class="l">脸蛋星纹、暖厚光环</td><td class="l">熊耳光冠、暖光粒子</td></tr>
+      <tr><td class="l">团团海豹 seal</td><td class="l">斑纹定型、戴上贝壳项圈</td><td class="l">项圈发光、潮汐光环</td><td class="l">珍珠光冠、水光粒子</td></tr>
+    </tbody>
+  </table>
+  <p class="mini">三气（焰/霜/辉）再给上面整层染色 + 换粒子，所以同一只「觉醒奶团」在焰/霜/辉下也各不相同。所有特征都用现有像素原语（<code>tri/disc/stroke/floatExtras</code>）可画，无需引入外部资源。</p>
+</section>
+
+<!-- REWARD -->
+<section id="reward">
+  <div class="sec-h"><div class="num">7</div><div><h2>奖励整合 — 让进化「看得见、拿得到」</h2></div></div>
+  <p>每段进化都<b>同时</b>点亮：① 一次身体形态变化 ② 一个称号 ③ 一件专属光环 ④（纪元）一张专属背景。全部并入现有 <code>unlocks.ts</code> 解锁路线时间线，主页「下个解锁」chip 与纪元面板的路线表会自动显示「Lv20 觉醒体 → 星辉觉醒环」这种<b>可预告的台阶</b>。</p>
+  <table>
+    <thead><tr><th class="l">阶段</th><th class="l">形态</th><th class="l">称号（已有）</th><th class="l">光环</th><th class="l">背景（新槽位）</th></tr></thead>
+    <tbody>
+      <tr><td class="l">成熟体 Lv15</td><td class="l">特化定型</td><td class="l">羁绊渐深</td><td class="l">—（接 antlers 同档头饰）</td><td class="l">—</td></tr>
+      <tr><td class="l">觉醒体 Lv20</td><td class="l">焰/霜/辉觉醒</td><td class="l">本命觉醒 ★</td><td class="l">星辉觉醒环（aura_star 强化）</td><td class="l">—</td></tr>
+      <tr><td class="l">纪元体 Lv30</td><td class="l">纪元形态</td><td class="l">纪元守护者</td><td class="l">纪元环（aura_tide 强化）</td><td class="l">纪元星domain（新）</td></tr>
+    </tbody>
+  </table>
+  <div class="callout">🆕 <b>可选新槽位「背景 background」</b>：现有装饰只有 <code>hat / aura</code> 两槽。纪元体值得一张专属<b>舞台背景</b>作为终极视觉奖励。实现成本中等（加 <code>equipped_bg</code> 列 + 1 个槽 + 几张程序化背景），<b>可作为 V3 的 stretch，先标记、视你意见决定是否纳入本版</b>。</div>
+</section>
+
+<!-- JOURNEY -->
+<section id="journey">
+  <div class="sec-h"><div class="num">8</div><div><h2>50 天体感曲线 — 每周都有盼头</h2></div></div>
+  <p>把进化、称号、光环、连登里程碑铺在同一条时间轴上，确认没有「空窗周」。</p>
+  <div class="stepbar">
+    <div class="step"><b>第1周</b><br>蛋→幼体→幼年，学会照顾循环</div>
+    <div class="step"><b>第2周</b><br>少年分叉（亲手选形）→ 接近成体</div>
+    <div class="step"><b>第3周</b><br>成体 Lv11 → <b>成熟体 Lv15</b> 特化定型</div>
+    <div class="step"><b>第4–5周</b><br><b>觉醒体 Lv20</b> 三气抉择（大事件）+ 中途 Lv16/Lv24 头饰、Lv28 光环</div>
+    <div class="step"><b>第6–7周+</b><br>冲刺 <b>纪元体 Lv30</b> 封顶 + 连登 30/60/100 里程碑</div>
+  </div>
+  <ul>
+    <li><b>短期钩子</b>（&lt;1周可达）：每日连登礼、单级解锁 chip、成熟体特征。</li>
+    <li><b>中期钩子</b>（1–2周）：觉醒大事件 + 三气抉择 = 第 4 周的高潮，正好接住「Lv20 没动力」的断点。</li>
+    <li><b>长期钩子</b>（终局）：纪元体 + 纪元背景 + 连登百日，给重度玩家一个值得炫耀的终点。</li>
+  </ul>
+</section>
+
+<!-- IMPL -->
+<section id="impl">
+  <div class="sec-h"><div class="num">9</div><div><h2>落地、改动量与迁移安全</h2></div></div>
+  <h3>改动清单（按依赖顺序）</h3>
+  <table>
+    <thead><tr><th class="l">文件</th><th class="l">改动</th><th>量</th></tr></thead>
+    <tbody>
+      <tr><td class="l"><code>web/src/lib/types.ts</code></td><td class="l"><code>Stage</code> 增 <code>"mature"|"awakened"|"epoch"</code>；新增 <code>aura_qi</code> 类型</td><td>小</td></tr>
+      <tr><td class="l"><code>web/src/data/stage-table.ts</code></td><td class="l"><code>STAGES</code> 追加 3 行 + <code>MAX_STAGE</code> 升级；<code>pendingTeenFork</code> 同构出 <code>pendingAwakenFork</code></td><td>小</td></tr>
+      <tr><td class="l"><code>web/src/lib/game/constants.ts</code></td><td class="l"><code>STAGE_SIZE_BASE</code> 加 3 段；体型仍走 §1 的 ≤229rpx 钳制</td><td>小</td></tr>
+      <tr><td class="l"><code>scripts/gen-art.mjs</code></td><td class="l"><code>NODE</code>/<code>SCALE</code> 加 5/6/7；每只怪 <code>draw</code> 加 <code>node≥5/6/7</code> 特征 + qi overlay；重生成 PNG</td><td><b>中</b></td></tr>
+      <tr><td class="l"><code>web/src/app/api/pet/evolve/route.ts</code></td><td class="l">复用少年分叉，新增觉醒期三气选择落库</td><td>中</td></tr>
+      <tr><td class="l"><code>web/src/data/titles.ts / deco.ts / unlocks.ts</code></td><td class="l">把三段进化接进解锁路线；光环强化档</td><td>小</td></tr>
+      <tr><td class="l"><code>miniprogram/*</code></td><td class="l">觉醒动画、三气选择 modal、纪元徽记；qi tint 渲染</td><td>中</td></tr>
+      <tr><td class="l">DB</td><td class="l">加 <code>aura_qi</code> 列（+ stretch: <code>equipped_bg</code>）</td><td>小</td></tr>
+    </tbody>
+  </table>
+
+  <h3>线上 24 只宠物的迁移安全</h3>
+  <ul>
+    <li><span class="tag t-keep">零回退</span> 新三段只往 <code>adult</code> 之后<b>追加</b>，不动前五段的 expReq/天数。所有现存宠物的当前阶段、等级、形态完全不变。</li>
+    <li><span class="tag t-keep">自然衔接</span> 已经 Lv15+/Lv20+ 的宠物（如你的大熊 Lv20）在下一次 tick 时，会按新表<b>自动补进化</b>到它等级/天数/羁绊已满足的最高新阶段——并触发一次（仅一次）觉醒庆祝；觉醒分叉则在首次进入觉醒体时弹一次三气选择（在补进化场景给个温和默认 = 辉，可改）。</li>
+    <li><span class="tag t-keep">幂等</span> 沿用 <code>migration_marker</code> 模式；<code>aura_qi</code> 默认 NULL，渲染时 NULL 视作「未觉醒/无气」。</li>
+    <li><span class="tag t-new">部署</span> 后端：<code>docker compose up -d --build --force-recreate web</code> + 跑列迁移；客户端：你在微信开发者工具上传新版本后对真实用户生效。</li>
+  </ul>
+
+  <div class="callout">✅ <b>请你 review 的关键决策点</b>（确认后我就开始逐项实施）：
+    <ol style="margin:8px 0 0">
+      <li>三段命名：<b>成熟体 / 觉醒体 / 纪元体</b> 是否 OK？还是想换字（如「特化体/觉醒体/纪元体」或别的）？</li>
+      <li>等级/天数门（Lv15·26天 / Lv20·32天 / Lv30·50天）节奏是否合适？纪元体要不要更早一点（如 Lv28）以免太肝？</li>
+      <li>三气觉醒分叉（焰/霜/辉）要不要做？还是成体后纯线性飞升、不再让玩家选？</li>
+      <li>「曾达成连登」软门要不要加进进化条件？（加 = 强登录钩子，但对断签玩家略劝退）</li>
+      <li>纪元体「背景槽位」是纳入本版，还是先留作后续？</li>
+    </ol>
+  </div>
+</section>
+
+<div class="foot">本命小宠 · V3 成体进化大版本设计稿 — 待 @WhatsFish review。确认方向后逐项实施 + 部署 + push。</div>
+</div>
+</body>
+</html>
